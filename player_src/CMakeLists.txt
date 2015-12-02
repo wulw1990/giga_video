@@ -19,7 +19,3 @@ add_library( ${NAME} ${LIB_SOURCES} ${LIB_HEADERS} )
 find_package( OpenCV REQUIRED )
 include_directories(${OpenCV_HEADERS})
 target_link_libraries( ${NAME} ${OpenCV_LIBS} )
-
-# MESSAGE( STATUS ${CMAKE_SOURCE_DIR})
-# include_directories(${CMAKE_SOURCE_DIR}/../caffe/include)
-# target_link_libraries( ${NAME} caffe )

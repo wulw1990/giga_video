@@ -12,3 +12,5 @@ ADD_SUBDIRECTORY(construct)
 
 ADD_SUBDIRECTORY(player_src)
 ADD_SUBDIRECTORY(player_standalone)
+ADD_SUBDIRECTORY(player_server)
+ADD_SUBDIRECTORY(player_client)
