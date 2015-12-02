@@ -1,0 +1,9 @@
+build/*
+data/*
+output/*
+main
+*.o
+*.d
+*~
+temp_*
+*.orig
