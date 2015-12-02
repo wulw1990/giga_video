@@ -54,9 +54,15 @@ void init_server()
                int((client_addr.sin_addr.s_addr & 0xFF000000) >> 24),
                servaddr.sin_port);
 
-        n = recv(connfd, buff, MAXLINE, 0);
+        while(1){
+                   n = recv(connfd, buff, MAXLINE, 0);
         buff[n] = '\0';
-        printf("recv msg from client: %s\n", buff);
+        if(n>0)
+            printf("recv msg from client: %s\n", buff); 
+        else
+            break;
+        }
+
 
 
         close(connfd);
