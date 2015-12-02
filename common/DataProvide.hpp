@@ -29,8 +29,8 @@ public:
 	SceneFrameProvider(std::string path, std::string info_file, int w, int h);
 	cv::Mat getFrame(double x, double y, double z);
 	void incXY(double z, int dx, int dy, double& x, double& y);
-	double getMaxZ(){	return 4.0; }
-	double getMinZ(){	return 0.0; }
+	double getMaxZ(){ return 5.0; }
+	double getMinZ(){ return -3.5; }
 
 	private:
 		std::shared_ptr<TileProvider> m_tile_provider;

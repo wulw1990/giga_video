@@ -43,14 +43,16 @@ void ImagePlayer::onMouse(int event, int x, int y, int, void* data)
 
 		break;
 	case EVENT_LBUTTONDBLCLK:
+	cout << "EVENT_LBUTTONDBLCLK" << endl;
 		// cout << info->z << endl;
-		info->z += 1.0;
+		info->z += 0.5;
 		info->z = min(info->z, info->m_frame_provider->getMaxZ());
 		// cout << info->z << endl;
 		info->frame = info->m_frame_provider->getFrame(info->x, info->y, info->z);
 		break;
 	case EVENT_RBUTTONDBLCLK:
-		info->z -= 1.0;
+	cout << "EVENT_RBUTTONDBLCLK" << endl;
+		info->z -= 0.5;
 		info->z = max(info->z, info->m_frame_provider->getMinZ());
 		info->frame = info->m_frame_provider->getFrame(info->x, info->y, info->z);
 		break;
