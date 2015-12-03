@@ -12,16 +12,16 @@
 
 #define MAXLINE 4096
 
-int init_client(int argc, char** argv)
+int SocketClient::init(std::string server_ip)
 {
 	int    sockfd, n;
 	char    recvline[4096], sendline[4096];
 	struct sockaddr_in    servaddr;
 
-	if ( argc != 2) {
-		printf("usage: ./client <ipaddress>\n");
-		exit(0);
-	}
+	// if ( argc != 2) {
+	// 	printf("usage: ./client <ipaddress>\n");
+	// 	exit(0);
+	// }
 
 	if ( (sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
 		printf("create socket error: %s(errno: %d)\n", strerror(errno), errno);
@@ -31,8 +31,8 @@ int init_client(int argc, char** argv)
 	memset(&servaddr, 0, sizeof(servaddr));
 	servaddr.sin_family = AF_INET;
 	servaddr.sin_port = htons(6666);
-	if ( inet_pton(AF_INET, argv[1], &servaddr.sin_addr) <= 0) {
-		printf("inet_pton error for %s\n", argv[1]);
+	if ( inet_pton(AF_INET, server_ip.c_str(), &servaddr.sin_addr) <= 0) {
+		printf("inet_pton error for %s\n", server_ip.c_str());
 		exit(0);
 	}
 
@@ -45,14 +45,13 @@ int init_client(int argc, char** argv)
 
 	while (1) {
 		fgets(sendline, 4096, stdin);
+		// printf("len: %d\n", (int)strlen(sendline));
 		if ( send(sockfd, sendline, strlen(sendline), 0) < 0)
 		{
 			printf("send msg error: %s(errno: %d)\n", strerror(errno), errno);
 			exit(0);
 		}
 	}
-
-
 	close(sockfd);
 	exit(0);
 }

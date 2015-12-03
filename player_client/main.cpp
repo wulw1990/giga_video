@@ -51,7 +51,8 @@ Mat readImage(string name){
 }
 int demo(int argc, char** argv){
 	cout << "client demo" << endl;
-	// init_client(argc, argv);
-	readImage("/home/wlw/Pictures/dasheng.jpg");
+	SocketClient client;
+	client.init(argv[1]);
+	// readImage("/home/wlw/Pictures/dasheng.jpg");
 	return 0;
 }

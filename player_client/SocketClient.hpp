@@ -1,6 +1,14 @@
 #ifndef SOCKET_CLIENT_HPP_
 #define SOCKET_CLIENT_HPP_
 
-int init_client(int argc, char** argv);
+#include <string>
+
+class SocketClient
+{
+public:
+	SocketClient(){}
+	~SocketClient(){}
+	int init(std::string server_ip = "127.0.0.1");
+};
 
 #endif

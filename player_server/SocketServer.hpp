@@ -13,7 +13,7 @@ public:
 		}
 		return m_instance_ptr;
 	} 
-
+	void init(int port = 6666);
 
 private:
 	SocketServer(){}

@@ -11,7 +11,10 @@
 
 #define MAXLINE 4096
 
-void init_server()
+SocketServer* SocketServer::m_instance_p = NULL;
+std::shared_ptr<SocketServer> SocketServer::m_instance_ptr;
+
+void SocketServer::init(int port)
 {
     int    listenfd, connfd;
     struct sockaddr_in     servaddr;
@@ -27,7 +30,7 @@ void init_server()
     memset(&servaddr, 0, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    servaddr.sin_port = htons(6666);
+    servaddr.sin_port = htons(port);
 
     if ( bind(listenfd, (struct sockaddr*)&servaddr, sizeof(servaddr)) == -1) {
         printf("bind socket error: %s(errno: %d)\n", strerror(errno), errno);
@@ -54,17 +57,16 @@ void init_server()
                int((client_addr.sin_addr.s_addr & 0xFF000000) >> 24),
                servaddr.sin_port);
 
-        while(1){
-                   n = recv(connfd, buff, MAXLINE, 0);
-        buff[n] = '\0';
-        if(n>0)
-            printf("recv msg from client: %s\n", buff); 
-        else
-            break;
+        while (1) {
+            n = recv(connfd, buff, MAXLINE, 0);
+            buff[n] = '\0';
+            if (n > 0){
+                printf("recv msg from client: %s\n", buff);
+                printf("len: %d\n", n);
+            }
+            else
+                break;
         }
-
-
-
         close(connfd);
     }
 

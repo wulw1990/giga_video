@@ -26,6 +26,7 @@ int main(int argc, char **argv){
 }
 int demo(int argc, char** argv){
 	cout << "server demo" << endl;
-	init_server();
+	shared_ptr<SocketServer> server = SocketServer::getInstance();
+	server->init();
 	return 0;
 }
