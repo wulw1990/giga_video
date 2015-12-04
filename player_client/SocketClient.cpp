@@ -10,6 +10,11 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 
+#include <vector>
+#include <opencv2/opencv.hpp>
+using namespace std;
+using namespace cv;
+
 #define MAXLINE 4096
 
 int SocketClient::init(std::string server_ip)
@@ -43,6 +48,8 @@ int SocketClient::init(std::string server_ip)
 
 	printf("send msg to server: \n");
 
+
+	char buf[1024];
 	while (1) {
 		fgets(sendline, 4096, stdin);
 		// printf("len: %d\n", (int)strlen(sendline));
@@ -50,6 +57,13 @@ int SocketClient::init(std::string server_ip)
 		{
 			printf("send msg error: %s(errno: %d)\n", strerror(errno), errno);
 			exit(0);
+		}
+
+		int n = recv(sockfd, buf, 1024, 0);
+		buf[n] = '\0';
+		if (n > 0) {
+			printf("recv msg from server: %s\n", buf);
+			printf("len: %d\n", n);
 		}
 	}
 	close(sockfd);
