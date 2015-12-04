@@ -2,23 +2,21 @@
 #define SOCKET_SERVER_HPP_
 
 #include <memory>
+class Protocol;
+class Transmitter;
 
 class SocketServer
 {
-public:
-	static std::shared_ptr<SocketServer> getInstance(){
-		if(m_instance_p==NULL){
-			m_instance_p = new SocketServer();
-			m_instance_ptr = std::shared_ptr<SocketServer>(m_instance_p);
-		}
-		return m_instance_ptr;
-	} 
-	void init(int port = 6666);
+	public:
+		SocketServer(int port) ;
+		void work();
 
-private:
-	SocketServer(){}
-	static SocketServer* m_instance_p;
-	static std::shared_ptr<SocketServer> m_instance_ptr;
+	private:
+
+		std::shared_ptr<Protocol> m_protocol;
+		std::shared_ptr<Transmitter> m_transmitter;
+
+		int m_server_id;
 };
 void init_server();
 

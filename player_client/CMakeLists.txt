@@ -18,3 +18,6 @@ add_executable( ${NAME} ${LIB_SOURCES} ${LIB_HEADERS} )
 find_package( OpenCV REQUIRED )
 include_directories(${OpenCV_HEADERS})
 target_link_libraries( ${NAME} ${OpenCV_LIBS} )
+
+include_directories(${CMAKE_SOURCE_DIR}/common)
+target_link_libraries( ${NAME} common )

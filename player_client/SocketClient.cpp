@@ -1,71 +1,75 @@
 #include "SocketClient.hpp"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <unistd.h>
-#include <arpa/inet.h>
-
 #include <vector>
 #include <opencv2/opencv.hpp>
 using namespace std;
 using namespace cv;
+#include "Protocol.hpp"
+#include "Transmitter.hpp"
 
-#define MAXLINE 4096
+SocketClient::SocketClient(std::string ip, int port ) {
+	m_protocol = make_shared<Protocol>();
+	m_transmitter = make_shared<Transmitter>();
 
-int SocketClient::init(std::string server_ip)
-{
-	int    sockfd, n;
-	char    recvline[4096], sendline[4096];
-	struct sockaddr_in    servaddr;
-
-	// if ( argc != 2) {
-	// 	printf("usage: ./client <ipaddress>\n");
-	// 	exit(0);
-	// }
-
-	if ( (sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-		printf("create socket error: %s(errno: %d)\n", strerror(errno), errno);
-		exit(0);
-	}
-
-	memset(&servaddr, 0, sizeof(servaddr));
-	servaddr.sin_family = AF_INET;
-	servaddr.sin_port = htons(6666);
-	if ( inet_pton(AF_INET, server_ip.c_str(), &servaddr.sin_addr) <= 0) {
-		printf("inet_pton error for %s\n", server_ip.c_str());
-		exit(0);
-	}
-
-	if ( connect(sockfd, (struct sockaddr*)&servaddr, sizeof(servaddr)) < 0) {
-		printf("connect error: %s(errno: %d)\n", strerror(errno), errno);
-		exit(0);
-	}
-
-	printf("send msg to server: \n");
-
-
-	char buf[1024];
+	m_socket_id = m_transmitter->initSocketClient(ip, port);
+	cout << "init ok" << endl;
+}
+void SocketClient::work() {
+	char recvline[4096], sendline[4096];
 	while (1) {
-		fgets(sendline, 4096, stdin);
-		// printf("len: %d\n", (int)strlen(sendline));
-		if ( send(sockfd, sendline, strlen(sendline), 0) < 0)
-		{
-			printf("send msg error: %s(errno: %d)\n", strerror(errno), errno);
-			exit(0);
+		vector<unsigned char> recv_buf;
+		if (!m_transmitter->readData(m_socket_id, recv_buf, m_protocol->getHeadLen())) {
+			cout << "connect end" << endl;
+			break;
+		}
+		// cout << recv_buf.size() << endl;
+		// for (size_t i = 0; i < recv_buf.size(); ++i) {
+		// 	cout << (int)recv_buf[i] << " ";
+		// }
+		// cout << endl;
+
+		string cmd;
+		int data_len;
+		m_protocol->decodeHead(recv_buf, cmd, data_len);
+		cout << "cmd: " << cmd << " data_len: " << data_len << endl;
+		if (!m_transmitter->readData(m_socket_id, recv_buf, data_len)) {
+			cout << "connect end" << endl;
+			break;
 		}
 
-		int n = recv(sockfd, buf, 1024, 0);
-		buf[n] = '\0';
-		if (n > 0) {
-			printf("recv msg from server: %s\n", buf);
-			printf("len: %d\n", n);
+		Mat raw(1, recv_buf.size(), CV_8UC1, &recv_buf[0]);
+		Mat dec = imdecode(raw, 1);
+		imshow("dec", dec);
+		waitKey(1);
+
+		vector<unsigned char> send_data(2);
+		vector<unsigned char> send_buf;
+		m_protocol->encode(send_buf, "img", send_data);
+		if ( ! m_transmitter->sendData(m_socket_id, send_buf) ) {
+			printf("send msg error, end of this client");
+			break;
 		}
+
+
+
+		// fgets(sendline, 4096, stdin);
+		// vector<unsigned char> data;
+		// // for(int i=0; i<4096; ++i){
+		// // 	if(sendline[i]!=0){
+		// // 		data.push_back(sendline[i]);
+		// // 	}else{
+		// // 		break;
+		// // 	}
+		// // }
+		// data.resize(1024);
+		// for(size_t i=0; i<data.size(); ++i){
+		// 	data[i] = i % 256;
+		// }
+		// if ( ! m_transmitter->sendData(m_socket_id, data) ){
+		// 	printf("send msg error");
+		// 	exit(0);
+		// }
+		// cout << data.size() << endl;
 	}
-	close(sockfd);
-	exit(0);
+	m_transmitter->closeSocket(m_socket_id);
 }

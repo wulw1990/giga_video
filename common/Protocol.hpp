@@ -9,17 +9,26 @@ class Protocol
 
 	public:
 		Protocol();
+
 		void encode(
-			std::vector<unsigned char>& buf,
-			std::string cmd, const std::vector<unsigned char>& data );
-		void decode(
-			const std::vector<unsigned char>& buf,
-			std::string& cmd, std::vector<unsigned char>& data );
+		    std::vector<unsigned char>& buf,
+		    std::string cmd, const std::vector<unsigned char>& data );
+
+		void decodeHead(
+		    const std::vector<unsigned char>& buf,
+		    std::string& cmd, int& data_len );
+
+		int getHeadLen(){
+			return CMD_LEN + LEN_LEN;
+		}
+
 
 	private:
 		const int CMD_LEN;
 		const int LEN_LEN;
-		const int DATA_LEN;
+
+		void int2Vector(int value, std::vector<unsigned char>& vec);
+		void vector2Int(int& value, const std::vector<unsigned char>& vec);
 };
 
 #endif

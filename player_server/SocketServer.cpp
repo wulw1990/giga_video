@@ -1,86 +1,29 @@
 #include "SocketServer.hpp"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <unistd.h>
-
 #include <vector>
 #include <string>
 #include <opencv2/opencv.hpp>
 using namespace std;
 using namespace cv;
 #include "Protocol.hpp"
+#include "Transmitter.hpp"
 
-
-#define MAXLINE 4096
-
-SocketServer* SocketServer::m_instance_p = NULL;
-std::shared_ptr<SocketServer> SocketServer::m_instance_ptr;
-
-void SocketServer::init(int port)
+SocketServer::SocketServer(int port) {
+    m_protocol = make_shared<Protocol>();
+    m_transmitter = make_shared<Transmitter>();
+    m_server_id = m_transmitter->initSocketServer(port);
+}
+void SocketServer::work()
 {
-    int    listenfd, connfd;
-    struct sockaddr_in     servaddr;
-    struct sockaddr_in     client_addr;
-    char    buff[4096];
-    int     n;
-
-    if ( (listenfd = socket(AF_INET, SOCK_STREAM, 0)) == -1 ) {
-        printf("create socket error: %s(errno: %d)\n", strerror(errno), errno);
-        exit(0);
-    }
-
-    memset(&servaddr, 0, sizeof(servaddr));
-    servaddr.sin_family = AF_INET;
-    servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    servaddr.sin_port = htons(port);
-
-    if ( bind(listenfd, (struct sockaddr*)&servaddr, sizeof(servaddr)) == -1) {
-        printf("bind socket error: %s(errno: %d)\n", strerror(errno), errno);
-        exit(0);
-    }
-
-    if ( listen(listenfd, 10) == -1) {
-        printf("listen socket error: %s(errno: %d)\n", strerror(errno), errno);
-        exit(0);
-    }
-
-    printf("======waiting for client's request======\n");
-
-    Protocol protocol;
-    string cmd = "img";
-    int length = 2;
-    vector<unsigned char> data(2);
-    data[0] = 0;
-    data[1] = 1;
-
-    vector<unsigned char> bu;
-    protocol.encode(bu, cmd, data);
-
-
-
-
     while (1) {
-        int len = sizeof(client_addr);
-        if ( (connfd = accept(listenfd, (struct sockaddr*)&client_addr, (socklen_t * __restrict__)&len)) == -1) {
-            printf("accept socket error: %s(errno: %d)", strerror(errno), errno);
+        //get a client
+        cout << "waiting for a client" << endl;
+        int client_id;
+        if ( ! m_transmitter->getClientId(m_server_id, client_id) ) {
             continue;
         }
-
-        printf("%d.%d.%d.%d:%d\n",
-               int(client_addr.sin_addr.s_addr & 0xFF),
-               int((client_addr.sin_addr.s_addr & 0xFF00) >> 8),
-               int((client_addr.sin_addr.s_addr & 0xFF0000) >> 16),
-               int((client_addr.sin_addr.s_addr & 0xFF000000) >> 24),
-               servaddr.sin_port);
-
-
-        VideoCapture capture("/home/wlw/Videos/video.mp4");
+        //serve it
+        VideoCapture capture("/home/wuliwei/Videos/86-1.avi");
         assert(capture.isOpened());
         Mat frame;
         // while(capture.read(frame)){
@@ -88,29 +31,47 @@ void SocketServer::init(int port)
         //     waitKey(33);
         // }
 
-        while (1) {
-            n = recv(connfd, buff, MAXLINE, 0);
-            buff[n] = '\0';
-            if (n > 0) {
-                printf("recv msg from client: %s\n", buff);
-                printf("len: %d\n", n);
-            }
-            else
+
+        while (capture.read(frame)) {
+            vector<unsigned char> jpg;
+            imencode(".jpg", frame, jpg);
+            cout << jpg.size() << endl;
+
+            vector<unsigned char> send_buf;
+            m_protocol->encode(send_buf, "img", jpg);
+            if ( ! m_transmitter->sendData(client_id, send_buf) ) {
+                printf("send msg error, end of this client");
                 break;
+            }
 
-            capture.read(frame);
-
-
-
-            if ( send(connfd, "hh", 3, 0) < 0)
-            {
-                printf("send msg error: %s(errno: %d)\n", strerror(errno), errno);
-                exit(0);
+            vector<unsigned char> recv_buf;
+            if (!m_transmitter->readData(client_id, recv_buf, m_protocol->getHeadLen())) {
+                cout << "connect end" << endl;
+                break;
+            }
+            string cmd;
+            int data_len;
+            m_protocol->decodeHead(recv_buf, cmd, data_len);
+            cout << "cmd: " << cmd << " data_len: " << data_len <<endl;
+            if (!m_transmitter->readData(client_id, recv_buf, data_len)) {
+                cout << "connect end" << endl;
+                break;
             }
         }
-        close(connfd);
-    }
+        // exit(-1);
+        // while (1) {
+        //     vector<unsigned char> data;
+        //     if(!m_transmitter->readData(client_id, data, 1024)){
+        //         cout << "connect end" << endl;
+        //         break;
+        //     }
+        //     cout << data.size() << endl;
+        //     cout << (int)data[0] << " " << (int)data[data.size()-1] << endl;
+        // }
 
-    close(listenfd);
+        //close the client connection, wait for another client
+        m_transmitter->closeSocket(client_id);
+    }
+    m_transmitter->closeSocket(m_server_id);
 }
 
