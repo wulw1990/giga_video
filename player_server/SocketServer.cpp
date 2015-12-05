@@ -23,7 +23,8 @@ void SocketServer::work()
             continue;
         }
         //serve it
-        VideoCapture capture("/home/wuliwei/Videos/86-1.avi");
+        // VideoCapture capture("/home/wuliwei/Videos/86-1.avi");
+        VideoCapture capture("/home/wlw/Videos/video.mp4");
         assert(capture.isOpened());
         Mat frame;
         // while(capture.read(frame)){
@@ -40,36 +41,23 @@ void SocketServer::work()
             vector<unsigned char> send_buf;
             m_protocol->encode(send_buf, "img", jpg);
             if ( ! m_transmitter->sendData(client_id, send_buf) ) {
-                printf("send msg error, end of this client");
-                break;
+                goto CONNECT_END;
             }
 
             vector<unsigned char> recv_buf;
             if (!m_transmitter->readData(client_id, recv_buf, m_protocol->getHeadLen())) {
-                cout << "connect end" << endl;
-                break;
+                goto CONNECT_END;
             }
             string cmd;
             int data_len;
             m_protocol->decodeHead(recv_buf, cmd, data_len);
-            cout << "cmd: " << cmd << " data_len: " << data_len <<endl;
+            cout << "cmd: " << cmd << " data_len: " << data_len << endl;
             if (!m_transmitter->readData(client_id, recv_buf, data_len)) {
-                cout << "connect end" << endl;
-                break;
+                goto CONNECT_END;
             }
         }
-        // exit(-1);
-        // while (1) {
-        //     vector<unsigned char> data;
-        //     if(!m_transmitter->readData(client_id, data, 1024)){
-        //         cout << "connect end" << endl;
-        //         break;
-        //     }
-        //     cout << data.size() << endl;
-        //     cout << (int)data[0] << " " << (int)data[data.size()-1] << endl;
-        // }
-
-        //close the client connection, wait for another client
+CONNECT_END:
+        cout << "connect end" << endl;
         m_transmitter->closeSocket(client_id);
     }
     m_transmitter->closeSocket(m_server_id);

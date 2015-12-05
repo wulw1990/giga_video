@@ -18,6 +18,12 @@ class Protocol
 		    const std::vector<unsigned char>& buf,
 		    std::string& cmd, int& data_len );
 
+		void decodeXYZ(
+		    std::vector<unsigned char>& buf,
+			int x, int y, int z){
+
+		}
+
 		int getHeadLen(){
 			return CMD_LEN + LEN_LEN;
 		}
