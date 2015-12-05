@@ -5,6 +5,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-write-strings")
+
 
 ADD_SUBDIRECTORY(common)
 
@@ -14,3 +16,5 @@ ADD_SUBDIRECTORY(player_src)
 ADD_SUBDIRECTORY(player_standalone)
 ADD_SUBDIRECTORY(player_server)
 ADD_SUBDIRECTORY(player_client)
+
+ADD_SUBDIRECTORY(rtp)
