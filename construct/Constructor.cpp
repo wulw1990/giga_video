@@ -3,11 +3,11 @@
 #include <cassert>
 #include <map>
 #include <iostream>
-#include <opencv2/opencv.hpp>
 using namespace std;
 using namespace cv;
 
 #include "Data.hpp"
+#include "DataProvide.hpp"
 
 Constructor::Constructor() {
 }
@@ -23,15 +23,31 @@ void Constructor::writeInfoForAutopan(std::string path, int n_layers, std::strin
 	scene_data_ver.load(path + name);
 	scene_data_ver.save(path + name);
 }
-bool Constructor::constructVideo(std::string raw_video_name, std::string path_out){
+
+//TODO
+#include "GigaAligner.h" 
+bool Constructor::constructVideo(std::string path_img, std::string raw_video_name, std::string path_out){
+	cout << "path_img: " << path_img << endl;
 	cout << "raw_video_name: " << raw_video_name << endl;
 	cout << "path_out: " << path_out << endl;
+
+	GigaAligner giga_aligner;
+	giga_aligner.alignStaticVideo(path_img, raw_video_name, path_out);
+
+	// SceneFrameProvider frame_provider(path_img, path_img+"info_scene.txt");
+	// const int default_layer = 4;
+	// Mat background = frame_provider.getFrame(1000, 700, 0, 0, 0);
+	// imshow("background", background);
+	// waitKey(0);
+
 	return true;
 }
 void Constructor::cutVideo(std::string name_src, std::string name_dst){
 	cout << "cutVideo: " << endl;
 	cout << "name_src: " << name_src << endl;
 	cout << "name_dst: " << name_dst << endl;
+
+	assert(name_dst.substr(name_dst.length()-3, 3)=="avi");
 
 	Size output_size;
 

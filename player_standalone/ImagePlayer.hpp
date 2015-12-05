@@ -22,6 +22,8 @@ public:
 			int pre_x;
 			int pre_y;
 			std::string m_window_title;
+			int w;
+			int h;
 			double x;
 			double y;
 			double z;
@@ -29,9 +31,6 @@ public:
 			cv::Mat frame;
 		};
 		Info m_info;
-
-	int m_window_width;
-	int m_window_height;
 
 	static void onMouse(int event, int x, int y, int, void* data);
 };

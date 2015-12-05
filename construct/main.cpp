@@ -39,15 +39,12 @@ int construct_from_autopan(int argc, char** argv){
 }
 int construct_video(int argc, char** argv){
 	cout << "construct_video demo" << endl;
-	assert(argc>=3);
-	string raw_video_name(argv[1]);
-	string path_output(argv[2]);
-
+	assert(argc>=4);
 	DirDealer dir_dealer;
-	dir_dealer.mkdir_p(path_output);
+	dir_dealer.mkdir_p(argv[3]);
 
 	Constructor constructor;
-	constructor.constructVideo(raw_video_name, path_output);
+	constructor.constructVideo(argv[1], argv[2], argv[3]);
 	return 0;
 }
 int cut_video(int argc, char** argv){

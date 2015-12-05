@@ -1,6 +1,8 @@
 #include "DataProvide.hpp"
 #include "Data.hpp"
 
+#include <sys/time.h>
+#include <cstdlib>
 using namespace std;
 using namespace cv;
 
@@ -50,7 +52,12 @@ int TileProvider::getPixelColsOfLayer(int layer_id) {
 	return m_pixel_cols[layer_id];
 }
 cv::Mat TileProvider::getTile(int x, int y, int z) {
-	cv::Mat tile = imread(path + m_scene_data->getTileName(x, y, z));
+	string name = m_scene_data->getTileName(x, y, z);
+	if (m_cache.find(name) == m_cache.end()) {
+		m_cache[name] = make_pair(imread(path + name), getCurrentTime());
+	}
+	cv::Mat tile = m_cache[name].first;
+	m_cache[name].second = getCurrentTime();
 	// cout << m_scene_data->getTileName(x, y, z) << endl;
 	assert(!tile.empty());
 	if (tile.rows < getTileLen() || tile.cols < getTileLen()) {
@@ -60,15 +67,51 @@ cv::Mat TileProvider::getTile(int x, int y, int z) {
 		tile.copyTo(tmp(rect));
 		tile = tmp;
 	}
+
+
+	const int MAX_SIZE = 10;
+	if (m_cache.size() > MAX_SIZE) {
+		vector<float> time_vec;
+		for (auto iter = m_cache.begin(); iter != m_cache.end(); ++iter) {
+			time_vec.push_back(iter->second.second);
+			cout << iter->second.second << " ";
+		}
+		cout << endl;
+		sort(time_vec.begin(), time_vec.end());
+		cout << time_vec.size() << endl;
+
+		float thresh = time_vec[time_vec.size() - MAX_SIZE];
+		// for (auto iter = m_cache.begin(); iter != m_cache.end(); ) {
+		// 	if (iter->second.second < thresh) {
+		// 		m_cache.erase(iter);
+		// 		cout << "detete ";
+		// 	} else {
+		// 		++iter;
+		// 	}
+		// }
+	}
+	cout << "cache size: " << m_cache.size() << endl;
+
 	return tile;
 }
-SceneFrameProvider::SceneFrameProvider(std::string path, std::string info_file, int w, int h) {
-	m_tile_provider = make_shared<TileProvider>(path, info_file);
-	m_frame_width = w;
-	m_frame_height = h;
+float TileProvider::getCurrentTime() {
+	static bool first = true;
+	static struct timeval t1;
+	if (first) {
+		gettimeofday(&t1, NULL);
+		first = false;
+	}
+	struct timeval t2;
+	gettimeofday(&t2, NULL);
+	// cout << "t_.tv_sec: " << t_.tv_sec << endl;
+	// cout << "t_.tv_usec: " << t_.tv_usec << endl;
+	return (t2.tv_sec - t1.tv_sec) * 1e3 + (t2.tv_usec - t1.tv_usec) / 1e3;
 }
-cv::Mat SceneFrameProvider::getFrame(double x, double y, double z) {
-	int layer_id = static_cast<int>(z+1);
+SceneFrameProvider::SceneFrameProvider(std::string path, std::string info_file) {
+	m_tile_provider = make_shared<TileProvider>(path, info_file);
+}
+cv::Mat SceneFrameProvider::getFrame(int w, int h, double x, double y, double z) {
+	int layer_id = static_cast<int>(z + 1);
 	layer_id = max(layer_id, 0);
 	layer_id = min(layer_id, m_tile_provider->getNumLayers() - 1);
 
@@ -81,18 +124,18 @@ cv::Mat SceneFrameProvider::getFrame(double x, double y, double z) {
 
 
 	double zoom = pow(2.0, z - layer_id);
-	int w = 1.0 / zoom * m_frame_width;
-	int h = 1.0 / zoom * m_frame_height;
+	int sw = 1.0 / zoom * w;
+	int sh = 1.0 / zoom * h;
 
 	// pixel_x = 8896;
 	// pixel_y = 960;
 	// layer_id = 5;
 
-	pixel_x -= w / 2;
-	pixel_y -= h / 2;
+	pixel_x -= sw / 2;
+	pixel_y -= sh / 2;
 
 	Mat result = getFrame(w, h, pixel_x, pixel_y, layer_id);
-	resize(result, result, Size(m_frame_width, m_frame_height));
+	resize(result, result, Size(w, h));
 	return result;
 }
 cv::Mat SceneFrameProvider::getFrame(int w, int h, int x, int y, int z) {
@@ -178,4 +221,10 @@ void SceneFrameProvider::incXY(double z, int dx, int dy, double& x, double& y) {
 
 	y = max(y, 0.0);
 	y = min(y, 1.0);
+}
+int SceneFrameProvider::getLayerWidth(int layer_id) {
+	return m_tile_provider->getPixelColsOfLayer(layer_id);
+}
+int SceneFrameProvider::getLayerHeight(int layer_id) {
+	return m_tile_provider->getPixelRowsOfLayer(layer_id);
 }
