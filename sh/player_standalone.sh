@@ -1,6 +1,7 @@
 mode="image"
 
-path="/home/wuliwei/dataset/bbnc/giga_image/"
+# path="/home/wuliwei/dataset/bbnc/giga_image/"
+path="/media/wlw/data/NB_BBNC/giga_video/zijing16/"
 info_file=$path"info_scene.txt"
 
 ./build/player_standalone/player_standalone $mode $path $info_file
