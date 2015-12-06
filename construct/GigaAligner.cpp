@@ -66,10 +66,9 @@ bool GigaAligner::alignFrameToScene(string path_scene, Mat frame, Mat& dst_frame
 	int step_row = frame.rows * 2;
 	int step_col = frame.cols * 2;
 
-	for (int r = 1; r*step_row < work_layer_size.height; ++r){
+	for (int r = 2; r*step_row < work_layer_size.height; ++r){
 		for (int c = 0; c*step_col < work_layer_size.width; ++c){
 			cout << r << "\t" << c << "\t" << "begin..." << endl;
-			clock_t start_time = clock();
 
 			Rect rect(c*step_col, r*step_row, win_cols, win_rows);
 			rect = rect & rect_max;
@@ -78,30 +77,42 @@ bool GigaAligner::alignFrameToScene(string path_scene, Mat frame, Mat& dst_frame
 			Timer timer;
 			timer.reset();
 			Mat win = rect_getter->getFrame(rect.width, rect.height, rect.x, rect.y, work_layer_id);
-			cout << "time: " << timer.getTimeUs()/1000 << " ms" << endl;
+			// cout << "time: " << timer.getTimeUs()/1000 << " ms" << endl;
 			// cout << rect.x << endl;
 			// cout << rect.width << endl;
 			// cout << rect.height << endl;
 
+
+			imwrite("../win.jpg", win);
+			imwrite("../frame.jpg", frame);
+
+
 			showImage("win", win);
-			char key = waitKey(1);
+			char key = waitKey(0);
 			// if (key != 'y') continue;
 
-			// bool matched = m_geometry_aligner->align(frame, win, dst_frame, dst_rect, T);
-			// cout << r << "\t" << c << "\t" << matched  << "\tms : " << clock()-start_time << endl;
+			timer.reset();
+			bool matched = m_geometry_aligner->align(frame, win, dst_frame, dst_rect, T);
+			cout << r << "\t" << c << "\t" << matched  << "\tms : " << timer.getTimeUs()/1000 << endl;
 
-			// if (matched){
-			// 	model_hist = win(dst_rect).clone();
-			// 	dst_rect.x += c * step_col;
-			// 	dst_rect.y += r * step_row;
-			// 	dst_rect.x *= scale;
-			// 	dst_rect.y *= scale;
-			// 	dst_rect.width *= scale;
-			// 	dst_rect.height *= scale;
-			// 	return true;
-			// }
+			if (matched){
+				model_hist = win(dst_rect).clone();
+				dst_rect.x += c * step_col;
+				dst_rect.y += r * step_row;
+				dst_rect.x *= scale;
+				dst_rect.y *= scale;
+				dst_rect.width *= scale;
+				dst_rect.height *= scale;
+				return true;
+			}
+
+
+
+			// goto END;
+
 		}
 	}
+	// END:
 	return false;
 }
 Mat GigaAligner::readFirstFrame(string name)

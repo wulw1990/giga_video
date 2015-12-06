@@ -7,11 +7,13 @@
 using namespace std;
 
 #include "Constructor.hpp"
+#include "GeometryAligner.h"
 #include "DirDealer.h"
 
 int construct_from_autopan(int argc, char** argv);
 int construct_video(int argc, char** argv);
 int cut_video(int argc, char** argv);
+int test_geo_align(int argc, char** argv);
 
 int main(int argc, char **argv){
 	assert(argc >= 2);
@@ -24,6 +26,7 @@ int main(int argc, char **argv){
 	if(mode == "construct_from_autopan") construct_from_autopan(argc, argv);
 	else if(mode == "construct_video") construct_video(argc, argv);
 	else if(mode == "cut_video") cut_video(argc, argv);
+	else if(mode == "test_geo_align") test_geo_align(argc, argv);
 	else {
 		cerr << "main mode error : " << mode << endl;
 		return -1;
@@ -55,5 +58,19 @@ int cut_video(int argc, char** argv){
 
 	Constructor constructor;
 	constructor.cutVideo(name_src, name_dst);
+	return 0;
+}
+int test_geo_align(int argc, char** argv){
+	assert(argc>=3);
+	Mat back = imread(argv[1]);
+	Mat frame = imread(argv[2]);
+	Mat dst_frame;
+	Rect dst_rect;
+	Mat T;
+
+	GeometryAligner aligner;
+	bool is_matched = aligner.align(frame, back, dst_frame, dst_rect, T);
+	cout << "is_matched: " << is_matched <<endl;
+
 	return 0;
 }

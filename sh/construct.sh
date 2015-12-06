@@ -22,12 +22,12 @@
 # path_out="/media/wlw/data/NB_BBNC/giga_video/zijing16/video/6878/"
 # ./build/construct/construct $mode $raw_video $path_out
 
-mode="construct_video"
-name="MVI_6878"
-path_img="/media/wuliwei/data/NB_BBNC/giga_video/zijing16/"
-raw_video_name="/media/wuliwei/data/NB_BBNC/2015-06-20-zijing16/video_selected_cut/${name}.avi"
-path_output="/media/wlw/data/NB_BBNC/giga_video/zijing16/video/${name}.avi"
-./build/construct/construct $mode $path_img $raw_video_name $path_output
+# mode="construct_video"
+# name="MVI_6878"
+# path_img="/media/wuliwei/data/NB_BBNC/giga_video/zijing16/"
+# raw_video_name="/media/wuliwei/data/NB_BBNC/2015-06-20-zijing16/video_selected_cut/${name}.avi"
+# path_output="/media/wlw/data/NB_BBNC/giga_video/zijing16/video/${name}.avi"
+# ./build/construct/construct $mode $path_img $raw_video_name $path_output
 
 # mode="construct_video"
 # name="MVI_6878"
@@ -35,3 +35,11 @@ path_output="/media/wlw/data/NB_BBNC/giga_video/zijing16/video/${name}.avi"
 # raw_video_name="/home/wuliwei/dataset/bbnc/${name}.avi"
 # path_output="/home/wuliwei/dataset/bbnc/zijing16/video/${name}/"
 # ./build/construct/construct $mode $path_img $raw_video_name $path_output
+
+
+
+mode="test_geo_align"
+back="../win_match.jpg"
+frame="../frame.jpg"
+./build/construct/construct $mode $back $frame
+
