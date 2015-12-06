@@ -18,7 +18,7 @@ class TileProvider {
 		int getPixelRowsOfLayer(int layer_id);
 		int getPixelColsOfLayer(int layer_id);
 
-		cv::Mat getTile(int x, int y, int z);//cached
+		cv::Mat getTile(int x, int y, int z, int* is_cache=NULL);//cached
 
 	private:
 		std::string path;
@@ -40,8 +40,9 @@ class TileProvider {
 		// 		cv::Mat data;
 		// 		float t;
 		// };
-		float getCurrentTime();
-		std::map<std::string, std::pair<cv::Mat, float> > m_cache;
+		std::map<std::string, std::pair<cv::Mat, long long> > m_cache;
+		long long getCurrentTimeFromStart();
+		void resizeCache();
 };
 class SceneFrameProvider {
 	public:

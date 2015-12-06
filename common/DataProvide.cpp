@@ -51,14 +51,20 @@ int TileProvider::getPixelColsOfLayer(int layer_id) {
 	assert(layer_id >= 0 && layer_id < getNumLayers());
 	return m_pixel_cols[layer_id];
 }
-cv::Mat TileProvider::getTile(int x, int y, int z) {
+cv::Mat TileProvider::getTile(int x, int y, int z, int* is_cache) {
 	string name = m_scene_data->getTileName(x, y, z);
+	// cout << "name: " << name << endl;
 	if (m_cache.find(name) == m_cache.end()) {
-		m_cache[name] = make_pair(imread(path + name), getCurrentTime());
+		m_cache[name] = make_pair(imread(path + name), getCurrentTimeFromStart());
+		if(is_cache){ *is_cache = 0; }
+	}else{
+		// cout << "cached" << endl;
+		if(is_cache){ *is_cache = 1; }
 	}
 	cv::Mat tile = m_cache[name].first;
-	m_cache[name].second = getCurrentTime();
+	m_cache[name].second = getCurrentTimeFromStart();
 	// cout << m_scene_data->getTileName(x, y, z) << endl;
+
 	assert(!tile.empty());
 	if (tile.rows < getTileLen() || tile.cols < getTileLen()) {
 		Mat tmp(getTileLen(), getTileLen(), tile.type());
@@ -67,34 +73,11 @@ cv::Mat TileProvider::getTile(int x, int y, int z) {
 		tile.copyTo(tmp(rect));
 		tile = tmp;
 	}
-
-
-	const int MAX_SIZE = 10;
-	if (m_cache.size() > MAX_SIZE) {
-		vector<float> time_vec;
-		for (auto iter = m_cache.begin(); iter != m_cache.end(); ++iter) {
-			time_vec.push_back(iter->second.second);
-			cout << iter->second.second << " ";
-		}
-		cout << endl;
-		sort(time_vec.begin(), time_vec.end());
-		cout << time_vec.size() << endl;
-
-		float thresh = time_vec[time_vec.size() - MAX_SIZE];
-		// for (auto iter = m_cache.begin(); iter != m_cache.end(); ) {
-		// 	if (iter->second.second < thresh) {
-		// 		m_cache.erase(iter);
-		// 		cout << "detete ";
-		// 	} else {
-		// 		++iter;
-		// 	}
-		// }
-	}
-	cout << "cache size: " << m_cache.size() << endl;
+	resizeCache();
 
 	return tile;
 }
-float TileProvider::getCurrentTime() {
+long long TileProvider::getCurrentTimeFromStart() {
 	static bool first = true;
 	static struct timeval t1;
 	if (first) {
@@ -105,7 +88,39 @@ float TileProvider::getCurrentTime() {
 	gettimeofday(&t2, NULL);
 	// cout << "t_.tv_sec: " << t_.tv_sec << endl;
 	// cout << "t_.tv_usec: " << t_.tv_usec << endl;
-	return (t2.tv_sec - t1.tv_sec) * 1e3 + (t2.tv_usec - t1.tv_usec) / 1e3;
+	return (t2.tv_sec - t1.tv_sec) * 1e6 + (t2.tv_usec - t1.tv_usec);
+}
+void TileProvider::resizeCache() {
+	const int MAX_SIZE = 1024;
+	if (m_cache.size() > MAX_SIZE) {
+		// cout << m_cache.size() << endl;
+		vector<long long> time_vec;
+		for (auto iter = m_cache.begin(); iter != m_cache.end(); ++iter) {
+			time_vec.push_back(iter->second.second);
+			// cout << iter->second.second << " ";
+		}
+		// cout << endl;
+		sort(time_vec.begin(), time_vec.end());
+		// cout << time_vec.size() << endl;
+
+		long long thresh = time_vec[time_vec.size() - MAX_SIZE/2];
+		// cout << "thresh: " << thresh << endl;
+
+		// cout << m_cache.size() << endl;
+		for (auto iter = m_cache.begin(); iter != m_cache.end(); ) {
+			if (iter->second.second < thresh) {
+				iter = m_cache.erase(iter);
+			} else {
+				++iter;
+			}
+		}
+		// cout << m_cache.size() << endl;
+
+		// for (auto iter = m_cache.begin(); iter != m_cache.end(); ++iter) {
+		// cout << iter->second.second << " ";
+		// }
+		// cout << endl;
+	}
 }
 SceneFrameProvider::SceneFrameProvider(std::string path, std::string info_file) {
 	m_tile_provider = make_shared<TileProvider>(path, info_file);
@@ -150,6 +165,8 @@ cv::Mat SceneFrameProvider::getFrame(int w, int h, int x, int y, int z) {
 	int X2 = (x + w - 1) / LEN;
 	int Y2 = (y + h - 1) / LEN;
 
+	int cache_count = 0;
+	int not_cache_count = 0;
 	Mat tile;
 	for (int x = X1; x <= X2; ++x) {
 		for (int y = Y1; y <= Y2; ++y) {
@@ -157,7 +174,10 @@ cv::Mat SceneFrameProvider::getFrame(int w, int h, int x, int y, int z) {
 			const int ROWS = m_tile_provider->getRowsOfLayer(z);
 			const int COLS = m_tile_provider->getColsOfLayer(z);
 			if (x >= 0 && x < COLS  && y >= 0 && y < ROWS) {
-				tile = m_tile_provider->getTile(x, y, z);
+				int is_cache;
+				tile = m_tile_provider->getTile(x, y, z, &is_cache);
+				cache_count += is_cache;
+				not_cache_count += !is_cache;
 			}
 			else {
 				tile = Mat::zeros(LEN, LEN, CV_8UC3);
@@ -167,6 +187,8 @@ cv::Mat SceneFrameProvider::getFrame(int w, int h, int x, int y, int z) {
 			copyMatToMat(tile, tile_rect, result, rect);
 		}
 	}
+	// cout << "cache_count: " << cache_count << endl;
+	// cout << "not_cache_count: " << not_cache_count << endl;
 
 	return result;
 }

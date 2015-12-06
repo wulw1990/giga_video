@@ -6,6 +6,7 @@
 #include "GeometryAligner.h"
 #include "OpticAligner.h"
 #include "DataProvide.hpp"
+#include "Timer.hpp"
 
 const int DOWN_SAMPLE_RATE = 2;
 const int MAX_OUTPUT_FRAME = 100;
@@ -74,8 +75,14 @@ bool GigaAligner::alignFrameToScene(string path_scene, Mat frame, Mat& dst_frame
 			rect = rect & rect_max;
 
 			// Mat win = rect_getter->GetRectMat(rect, work_layer_id);
+			Timer timer;
+			timer.reset();
 			Mat win = rect_getter->getFrame(rect.width, rect.height, rect.x, rect.y, work_layer_id);
-			
+			cout << "time: " << timer.getTimeUs()/1000 << " ms" << endl;
+			// cout << rect.x << endl;
+			// cout << rect.width << endl;
+			// cout << rect.height << endl;
+
 			showImage("win", win);
 			char key = waitKey(1);
 			// if (key != 'y') continue;
