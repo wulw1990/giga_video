@@ -4,6 +4,37 @@
 
 static const int debug = 1;
 
+bool GeometryAligner::align(cv::Mat frame_, cv::Mat scene_, cv::Mat& H, cv::Size& size, cv::Point& offset) {
+	const int max_width = 500;
+
+	// -- down scale ---
+	int scale = 1;
+	Mat frame = frame_.clone();
+	Mat scene = scene_.clone();
+	while (frame.cols > max_width) {
+		resize(frame, frame, Size(frame.cols / 2, frame.rows / 2));
+		resize(scene, scene, Size(scene.cols / 2, scene.rows / 2));
+		scale *= 2;
+	}
+
+	if (!imageMatchSurf(frame, scene, H, 15)) {
+		return false;
+	}
+
+	vector<Point2f> corner_frame = getCornerOnFrame(scene.size());
+	vector<Point2f> corner_scene = getCornerOnScene(scene.size(), H);
+
+	for(size_t i=0; i<corner_frame.size(); ++i){
+		corner_frame[i].x *= scale;
+		corner_frame[i].y *= scale;
+		corner_scene[i].x *= scale;
+		corner_scene[i].y *= scale;
+	}
+
+	H = findHomography(corner_frame, corner_scene);
+
+	return true;
+}
 bool GeometryAligner::align(Mat _frame, Mat _scene, Mat& dst_frame, Rect& dst_rect, Mat& T)
 {
 	const int max_width = 500;
@@ -134,60 +165,23 @@ void GeometryAligner::writeMatchResult(
 
 	imwrite(name, img_matches);
 }
-Mat GeometryAligner::getMatOnScene(Mat frame, Mat scene, Mat H)
-{
+std::vector<cv::Point2f> GeometryAligner::getCornerOnFrame(cv::Size size) {
+	int rows = size.height;
+	int cols = size.width;
 	vector<Point2f> corner_frame(4);
 	corner_frame[0] = Point2f(0, 0);
-	corner_frame[1] = Point2f(frame.cols, 0);
-	corner_frame[2] = Point2f(frame.cols, frame.rows);
-	corner_frame[3] = Point2f(0, frame.rows);
+	corner_frame[1] = Point2f(cols, 0);
+	corner_frame[2] = Point2f(cols, rows);
+	corner_frame[3] = Point2f(0, rows);
+
+	return corner_frame;
+}
+std::vector<cv::Point2f> GeometryAligner::getCornerOnScene(cv::Size size, cv::Mat H) {
+	vector<Point2f> corner_frame = getCornerOnFrame(size);
 
 	vector<Point2f> corner_on_scene;
 	perspectiveTransform(corner_frame, corner_on_scene, H);
-
-	int x = (int)corner_on_scene[0].x;
-	int y = (int)corner_on_scene[0].y;
-	int w = (int)(norm(Mat(corner_on_scene[0] - corner_on_scene[1]), 2));
-	int h = (int)(norm(Mat(corner_on_scene[0] - corner_on_scene[3]), 2));
-	Rect rect(x, y, w, h);
-
-	return scene(rect).clone();
-}
-bool GeometryAligner::isGoodMatch(Mat frame, Mat scene, int thresh)
-{
-	// vector<KeyPoint> keypoint_frame, keypoint_scene;
-	// vector<DMatch> good_match;
-	// if (!getKeyPointAndGoodMatch(frame, scene, keypoint_frame, keypoint_scene, good_match))
-	// 	return false;
-
-	// vector<Point2f> goodpoint_frame, goodpoint_scene;
-	// getGoodPoint(keypoint_frame, keypoint_scene, good_match, goodpoint_frame, goodpoint_scene);
-
-	// //-- Step 6: Localize the object from img_1 in img_2
-
-	// Mat H = findHomography(goodpoint_frame, goodpoint_scene, RANSAC, thresh);
-	// if (debug) writeMatchResult(frame, scene, keypoint_frame, keypoint_scene, good_match, H, "../match_result_2.jpg");
-
-
-	// // -- succeed or not ? -----------------------------------
-	// vector<Point2f> testpoint_scene(good_match.size());
-	// perspectiveTransform(goodpoint_frame, testpoint_scene, H);
-	// int error = 0;
-	// //ofstream fout("dis.txt");
-	// for (int i = 0; i < (int)good_match.size(); i++) {
-	// 	Point p = goodpoint_scene[i];
-	// 	Point q = testpoint_scene[i];
-	// 	double dis = norm(Mat(p - q), 2);
-	// 	if (debug) cout << "dis : " << dis << endl;
-	// 	if (dis > thresh) error++;
-	// 	//fout << dis << endl;
-	// }
-	// //fout.close();
-	// if (debug) cout << "error : " << error << "\t" << (int)good_match.size() << endl;
-	// cout << "GeometryAligner::imageMatchSurf matched" << endl;
-
-	// return (error < (int)good_match.size() / 2);
-	return true;
+	return corner_on_scene;
 }
 void GeometryAligner::selectGoodMatch(vector<DMatch>& match) {
 	double max_dist = match[0].distance;
@@ -197,8 +191,8 @@ void GeometryAligner::selectGoodMatch(vector<DMatch>& match) {
 		if (dist < min_dist) min_dist = dist;
 		if (dist > max_dist) max_dist = dist;
 	}
-	if (debug) cout << "-- Max dist : " << max_dist << endl;
-	if (debug) cout << "-- Min dist : " << min_dist << endl;
+	// if (debug) cout << "-- Max dist : " << max_dist << endl;
+	// if (debug) cout << "-- Min dist : " << min_dist << endl;
 
 	vector<DMatch> good_match;
 	for (size_t i = 0; i < match.size(); i++) {
@@ -206,6 +200,48 @@ void GeometryAligner::selectGoodMatch(vector<DMatch>& match) {
 			good_match.push_back(match[i]);
 	}
 	match = good_match;
+}
+float GeometryAligner::getDistance(cv::Point2f p1, cv::Point2f& p2) {
+	return sqrt( (p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y) );
+}
+bool GeometryAligner::isRightTriAngle(std::vector<cv::Point2f>& corner) {
+	if (corner.size() != 3) return false;
+
+	float l1 = getDistance(corner[0], corner[1]);
+	float l2 = getDistance(corner[1], corner[2]);
+	float l3 = getDistance(corner[0], corner[2]);
+
+	// cout << l1 << " " << l2 << " " << l3 << endl;
+	// cout << sqrt(l1*l1 + l2*l2) << endl;
+
+	float err = abs(sqrt(l1 * l1 + l2 * l2) - l3);
+	// cout << err << endl;
+
+	return (err < l3 / 10);
+}
+
+bool GeometryAligner::isRectangle(std::vector<cv::Point2f>& corner) {
+	if (corner.size() != 4) return false;
+
+	vector<Point2f> tri;
+	tri.push_back(corner[0]);
+	tri.push_back(corner[1]);
+	tri.push_back(corner[2]);
+	if (!isRightTriAngle(tri)) return false;
+
+	tri.clear();
+	tri.push_back(corner[1]);
+	tri.push_back(corner[2]);
+	tri.push_back(corner[3]);
+	if (!isRightTriAngle(tri)) return false;
+
+	tri.clear();
+	tri.push_back(corner[2]);
+	tri.push_back(corner[3]);
+	tri.push_back(corner[0]);
+	if (!isRightTriAngle(tri)) return false;
+
+	return true;
 }
 bool GeometryAligner::imageMatchSurf(Mat frame, Mat scene, Mat& H, int thresh)
 {
@@ -239,35 +275,39 @@ bool GeometryAligner::imageMatchSurf(Mat frame, Mat scene, Mat& H, int thresh)
 	}
 
 	selectGoodMatch(match);
-	cout << match.size() << endl;
+	if(debug) cout << match.size() << endl;
 
-	vector<Point2f> goodpoint_frame, goodpoint_scene;
+	vector<Point2f> matchpoint_frame, matchpoint_scene;
 	for (size_t i = 0; i < match.size(); i++) {
-		goodpoint_frame.push_back(keypoint_frame[match[i].queryIdx].pt);
-		goodpoint_scene.push_back(keypoint_scene[match[i].trainIdx].pt);
+		matchpoint_frame.push_back(keypoint_frame[match[i].queryIdx].pt);
+		matchpoint_scene.push_back(keypoint_scene[match[i].trainIdx].pt);
 	}
 
 	//-- Step 6: Localize the object from img_1 in img_2
-	H = findHomography(goodpoint_frame, goodpoint_scene, RANSAC, thresh);
+	H = findHomography(matchpoint_frame, matchpoint_scene, RANSAC, thresh);
 	// cout << H << endl;
-
-
-	// Mat H1 = findHomography(goodpoint_scene, goodpoint_frame, RANSAC, thresh);
-	// Mat T1 = H1(Rect(0, 0, 3, 2)).clone();
-	// cout << T1 << endl;
 	// Mat scene1 = scene.clone();
-	// warpAffine(frame, scene1, T1, scene1.size());
+	// warpPerspective(frame, scene1, H, scene1.size());
+	// for (int r = 0; r < scene.rows; ++r) {
+	// 	for (int c = 0; c < scene.cols; ++c) {
+	// 		if (scene1.at<Vec3b>(r, c) != Vec3b(0, 0, 0)) {
+	// 			scene.at<Vec3b>(r, c) = scene1.at<Vec3b>(r, c);
+	// 		}
+	// 	}
+	// }
 	// showImage("scene1", scene1);
 	// showImage("scene", scene);
 	// waitKey(0);
 
+	vector<Point2f> corner = getCornerOnScene(frame.size(), H);
+	// for (size_t i = 0; i < corner.size(); ++i) {
+	// 	circle(scene, corner[i], 10, Scalar(0, 0, 255), -1);
+	// }
+	// showImage("scene", scene);
+	// waitKey(0);
 
 	if (debug) writeMatchResult(frame, scene, keypoint_frame, keypoint_scene, match, H, "../match_result_1.jpg");
 
-	Mat mat_on_scene = getMatOnScene(frame, scene, H);
-	//showImage("mat_on_scene", mat_on_scene);
-	//showImage("frame", frame);
-	//waitKey(0);
-
-	return isGoodMatch(frame, mat_on_scene, thresh);
+	if (!isRectangle(corner)) return false;
+	return true;;
 }

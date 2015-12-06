@@ -39,7 +39,7 @@
 
 
 mode="test_geo_align"
-back="../win_match.jpg"
+scene="../win_match.jpg"
 frame="../frame.jpg"
-./build/construct/construct $mode $back $frame
+./build/construct/construct $mode $scene $frame
 
