@@ -28,7 +28,8 @@ int main(int argc, char **argv){
 }
 int demo(int argc, char** argv){
 	cout << "client demo" << endl;
-	SocketClient client("127.0.0.1", 5004);
+	assert(argc>=2);
+	SocketClient client(argv[1], 5005);
 	client.work();
 	// readImage("/home/wuliwei/Pictures/type.jpg");
 	return 0;
