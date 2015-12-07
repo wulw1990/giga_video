@@ -24,7 +24,7 @@ void SocketServer::work()
         }
         //serve it
         // VideoCapture capture("/home/wuliwei/Videos/86-1.avi");
-        VideoCapture capture("/home/wlw/Videos/video.mp4");
+        VideoCapture capture("/home/wuliwei/Videos/face_recognition_google_glass.mp4");
         assert(capture.isOpened());
         Mat frame;
         // while(capture.read(frame)){
