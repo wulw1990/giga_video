@@ -31,30 +31,29 @@ bool GigaAligner::alignStaticVideo(string path_scene, string input_video, string
 	cout << "Frame Size : " << frame.size() << endl;
 
 	//align first frame
-	Mat aligned_frame;
-	Rect aligned_rect;
-	Mat T;
-	Mat model_hist;
+	Mat H;
+	Rect rect_on_scene;
 
-	if (!alignFrameToScene(path_scene, frame, aligned_frame, aligned_rect, T, model_hist))
+	if (!alignFrameToScene(path_scene, frame, H, rect_on_scene))
 		return false;
 
-	//save 
-	cout << "Saving..." << endl;
-	string output_video = output_prefix + ".avi";
-	string output_txt = output_prefix + ".txt";
+	cout << rect_on_scene << endl;
 
-	int len = writeStaticVideo(input_video, output_video, T, model_hist, aligned_frame.size());
-	cout << "n_frames saved: " << len << endl;;
-	writeStaticInfo(output_txt, len, aligned_rect);
+	//save 
+	// cout << "Saving..." << endl;
+	// string output_video = output_prefix + ".avi";
+	// string output_txt = output_prefix + ".txt";
+
+	// int len = writeStaticVideo(input_video, output_video, T, model_hist, aligned_frame.size());
+	// cout << "n_frames saved: " << len << endl;;
+	// writeStaticInfo(output_txt, len, aligned_rect);
 	return true;
 }
-bool GigaAligner::alignFrameToScene(string path_scene, Mat frame, Mat& dst_frame, Rect& dst_rect, Mat& T, Mat& model_hist)
+bool GigaAligner::alignFrameToScene(string path_scene, Mat frame, Mat& H, Rect& rect_on_scene)
 {
 	SceneFrameProvider* rect_getter = new SceneFrameProvider(path_scene, path_scene + "info_scene.txt");
 
 	int work_layer_id = 4;
-	int scale = 2;
 
 	// Size work_layer_size = rect_getter->getSceneLayerSizePixel(work_layer_id);
 	Size work_layer_size(rect_getter->getLayerWidth(work_layer_id), rect_getter->getLayerHeight(work_layer_id));
@@ -83,33 +82,22 @@ bool GigaAligner::alignFrameToScene(string path_scene, Mat frame, Mat& dst_frame
 			// cout << rect.height << endl;
 
 
-			imwrite("../win.jpg", win);
-			imwrite("../frame.jpg", frame);
-
-
+			// imwrite("../win.jpg", win);
+			// imwrite("../frame.jpg", frame);
 			showImage("win", win);
-			char key = waitKey(0);
+			char key = waitKey(1);
 			// if (key != 'y') continue;
 
 			timer.reset();
-			bool matched = m_geometry_aligner->align(frame, win, dst_frame, dst_rect, T);
+			bool matched = m_geometry_aligner->align(frame, win, H, rect_on_scene);
 			cout << r << "\t" << c << "\t" << matched  << "\tms : " << timer.getTimeUs()/1000 << endl;
 
 			if (matched){
-				model_hist = win(dst_rect).clone();
-				dst_rect.x += c * step_col;
-				dst_rect.y += r * step_row;
-				dst_rect.x *= scale;
-				dst_rect.y *= scale;
-				dst_rect.width *= scale;
-				dst_rect.height *= scale;
+				rect_on_scene.x += c * step_col;
+				rect_on_scene.y += r * step_row;
 				return true;
 			}
-
-
-
 			// goto END;
-
 		}
 	}
 	// END:

@@ -9,8 +9,9 @@ class GeometryAligner
 {
 public:
 	bool align(cv::Mat frame, cv::Mat scene, cv::Mat& H, cv::Rect& rect_on_scene);
-	bool align(Mat frame, Mat scene, Mat& dst_frame, Rect& dst_rect, Mat& T);
 private:
+	bool align(Mat frame, Mat scene, Mat& dst_frame, Rect& dst_rect, Mat& T);
+	
 	void writeMatchResult(
 		Mat frame, Mat scene,
 		vector<KeyPoint>& keypoints_frame,

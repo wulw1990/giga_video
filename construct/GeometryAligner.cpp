@@ -2,7 +2,7 @@
 #include <fstream>
 #include <time.h>
 
-static const int debug = 1;
+static const int debug = 0;
 
 bool GeometryAligner::align(cv::Mat frame_, cv::Mat scene_, cv::Mat& H, cv::Rect& rect_on_scene) {
 	const int max_width = 500;
@@ -201,7 +201,7 @@ cv::Rect GeometryAligner::getRectFromCorner(std::vector<cv::Point2f>& corner) {
 		if (corner[i].x > x2) x2 = corner[i].x;
 		if (corner[i].y < y1) y1 = corner[i].y;
 		if (corner[i].y > y2) y2 = corner[i].y;
-		cout << corner[i] << endl;
+		// cout << corner[i] << endl;
 	}
 	return Rect(x1, y1, x2 - x1 + 1, y2 - y1 + 1);
 }

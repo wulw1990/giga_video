@@ -14,6 +14,7 @@ int construct_from_autopan(int argc, char** argv);
 int construct_video(int argc, char** argv);
 int cut_video(int argc, char** argv);
 int test_geo_align(int argc, char** argv);
+// int test_giga_align(int argc, char** argv);
 
 int main(int argc, char **argv) {
 	assert(argc >= 2);
@@ -27,6 +28,7 @@ int main(int argc, char **argv) {
 	else if (mode == "construct_video") construct_video(argc, argv);
 	else if (mode == "cut_video") cut_video(argc, argv);
 	else if (mode == "test_geo_align") test_geo_align(argc, argv);
+	// else if (mode == "test_giga_align") test_giga_align(argc, argv);
 	else {
 		cerr << "main mode error : " << mode << endl;
 		return -1;
