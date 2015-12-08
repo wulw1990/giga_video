@@ -46,9 +46,9 @@ class TileProvider {
 		long long getCurrentTimeFromStart();
 		void resizeCache();
 };
-class SceneFrameProvider {
+class FrameProvider {
 	public:
-		SceneFrameProvider(std::string path, std::string info_file);
+		FrameProvider(std::string path, bool enable_video);
 		cv::Mat getFrame(int w, int h, double x, double y, double z);
 		cv::Mat getFrame(int w, int h, int x, int y, int z);
 		int getNumLayers();
@@ -57,6 +57,10 @@ class SceneFrameProvider {
 
 	private:
 		std::shared_ptr<TileProvider> m_tile_provider;
+
+		bool m_enable_video;
+		std::shared_ptr<MultiVideoData> m_multi_video_data;
+
 		int frame_width;
 		int frame_height;
 		double x;
@@ -64,28 +68,6 @@ class SceneFrameProvider {
 		double z;
 
 		void copyMatToMat(cv::Mat& src_mat, cv::Rect& src_rect, cv::Mat& dst_mat, cv::Rect& dst_rect);
-};
-class VideoFrameProvider {
-	public:
-		VideoFrameProvider(std::string path);
-		void getFrame(cv::Mat& frame, cv::Rect rect);
-
-	private:
-		std::shared_ptr<MultiVideoData> m_multi_video_data;
-};
-
-class FrameProvider {
-	public:
-		FrameProvider(std::string path, bool enable_video);
-		cv::Mat getFrame(int w, int h, double x, double y, double z);
-		int getNumLayers();
-		int getLayerWidth(int layer_id);
-		int getLayerHeight(int layer_id);
-
-	private:
-		std::shared_ptr<SceneFrameProvider> m_scene_frame_provider;
-		std::shared_ptr<VideoFrameProvider> m_video_frame_provider;
-		bool m_enable_video;
 };
 
 #endif

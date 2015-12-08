@@ -57,7 +57,7 @@ bool GigaAligner::alignStaticVideo(string path_scene, string input_video, string
 }
 bool GigaAligner::alignFrameToScene(string path_scene, Mat frame, Mat& H, Rect& rect_on_scene)
 {
-	SceneFrameProvider* rect_getter = new SceneFrameProvider(path_scene, path_scene + "info_scene.txt");
+	FrameProvider* rect_getter = new FrameProvider(path_scene, false);
 
 	int work_layer_id = 4;
 

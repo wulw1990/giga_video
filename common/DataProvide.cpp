@@ -124,10 +124,19 @@ void TileProvider::resizeCache() {
 		// cout << endl;
 	}
 }
-SceneFrameProvider::SceneFrameProvider(std::string path, std::string info_file) {
-	m_tile_provider = make_shared<TileProvider>(path, info_file);
+
+
+
+
+FrameProvider::FrameProvider(std::string path, bool enable_video) {
+	m_tile_provider = make_shared<TileProvider>(path, path+"info_scene.txt");
+
+	m_enable_video = enable_video;
+	if (m_enable_video) {
+		m_multi_video_data = make_shared<MultiVideoData>(path + "video/");
+	}
 }
-cv::Mat SceneFrameProvider::getFrame(int w, int h, double x, double y, double z) {
+cv::Mat FrameProvider::getFrame(int w, int h, double x, double y, double z) {
 	int layer_id = static_cast<int>(z + 1);
 	layer_id = max(layer_id, 0);
 	layer_id = min(layer_id, m_tile_provider->getNumLayers() - 1);
@@ -151,7 +160,7 @@ cv::Mat SceneFrameProvider::getFrame(int w, int h, double x, double y, double z)
 	resize(result, result, Size(w, h));
 	return result;
 }
-cv::Mat SceneFrameProvider::getFrame(int w, int h, int x, int y, int z) {
+cv::Mat FrameProvider::getFrame(int w, int h, int x, int y, int z) {
 	const int LEN = m_tile_provider->getTileLen();
 
 	Rect rect(x, y, w, h);
@@ -188,9 +197,44 @@ cv::Mat SceneFrameProvider::getFrame(int w, int h, int x, int y, int z) {
 	// cout << "cache_count: " << cache_count << endl;
 	// cout << "not_cache_count: " << not_cache_count << endl;
 
+
+
+	if(m_enable_video && z==m_tile_provider->getNumLayers()-1){
+		// cout << "hh " << endl;
+		int n_videos = m_multi_video_data->getNumVideos();
+		for(int i=0; i<n_videos; ++i){
+			Rect rect_video_on_scene = m_multi_video_data->getRectOnScene(i);
+			Rect rect_overlap = rect_video_on_scene & Rect(x, y, w, h);
+			if(rect_overlap.width>0 && rect_overlap.height>0){
+				// cout << "dd " << endl;
+				Mat video_frame = m_multi_video_data->getFrame(i);
+				Rect rect_on_video = rect_overlap;
+				rect_on_video.x -= rect_video_on_scene.x;
+				rect_on_video.y -= rect_video_on_scene.y;
+
+				Rect rect_on_win = rect_overlap;
+				rect_on_win.x -= x;
+				rect_on_win.y -= y;
+
+				//TODO: Optic Aligner
+				Mat src = video_frame(rect_on_video);
+				Mat dst = result(rect_on_win);
+				for(int r=0; r<src.rows; ++r){
+					for(int c=0; c<src.cols; ++c){
+						if(src.at<Vec3b>(r,c)!=Vec3b(0,0,0)){
+							dst.at<Vec3b>(r,c) = src.at<Vec3b>(r,c);
+						}
+					}
+				}
+			}
+		}
+	}
+
+
+
 	return result;
 }
-void SceneFrameProvider::copyMatToMat(Mat& src_mat, Rect& src_rect, Mat& dst_mat, Rect& dst_rect)
+void FrameProvider::copyMatToMat(Mat& src_mat, Rect& src_rect, Mat& dst_mat, Rect& dst_rect)
 {
 	Rect src(0, 0, src_mat.cols, src_mat.rows);
 	Rect dst(src_rect.x - dst_rect.x, src_rect.y - dst_rect.y, src_mat.cols, src_mat.rows);
@@ -224,38 +268,12 @@ void SceneFrameProvider::copyMatToMat(Mat& src_mat, Rect& src_rect, Mat& dst_mat
 	}
 	src_mat(src).copyTo(dst_mat(dst));
 }
-int SceneFrameProvider::getNumLayers(){
+int FrameProvider::getNumLayers() {
 	return m_tile_provider->getNumLayers();
 }
-int SceneFrameProvider::getLayerWidth(int layer_id) {
+int FrameProvider::getLayerWidth(int layer_id) {
 	return m_tile_provider->getPixelColsOfLayer(layer_id);
 }
-int SceneFrameProvider::getLayerHeight(int layer_id) {
-	return m_tile_provider->getPixelRowsOfLayer(layer_id);
-}
-
-
-VideoFrameProvider::VideoFrameProvider(std::string path) {
-	m_multi_video_data = make_shared<MultiVideoData>(path);
-}
-void VideoFrameProvider::getFrame(cv::Mat& frame, cv::Rect rect) {
-	cout << rect << endl;
-}
-
-
-FrameProvider::FrameProvider(std::string path, bool enable_video) {
-	m_enable_video = enable_video;
-	m_scene_frame_provider = make_shared<SceneFrameProvider>(path, path + "info_scene.txt");
-}
-cv::Mat FrameProvider::getFrame(int w, int h, double x, double y, double z) {
-	return m_scene_frame_provider->getFrame(w, h, x, y, z);
-}
-int FrameProvider::getNumLayers() {
-	return m_scene_frame_provider->getNumLayers();
-}
-int FrameProvider::getLayerWidth(int layer_id) {
-	return m_scene_frame_provider->getLayerWidth(layer_id);
-}
 int FrameProvider::getLayerHeight(int layer_id) {
-	return m_scene_frame_provider->getLayerHeight(layer_id);
+	return m_tile_provider->getPixelRowsOfLayer(layer_id);
 }

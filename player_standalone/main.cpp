@@ -27,13 +27,13 @@ int main(int argc, char **argv){
 	return 0;
 }
 int image(int argc, char** argv){
-	assert(argc>=3);
+	assert(argc>=2);
 	Player player( argv[1], false);
 	player.play();
 	return 0;
 }
 int video(int argc, char** argv){
-	assert(argc>=3);
+	assert(argc>=2);
 	Player player( argv[1], true);
 	player.play();
 	return 0;

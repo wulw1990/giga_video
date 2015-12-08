@@ -7,8 +7,8 @@ using namespace cv;
 
 Player::Player(std::string path, bool enable_video ) {
 	m_info.win_title = "giga  player";
-	m_info.w = 1000;
-	m_info.h = 500;
+	m_info.w = 1700;
+	m_info.h = 900;
 	m_info.m_frame_provider = make_shared<FrameProvider>(path, enable_video);
 
 	int n_layers = m_info.m_frame_provider->getNumLayers();
@@ -20,16 +20,16 @@ Player::Player(std::string path, bool enable_video ) {
 }
 void Player::play() {
 	while (1) {
-		if (m_info.update) {
-			double x, y, z;
-			m_info.m_window_controller->getXYZ(x, y, z);
-			// cout << x << "\t" << y << "\t" << z << endl;
-			m_info.frame = m_info.m_frame_provider->getFrame(m_info.w, m_info.h, x, y, z);
-			imshow(m_info.win_title, m_info.frame);
-			cv::setMouseCallback(m_info.win_title, onMouse, &m_info);
+		// if (m_info.update) {
+		double x, y, z;
+		m_info.m_window_controller->getXYZ(x, y, z);
+		// cout << x << "\t" << y << "\t" << z << endl;
+		m_info.frame = m_info.m_frame_provider->getFrame(m_info.w, m_info.h, x, y, z);
+		imshow(m_info.win_title, m_info.frame);
+		cv::setMouseCallback(m_info.win_title, onMouse, &m_info);
 
-			m_info.update = false;
-		}
+		m_info.update = false;
+		// }
 		waitKey(30);
 	}
 }
@@ -51,10 +51,10 @@ void Player::onMouse(int event, int x, int y, int, void* data)
 		info->m_window_controller->move(info->pre_x - x, info->pre_y - y);
 		break;
 	case EVENT_LBUTTONDBLCLK:
-		info->m_window_controller->zoom(0.5);
+		info->m_window_controller->zoom(1);
 		break;
 	case EVENT_RBUTTONDBLCLK:
-		info->m_window_controller->zoom(-0.5);
+		info->m_window_controller->zoom(-1);
 		break;
 	}
 	info->update = true;
