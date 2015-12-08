@@ -33,13 +33,10 @@ int test_multi_video_data(int argc, char** argv){
 	cout << data.getRectOnScene(0) << endl;
 	while(1){
 		Mat frame = data.getFrame(0);
-		resize(frame, frame, Size(frame.cols/2, frame.rows/2));
+		resize(frame, frame, Size(frame.cols/4, frame.rows/4));
 		imshow("frame", frame);
 		waitKey(33);
 	}
-
-
-
 	return 0;
 }
 int video(int argc, char** argv){

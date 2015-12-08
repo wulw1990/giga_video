@@ -41,12 +41,9 @@ bool GigaAligner::alignStaticVideo(string path_scene, string input_video, string
 	cout << "align ok, saving..." << endl;
 	// cout << rect_on_scene << endl;
 
-	string cmd = "cp " + input_video + " " + path_out;
-	system(cmd.c_str());
-
 	VideoData video_data(path_out);
-	video_data.setInfo(H, rect_on_scene);
-	video_data.save();
+	video_data.save(input_video, H, rect_on_scene);
+	// cout << H << endl;
 
 	//save 
 	// cout << "Saving..." << endl;

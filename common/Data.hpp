@@ -58,8 +58,7 @@ class VideoData {
 	public:
 		VideoData(std::string path);
 		void load();
-		void save();
-		void setInfo(cv::Mat H, cv::Rect rect_on_scene);
+		void save(std::string video_src, cv::Mat H, cv::Rect rect_on_scene);
 
 		cv::Mat getH() {return H.clone();}
 		cv::Rect getRectOnScene() {return rect_on_scene;}

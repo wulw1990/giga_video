@@ -49,14 +49,16 @@ class SceneFrameProvider {
 		SceneFrameProvider(std::string path, std::string info_file);
 		cv::Mat getFrame(int w, int h, double x, double y, double z);
 		cv::Mat getFrame(int w, int h, int x, int y, int z);
-		void incXY(double z, int dx, int dy, double& x, double& y);
-		double getMaxZ() { return 5.0; }
-		double getMinZ() { return -3.5; }
 		int getLayerWidth(int layer_id);
 		int getLayerHeight(int layer_id);
 
 	private:
 		std::shared_ptr<TileProvider> m_tile_provider;
+		int frame_width;
+		int frame_height;
+		double x;
+		double y;
+		double z;
 
 		void copyMatToMat(cv::Mat& src_mat, cv::Rect& src_rect, cv::Mat& dst_mat, cv::Rect& dst_rect);
 };

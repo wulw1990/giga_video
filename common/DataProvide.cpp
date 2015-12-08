@@ -56,10 +56,10 @@ cv::Mat TileProvider::getTile(int x, int y, int z, int* is_cache) {
 	// cout << "name: " << name << endl;
 	if (m_cache.find(name) == m_cache.end()) {
 		m_cache[name] = make_pair(imread(path + name), getCurrentTimeFromStart());
-		if(is_cache){ *is_cache = 0; }
-	}else{
+		if (is_cache) { *is_cache = 0; }
+	} else {
 		// cout << "cached" << endl;
-		if(is_cache){ *is_cache = 1; }
+		if (is_cache) { *is_cache = 1; }
 	}
 	cv::Mat tile = m_cache[name].first;
 	m_cache[name].second = getCurrentTimeFromStart();
@@ -103,7 +103,7 @@ void TileProvider::resizeCache() {
 		sort(time_vec.begin(), time_vec.end());
 		// cout << time_vec.size() << endl;
 
-		long long thresh = time_vec[time_vec.size() - MAX_SIZE/2];
+		long long thresh = time_vec[time_vec.size() - MAX_SIZE / 2];
 		// cout << "thresh: " << thresh << endl;
 
 		// cout << m_cache.size() << endl;
@@ -128,28 +128,24 @@ SceneFrameProvider::SceneFrameProvider(std::string path, std::string info_file) 
 cv::Mat SceneFrameProvider::getFrame(int w, int h, double x, double y, double z) {
 	int layer_id = static_cast<int>(z + 1);
 	layer_id = max(layer_id, 0);
-	layer_id = min(layer_id, m_tile_provider->getNumLayers() - 1);
+	layer_id = min(layer_id, m_tile_provider->getNumLayers()-1);
 
 	int pixel_x = static_cast<int>(x * m_tile_provider->getPixelColsOfLayer(layer_id));
 	int pixel_y = static_cast<int>(y * m_tile_provider->getPixelRowsOfLayer(layer_id));
-	pixel_x = max(pixel_x, 0);
-	pixel_x = min(pixel_x, m_tile_provider->getPixelColsOfLayer(layer_id));
-	pixel_y = max(pixel_y, 0);
-	pixel_y = min(pixel_y, m_tile_provider->getPixelRowsOfLayer(layer_id));
 
-
-	double zoom = pow(2.0, z - layer_id);
-	int sw = 1.0 / zoom * w;
-	int sh = 1.0 / zoom * h;
-
-	// pixel_x = 8896;
-	// pixel_y = 960;
-	// layer_id = 5;
+	double zoom = pow(2.0, (double)layer_id - z);
+	int sw = zoom * w;
+	int sh = zoom * h;
 
 	pixel_x -= sw / 2;
 	pixel_y -= sh / 2;
 
-	Mat result = getFrame(w, h, pixel_x, pixel_y, layer_id);
+	// cout << pixel_x << "\t" << pixel_y << endl;
+
+	Mat result = getFrame(sw, sh, pixel_x, pixel_y, layer_id);
+	// cout << zoom << endl;
+	// cout << sw << "\t" << sh << endl;
+	// cout << result.size() << endl;
 	resize(result, result, Size(w, h));
 	return result;
 }
@@ -225,24 +221,6 @@ void SceneFrameProvider::copyMatToMat(Mat& src_mat, Rect& src_rect, Mat& dst_mat
 		dst.height -= shift;
 	}
 	src_mat(src).copyTo(dst_mat(dst));
-}
-void SceneFrameProvider::incXY(double z, int dx, int dy, double& x, double& y) {
-	int layer_id = static_cast<int>(z);
-	int layer_num = m_tile_provider->getNumLayers();
-	layer_id = max(layer_id, 0);
-	layer_id = min(layer_id, layer_num - 1);
-
-	double zoom = pow(2.0, z - layer_id);
-	// cout << "zoom: " << zoom << endl;
-
-	x += 1.0 / zoom * static_cast<double>(dx) / m_tile_provider->getPixelColsOfLayer(layer_id);
-	y += 1.0 / zoom * static_cast<double>(dy) / m_tile_provider->getPixelRowsOfLayer(layer_id);
-
-	x = max(x, 0.0);
-	x = min(x, 1.0);
-
-	y = max(y, 0.0);
-	y = min(y, 1.0);
 }
 int SceneFrameProvider::getLayerWidth(int layer_id) {
 	return m_tile_provider->getPixelColsOfLayer(layer_id);

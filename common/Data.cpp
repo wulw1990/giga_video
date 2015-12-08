@@ -127,12 +127,19 @@ void VideoData::load() {
 	fin >> rect_on_scene.x >> rect_on_scene.y >> rect_on_scene.width >> rect_on_scene.height;
 	// cout << rect_on_scene << endl;
 }
-void VideoData::save() {
+void VideoData::save(std::string video_src, cv::Mat H, cv::Rect rect_on_scene) {
+	this->H = H.clone();
+	this->rect_on_scene = rect_on_scene;
+
+	string cmd = "cp " + video_src + " " + path + NAME_VIDEO;
+	system(cmd.c_str());
+
 	ofstream fout( (path + NAME_INFO).c_str() );
 	if (!fout.is_open()) {
 		cerr << "VideoData::save: can not open: " << path + NAME_INFO << endl;
 		exit(-1);
 	}
+	H.convertTo(H, CV_32FC1);
 	for (int r = 0; r < H.rows; ++r) {
 		for (int c = 0; c < H.cols; ++c) {
 			fout << H.at<float>(r, c) << "\t";
@@ -143,10 +150,6 @@ void VideoData::save() {
 	fout << rect_on_scene.y << "\t";
 	fout << rect_on_scene.width << "\t";
 	fout << rect_on_scene.height << "\t";
-}
-void VideoData::setInfo(cv::Mat H, cv::Rect rect_on_scene) {
-	this->H = H.clone();
-	this->rect_on_scene = rect_on_scene;
 }
 cv::Mat VideoData::getFrame() {
 	if (!capture.isOpened()) {
@@ -159,9 +162,10 @@ cv::Mat VideoData::getFrame() {
 		capture >> frame;
 	}
 
+	// cout << H << endl;
 	Mat dst(rect_on_scene.height, rect_on_scene.width, CV_8UC3);
 	warpPerspective(frame, dst, H, dst.size());
-	cout << dst.size() << endl;
+	// cout << dst.size() << endl;
 
 	return dst;
 }
@@ -184,7 +188,7 @@ MultiVideoData::MultiVideoData(std::string path): NAME_LIST("list.txt") {
 	while (fin >> str) {
 		video_data.push_back( VideoData(path + str + "/") );
 	}
-	for(size_t i=0; i<video_data.size(); ++i){
+	for (size_t i = 0; i < video_data.size(); ++i) {
 		video_data[i].load();
 	}
 	cout << "video_data: " << video_data.size() << endl;

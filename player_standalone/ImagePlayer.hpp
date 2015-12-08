@@ -7,6 +7,7 @@
 #include <opencv2/opencv.hpp>
 
 class SceneFrameProvider;
+class WindowController;
 
 class ImagePlayer
 {
@@ -28,6 +29,7 @@ public:
 			double y;
 			double z;
 			std::shared_ptr<SceneFrameProvider> m_frame_provider;
+			std::shared_ptr<WindowController> m_window_controller;
 			cv::Mat frame;
 		};
 		Info m_info;
