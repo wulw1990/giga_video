@@ -129,7 +129,7 @@ void TileProvider::resizeCache() {
 
 
 FrameProvider::FrameProvider(std::string path, bool enable_video) {
-	m_tile_provider = make_shared<TileProvider>(path, path+"info_scene.txt");
+	m_tile_provider = make_shared<TileProvider>(path, path + "info_scene.txt");
 
 	m_enable_video = enable_video;
 	if (m_enable_video) {
@@ -199,13 +199,13 @@ cv::Mat FrameProvider::getFrame(int w, int h, int x, int y, int z) {
 
 
 
-	if(m_enable_video && z==m_tile_provider->getNumLayers()-1){
+	if (m_enable_video && z == m_tile_provider->getNumLayers() - 1) {
 		// cout << "hh " << endl;
 		int n_videos = m_multi_video_data->getNumVideos();
-		for(int i=0; i<n_videos; ++i){
+		for (int i = 0; i < n_videos; ++i) {
 			Rect rect_video_on_scene = m_multi_video_data->getRectOnScene(i);
 			Rect rect_overlap = rect_video_on_scene & Rect(x, y, w, h);
-			if(rect_overlap.width>0 && rect_overlap.height>0){
+			if (rect_overlap.width > 0 && rect_overlap.height > 0) {
 				// cout << "dd " << endl;
 				Mat video_frame = m_multi_video_data->getFrame(i);
 				Rect rect_on_video = rect_overlap;
@@ -219,22 +219,36 @@ cv::Mat FrameProvider::getFrame(int w, int h, int x, int y, int z) {
 				//TODO: Optic Aligner
 				Mat src = video_frame(rect_on_video);
 				Mat dst = result(rect_on_win);
-				for(int r=0; r<src.rows; ++r){
-					for(int c=0; c<src.cols; ++c){
-						if(src.at<Vec3b>(r,c)!=Vec3b(0,0,0)){
-							dst.at<Vec3b>(r,c) = src.at<Vec3b>(r,c);
+				for (int r = 0; r < src.rows; ++r) {
+					for (int c = 0; c < src.cols; ++c) {
+						if (src.at<Vec3b>(r, c) != Vec3b(0, 0, 0)) {
+							dst.at<Vec3b>(r, c) = src.at<Vec3b>(r, c);
 						}
 					}
 				}
 			}
 		}
+	} else if (m_enable_video) {
+		int n_videos = m_multi_video_data->getNumVideos();
+		for (int i = 0; i < n_videos; ++i) {
+			Rect rect_video_on_scene = m_multi_video_data->getRectOnScene(i);
+			double scale = pow(2, m_tile_provider->getNumLayers() - 1 - z);
+			rect_video_on_scene.x /= scale;
+			rect_video_on_scene.y /= scale;
+			rect_video_on_scene.width /= scale;
+			rect_video_on_scene.height /= scale;
+			Rect rect_overlap = rect_video_on_scene & Rect(x, y, w, h);
+			if (rect_overlap.width > 0 && rect_overlap.height > 0) {
+				rect_overlap.x -= x;
+				rect_overlap.y -= y;
+				rectangle( result, rect_overlap, Scalar(255, 0, 0), 2);
+			}
+		}
 	}
-
-
 
 	return result;
 }
-void FrameProvider::copyMatToMat(Mat& src_mat, Rect& src_rect, Mat& dst_mat, Rect& dst_rect)
+void FrameProvider::copyMatToMat(Mat & src_mat, Rect & src_rect, Mat & dst_mat, Rect & dst_rect)
 {
 	Rect src(0, 0, src_mat.cols, src_mat.rows);
 	Rect dst(src_rect.x - dst_rect.x, src_rect.y - dst_rect.y, src_mat.cols, src_mat.rows);
