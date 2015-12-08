@@ -1,10 +1,12 @@
 #include "DataProvide.hpp"
-#include "Data.hpp"
 
 #include <sys/time.h>
 #include <cstdlib>
 using namespace std;
 using namespace cv;
+
+#include "Data.hpp"
+
 
 const Scalar default_color(127, 127, 127);
 
@@ -128,7 +130,7 @@ SceneFrameProvider::SceneFrameProvider(std::string path, std::string info_file) 
 cv::Mat SceneFrameProvider::getFrame(int w, int h, double x, double y, double z) {
 	int layer_id = static_cast<int>(z + 1);
 	layer_id = max(layer_id, 0);
-	layer_id = min(layer_id, m_tile_provider->getNumLayers()-1);
+	layer_id = min(layer_id, m_tile_provider->getNumLayers() - 1);
 
 	int pixel_x = static_cast<int>(x * m_tile_provider->getPixelColsOfLayer(layer_id));
 	int pixel_y = static_cast<int>(y * m_tile_provider->getPixelRowsOfLayer(layer_id));
@@ -222,9 +224,38 @@ void SceneFrameProvider::copyMatToMat(Mat& src_mat, Rect& src_rect, Mat& dst_mat
 	}
 	src_mat(src).copyTo(dst_mat(dst));
 }
+int SceneFrameProvider::getNumLayers(){
+	return m_tile_provider->getNumLayers();
+}
 int SceneFrameProvider::getLayerWidth(int layer_id) {
 	return m_tile_provider->getPixelColsOfLayer(layer_id);
 }
 int SceneFrameProvider::getLayerHeight(int layer_id) {
 	return m_tile_provider->getPixelRowsOfLayer(layer_id);
+}
+
+
+VideoFrameProvider::VideoFrameProvider(std::string path) {
+	m_multi_video_data = make_shared<MultiVideoData>(path);
+}
+void VideoFrameProvider::getFrame(cv::Mat& frame, cv::Rect rect) {
+	cout << rect << endl;
+}
+
+
+FrameProvider::FrameProvider(std::string path, bool enable_video) {
+	m_enable_video = enable_video;
+	m_scene_frame_provider = make_shared<SceneFrameProvider>(path, path + "info_scene.txt");
+}
+cv::Mat FrameProvider::getFrame(int w, int h, double x, double y, double z) {
+	return m_scene_frame_provider->getFrame(w, h, x, y, z);
+}
+int FrameProvider::getNumLayers() {
+	return m_scene_frame_provider->getNumLayers();
+}
+int FrameProvider::getLayerWidth(int layer_id) {
+	return m_scene_frame_provider->getLayerWidth(layer_id);
+}
+int FrameProvider::getLayerHeight(int layer_id) {
+	return m_scene_frame_provider->getLayerHeight(layer_id);
 }

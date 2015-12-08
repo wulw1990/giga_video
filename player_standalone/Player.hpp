@@ -1,19 +1,19 @@
-#ifndef IMAGE_PLAYER_HPP_
-#define IMAGE_PLAYER_HPP_
+#ifndef _PLAYER_HPP_
+#define _PLAYER_HPP_
 
 #include <string>
 #include <vector>
 #include <memory>
 #include <opencv2/opencv.hpp>
 
-class SceneFrameProvider;
+class FrameProvider;
 class WindowController;
 
-class ImagePlayer
+class Player
 {
 public:
-	ImagePlayer(std::string path, std::string info_file );
-	~ImagePlayer(){}
+	Player(std::string path, bool enable_video );
+	~Player(){}
 	
 	void play();
 
@@ -22,15 +22,13 @@ public:
 		{
 			int pre_x;
 			int pre_y;
-			std::string m_window_title;
 			int w;
 			int h;
-			double x;
-			double y;
-			double z;
-			std::shared_ptr<SceneFrameProvider> m_frame_provider;
+			std::shared_ptr<FrameProvider> m_frame_provider;
 			std::shared_ptr<WindowController> m_window_controller;
+			std::string win_title;
 			cv::Mat frame;
+			bool update;
 		};
 		Info m_info;
 

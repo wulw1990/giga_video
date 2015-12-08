@@ -6,7 +6,9 @@
 #include <vector>
 #include <opencv2/opencv.hpp>
 #include <map>
+
 class SceneData;
+class MultiVideoData;
 
 class TileProvider {
 	public:
@@ -18,7 +20,7 @@ class TileProvider {
 		int getPixelRowsOfLayer(int layer_id);
 		int getPixelColsOfLayer(int layer_id);
 
-		cv::Mat getTile(int x, int y, int z, int* is_cache=NULL);//cached
+		cv::Mat getTile(int x, int y, int z, int* is_cache = NULL); //cached
 
 	private:
 		std::string path;
@@ -49,6 +51,7 @@ class SceneFrameProvider {
 		SceneFrameProvider(std::string path, std::string info_file);
 		cv::Mat getFrame(int w, int h, double x, double y, double z);
 		cv::Mat getFrame(int w, int h, int x, int y, int z);
+		int getNumLayers();
 		int getLayerWidth(int layer_id);
 		int getLayerHeight(int layer_id);
 
@@ -62,8 +65,27 @@ class SceneFrameProvider {
 
 		void copyMatToMat(cv::Mat& src_mat, cv::Rect& src_rect, cv::Mat& dst_mat, cv::Rect& dst_rect);
 };
+class VideoFrameProvider {
+	public:
+		VideoFrameProvider(std::string path);
+		void getFrame(cv::Mat& frame, cv::Rect rect);
 
+	private:
+		std::shared_ptr<MultiVideoData> m_multi_video_data;
+};
 
+class FrameProvider {
+	public:
+		FrameProvider(std::string path, bool enable_video);
+		cv::Mat getFrame(int w, int h, double x, double y, double z);
+		int getNumLayers();
+		int getLayerWidth(int layer_id);
+		int getLayerHeight(int layer_id);
 
+	private:
+		std::shared_ptr<SceneFrameProvider> m_scene_frame_provider;
+		std::shared_ptr<VideoFrameProvider> m_video_frame_provider;
+		bool m_enable_video;
+};
 
 #endif

@@ -44,8 +44,8 @@ void WindowController::move(int dx, int dy){
 	double fdx = (double) dx / cur_zoom_width;
 	double fdy = (double) dy / cur_zoom_height;
 
-	x += fdx * 2;
-	y += fdy * 2;
+	x += fdx;
+	y += fdy;
 
 	x = max(x, 0.0);
 	x = min(x, 1.0);
@@ -54,4 +54,7 @@ void WindowController::move(int dx, int dy){
 }
 void WindowController::zoom(double dz){
 	z += dz;
+	double top_layer_id = double(m_layer_size.size()-1);
+	z = max(z, -4.0);
+	z = min(z, top_layer_id);
 }
