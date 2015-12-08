@@ -105,7 +105,87 @@ void SceneData::loadFromDisk(std::string path) {
 	}
 	layer.resize(n_layers);
 	for (size_t i = 0; i < list_layer.size(); ++i) {
-		cout << "loading layer " << i <<endl;
+		cout << "loading layer " << i << endl;
 		layer[i].loadFromDisk(path, list_layer[i]);
 	}
+}
+VideoData::VideoData(std::string path): NAME_VIDEO("video.avi"), NAME_INFO("info.txt") {
+	this->path = path;
+}
+void VideoData::load() {
+	ifstream fin( (path + NAME_INFO).c_str() );
+	if (!fin.is_open()) {
+		cerr << "VideoData::load: can not open: " << path + NAME_INFO << endl;
+		exit(-1);
+	}
+	H = Mat(3, 3, CV_32FC1);
+	for (int r = 0; r < H.rows; ++r) {
+		for (int c = 0; c < H.cols; ++c) {
+			fin >> H.at<float>(r, c);
+		}
+	}
+	fin >> rect_on_scene.x >> rect_on_scene.y >> rect_on_scene.width >> rect_on_scene.height;
+	// cout << rect_on_scene << endl;
+}
+void VideoData::save() {
+	ofstream fout( (path + NAME_INFO).c_str() );
+	if (!fout.is_open()) {
+		cerr << "VideoData::save: can not open: " << path + NAME_INFO << endl;
+		exit(-1);
+	}
+	for (int r = 0; r < H.rows; ++r) {
+		for (int c = 0; c < H.cols; ++c) {
+			fout << H.at<float>(r, c) << "\t";
+		}
+		fout << endl;
+	}
+	fout << rect_on_scene.x << "\t";
+	fout << rect_on_scene.y << "\t";
+	fout << rect_on_scene.width << "\t";
+	fout << rect_on_scene.height << "\t";
+}
+void VideoData::setInfo(cv::Mat H, cv::Rect rect_on_scene) {
+	this->H = H.clone();
+	this->rect_on_scene = rect_on_scene;
+}
+cv::Mat VideoData::getFrame() {
+	if (!capture.isOpened()) {
+		openCapture();
+	}
+	cv::Mat frame;
+	if (!capture.read(frame)) {
+		capture.release();
+		openCapture();
+		capture >> frame;
+	}
+
+	Mat dst(rect_on_scene.height, rect_on_scene.width, CV_8UC3);
+	warpPerspective(frame, dst, H, dst.size());
+	cout << dst.size() << endl;
+
+	return dst;
+}
+void VideoData::openCapture() {
+	capture.open(path + NAME_VIDEO);
+	if (!capture.isOpened()) {
+		cerr << "can not open video: " << path + NAME_VIDEO;
+		exit(-1);
+	}
+}
+MultiVideoData::MultiVideoData(std::string path): NAME_LIST("list.txt") {
+	this->path = path;
+	ifstream fin( (path + NAME_LIST).c_str() );
+	if (!fin.is_open()) {
+		cerr << "MultiVideoData::MultiVideoData: can not open: " << path + NAME_LIST << endl;
+		exit(-1);
+	}
+	string str;
+	video_data.clear();
+	while (fin >> str) {
+		video_data.push_back( VideoData(path + str + "/") );
+	}
+	for(size_t i=0; i<video_data.size(); ++i){
+		video_data[i].load();
+	}
+	cout << "video_data: " << video_data.size() << endl;
 }

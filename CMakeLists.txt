@@ -9,6 +9,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-write-strings")
 
 
 ADD_SUBDIRECTORY(common)
+ADD_SUBDIRECTORY(common_test)
 
 ADD_SUBDIRECTORY(construct)
 

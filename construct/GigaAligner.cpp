@@ -5,6 +5,7 @@
 #include <time.h>
 #include "GeometryAligner.h"
 #include "OpticAligner.h"
+#include "Data.hpp"
 #include "DataProvide.hpp"
 #include "Timer.hpp"
 
@@ -23,7 +24,7 @@ GigaAligner::~GigaAligner()
 	delete m_optic_aligner;
 	delete m_geometry_aligner;
 }
-bool GigaAligner::alignStaticVideo(string path_scene, string input_video, string output_prefix)
+bool GigaAligner::alignStaticVideo(string path_scene, string input_video, string path_out)
 {
 	//read first frame
 	Mat frame = readFirstFrame(input_video);
@@ -37,7 +38,15 @@ bool GigaAligner::alignStaticVideo(string path_scene, string input_video, string
 	if (!alignFrameToScene(path_scene, frame, H, rect_on_scene))
 		return false;
 
-	cout << rect_on_scene << endl;
+	cout << "align ok, saving..." << endl;
+	// cout << rect_on_scene << endl;
+
+	string cmd = "cp " + input_video + " " + path_out;
+	system(cmd.c_str());
+
+	VideoData video_data(path_out);
+	video_data.setInfo(H, rect_on_scene);
+	video_data.save();
 
 	//save 
 	// cout << "Saving..." << endl;
@@ -66,7 +75,7 @@ bool GigaAligner::alignFrameToScene(string path_scene, Mat frame, Mat& H, Rect& 
 	int step_col = frame.cols * 2;
 
 	for (int r = 2; r*step_row < work_layer_size.height; ++r){
-		for (int c = 0; c*step_col < work_layer_size.width; ++c){
+		for (int c = 16; c*step_col < work_layer_size.width; ++c){
 			cout << r << "\t" << c << "\t" << "begin..." << endl;
 
 			Rect rect(c*step_col, r*step_row, win_cols, win_rows);

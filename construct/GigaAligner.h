@@ -14,7 +14,7 @@ class GigaAligner
 public:
 	GigaAligner();
 	~GigaAligner();
-	bool alignStaticVideo(string path_scene, string input_video, string output_prefix);
+	bool alignStaticVideo(string path_scene, string input_video, string path_out);
 	//TODO
 	//void manualSelect(string path_scene, string input_video);
 
