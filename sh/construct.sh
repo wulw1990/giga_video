@@ -5,9 +5,9 @@
 
 
 # mode="cut_video"
-# name="MVI_6881"
-# name_src="/media/wlw/data/NB_BBNC/2015-06-20-zijing16/video_selected/${name}.MOV"
-# name_dst="/media/wlw/data/NB_BBNC/2015-06-20-zijing16/video_selected_cut/${name}.avi"
+# name="MVI_6878"
+# name_src="/media/wuliwei/data/NB_BBNC/2015-06-20-zijing16/video_selected/${name}.MOV"
+# name_dst="/media/wuliwei/data/NB_BBNC/2015-06-20-zijing16/video_selected_cut/${name}.avi"
 # ./build/construct/construct $mode $name_src $name_dst
 
 # mode="cut_video"

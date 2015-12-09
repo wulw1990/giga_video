@@ -30,7 +30,7 @@ void Player::play() {
 
 		m_info.update = false;
 		// }
-		waitKey(30);
+		waitKey(1);
 	}
 }
 void Player::onMouse(int event, int x, int y, int, void* data)
