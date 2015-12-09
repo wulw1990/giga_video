@@ -4,26 +4,14 @@
 # ./build/construct/construct $mode $path
 
 
+name="MVI_6880"
+
 # mode="cut_video"
-# name="MVI_6878"
 # name_src="/media/wuliwei/data/NB_BBNC/2015-06-20-zijing16/video_selected/${name}.MOV"
 # name_dst="/media/wuliwei/data/NB_BBNC/2015-06-20-zijing16/video_selected_cut/${name}.avi"
 # ./build/construct/construct $mode $name_src $name_dst
 
-# mode="cut_video"
-# name="MVI_6881"
-# name_src="/home/wuliwei/dataset/bbnc/MVI_6878.MOV"
-# name_dst="/home/wuliwei/dataset/bbnc/MVI_6878.avi"
-# ./build/construct/construct $mode $name_src $name_dst
-
-
-# mode="construct_video"
-# raw_video="/media/wlw/data/NB_BBNC/2015-06-20-zijing16/video_selected/MVI_6878.MOV"
-# path_out="/media/wlw/data/NB_BBNC/giga_video/zijing16/video/6878/"
-# ./build/construct/construct $mode $raw_video $path_out
-
 mode="construct_video"
-name="MVI_6878"
 path_img="/media/wuliwei/data/NB_BBNC/giga_video/zijing16/"
 raw_video_name="/media/wuliwei/data/NB_BBNC/2015-06-20-zijing16/video_selected_cut/${name}.avi"
 path_output="/media/wuliwei/data/NB_BBNC/giga_video/zijing16/video/${name}/"

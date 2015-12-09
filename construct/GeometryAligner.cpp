@@ -33,7 +33,7 @@ bool GeometryAligner::align(cv::Mat frame_, cv::Mat scene_, cv::Mat& H, cv::Rect
 
 	rect_on_scene = getRectFromCorner(corner_scene);
 	// cout << rect_on_scene << endl;
-	for(size_t i=0; i<corner_scene.size(); ++i){
+	for (size_t i = 0; i < corner_scene.size(); ++i) {
 		corner_scene[i].x -= rect_on_scene.x;
 		corner_scene[i].y -= rect_on_scene.y;
 	}
@@ -265,6 +265,21 @@ bool GeometryAligner::isRectangle(std::vector<cv::Point2f>& corner) {
 
 	return true;
 }
+bool GeometryAligner::cornerInScene(cv::Point2f& corner, cv::Size size) {
+	const int PAD_W = size.width/5;
+	const int PAD_H = size.height/5;
+	if(corner.x < -PAD_W) return false;
+	if(corner.x >= size.width + PAD_W) return false;
+	if(corner.y < -PAD_H) return false;
+	if(corner.y >= size.height + PAD_H) return false;
+	return true;
+}
+bool GeometryAligner::cornerInScene(std::vector<cv::Point2f>& corner, cv::Size size) {
+	for(size_t i=0; i<corner.size(); ++i){
+		if(!cornerInScene(corner[i], size)) return false;
+	}
+	return true;
+}
 bool GeometryAligner::imageMatchSurf(Mat frame, Mat scene, Mat& H, int thresh)
 {
 	vector<KeyPoint> keypoint_frame, keypoint_scene;
@@ -331,5 +346,7 @@ bool GeometryAligner::imageMatchSurf(Mat frame, Mat scene, Mat& H, int thresh)
 	if (debug) writeMatchResult(frame, scene, keypoint_frame, keypoint_scene, match, H, "../match_result_1.jpg");
 
 	if (!isRectangle(corner)) return false;
+	if (!cornerInScene(corner, scene.size())) return false;
+
 	return true;;
 }

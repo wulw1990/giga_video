@@ -34,6 +34,9 @@ private:
 	float getDistance(cv::Point2f p1, cv::Point2f& p2);
 	cv::Rect getRectFromCorner(std::vector<cv::Point2f>& corner);
 
+	bool cornerInScene(std::vector<cv::Point2f>& corner, cv::Size size);
+	bool cornerInScene(cv::Point2f& corner, cv::Size size);
+
 	//TODO
 	// bool validCorner(std::vector<cv::Point2f>& corner, cv::Size size);
 

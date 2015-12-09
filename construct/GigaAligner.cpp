@@ -45,7 +45,7 @@ bool GigaAligner::alignStaticVideo(string path_scene, string input_video, string
 	video_data.save(input_video, H, rect_on_scene);
 	// cout << H << endl;
 
-	//save 
+	//save
 	// cout << "Saving..." << endl;
 	// string output_video = output_prefix + ".avi";
 	// string output_txt = output_prefix + ".txt";
@@ -71,11 +71,15 @@ bool GigaAligner::alignFrameToScene(string path_scene, Mat frame, Mat& H, Rect& 
 	int step_row = frame.rows * 2;
 	int step_col = frame.cols * 2;
 
-	for (int r = 2; r*step_row < work_layer_size.height; ++r){
-		for (int c = 16; c*step_col < work_layer_size.width; ++c){
+
+	showImage("frame", frame);
+
+
+	for (int r = 2; r * step_row < work_layer_size.height; ++r) {
+		for (int c = 13; c * step_col < work_layer_size.width; ++c) {
 			cout << r << "\t" << c << "\t" << "begin..." << endl;
 
-			Rect rect(c*step_col, r*step_row, win_cols, win_rows);
+			Rect rect(c * step_col, r * step_row, win_cols, win_rows);
 			rect = rect & rect_max;
 
 			// Mat win = rect_getter->GetRectMat(rect, work_layer_id);
@@ -90,15 +94,16 @@ bool GigaAligner::alignFrameToScene(string path_scene, Mat frame, Mat& H, Rect& 
 
 			// imwrite("../win.jpg", win);
 			// imwrite("../frame.jpg", frame);
+
 			showImage("win", win);
-			char key = waitKey(1);
+			char key = waitKey(0);
 			// if (key != 'y') continue;
 
-			timer.reset();
+			// timer.reset();
 			bool matched = m_geometry_aligner->align(frame, win, H, rect_on_scene);
-			cout << r << "\t" << c << "\t" << matched  << "\tms : " << timer.getTimeUs()/1000 << endl;
+			cout << r << "\t" << c << "\t" << matched  << "\tms : " << timer.getTimeUs() / 1000 << endl;
 
-			if (matched){
+			if (matched) {
 				rect_on_scene.x += c * step_col;
 				rect_on_scene.y += r * step_row;
 				return true;
@@ -126,12 +131,12 @@ int GigaAligner::writeStaticVideo(string name_input, string name_output, Mat T, 
 	VideoWriter writer(name_output, CV_FOURCC('M', 'J', 'P', 'G'), OUTPUT_RATE, size);
 	assert(capture.isOpened());
 	assert(writer.isOpened());
-	
+
 	Mat frame;
 	Mat aligned_frame(size, CV_8UC3);
 	int input_frame_count = 0;
 	int output_frame_count = 0;
-	while (capture.read(frame) && !frame.empty()){
+	while (capture.read(frame) && !frame.empty()) {
 		if ((++input_frame_count) % DOWN_SAMPLE_RATE != 0) continue;
 
 		warpAffine(frame, aligned_frame, T, size);
