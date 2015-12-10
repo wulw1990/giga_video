@@ -75,9 +75,10 @@ bool GigaAligner::alignFrameToScene(string path_scene, Mat frame, Mat& H, Rect& 
 	showImage("frame", frame);
 
 
-	for (int r = 2; r * step_row < work_layer_size.height; ++r) {
-		for (int c = 13; c * step_col < work_layer_size.width; ++c) {
-			cout << r << "\t" << c << "\t" << "begin..." << endl;
+	for (int r = 0; r * step_row < work_layer_size.height; ++r) {
+		for (int c = 0; c * step_col < work_layer_size.width; ++c) {
+			cout << r << "\t" << c << "\t";
+			cout .flush();
 
 			Rect rect(c * step_col, r * step_row, win_cols, win_rows);
 			rect = rect & rect_max;
@@ -96,12 +97,12 @@ bool GigaAligner::alignFrameToScene(string path_scene, Mat frame, Mat& H, Rect& 
 			// imwrite("../frame.jpg", frame);
 
 			showImage("win", win);
-			char key = waitKey(0);
+			char key = waitKey(1);
 			// if (key != 'y') continue;
 
 			// timer.reset();
 			bool matched = m_geometry_aligner->align(frame, win, H, rect_on_scene);
-			cout << r << "\t" << c << "\t" << matched  << "\tms : " << timer.getTimeUs() / 1000 << endl;
+			cout << matched  << "\tms : " << timer.getTimeUs() / 1000 << endl;
 
 			if (matched) {
 				rect_on_scene.x += c * step_col;

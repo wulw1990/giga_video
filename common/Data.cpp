@@ -151,6 +151,24 @@ void VideoData::save(std::string video_src, cv::Mat H, cv::Rect rect_on_scene) {
 	fout << rect_on_scene.width << "\t";
 	fout << rect_on_scene.height << "\t";
 }
+static std::vector<cv::Point2f> getCornerOnFrame(cv::Size size) {
+	int rows = size.height;
+	int cols = size.width;
+	vector<Point2f> corner_frame(4);
+	corner_frame[0] = Point2f(0, 0);
+	corner_frame[1] = Point2f(cols, 0);
+	corner_frame[2] = Point2f(cols, rows);
+	corner_frame[3] = Point2f(0, rows);
+
+	return corner_frame;
+}
+static std::vector<cv::Point2f> getCornerOnScene(cv::Size size, cv::Mat H) {
+	vector<Point2f> corner_frame = getCornerOnFrame(size);
+
+	vector<Point2f> corner_on_scene;
+	perspectiveTransform(corner_frame, corner_on_scene, H);
+	return corner_on_scene;
+}
 cv::Mat VideoData::getFrame() {
 	if (!capture.isOpened()) {
 		openCapture();
@@ -165,6 +183,16 @@ cv::Mat VideoData::getFrame() {
 	// cout << H << endl;
 	Mat dst(rect_on_scene.height, rect_on_scene.width, CV_8UC3);
 	warpPerspective(frame, dst, H, dst.size());
+
+
+	// TODO: remove black edge
+	// std::vector<cv::Point2f> corner_frame = getCornerOnFrame(frame.size());
+	std::vector<cv::Point2f> corner_scene = getCornerOnScene(frame.size(), H);
+	line(dst, corner_scene[0], corner_scene[1], Scalar(255, 0, 0), 3);
+	line(dst, corner_scene[1], corner_scene[2], Scalar(255, 0, 0), 3);
+	line(dst, corner_scene[2], corner_scene[3], Scalar(255, 0, 0), 3);
+	line(dst, corner_scene[3], corner_scene[0], Scalar(255, 0, 0), 3);
+
 	// cout << dst.size() << endl;
 
 	return dst;

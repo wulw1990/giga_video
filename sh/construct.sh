@@ -4,7 +4,7 @@
 # ./build/construct/construct $mode $path
 
 
-name="MVI_6880"
+name="MVI_6894"
 
 # mode="cut_video"
 # name_src="/media/wuliwei/data/NB_BBNC/2015-06-20-zijing16/video_selected/${name}.MOV"
@@ -16,6 +16,7 @@ path_img="/media/wuliwei/data/NB_BBNC/giga_video/zijing16/"
 raw_video_name="/media/wuliwei/data/NB_BBNC/2015-06-20-zijing16/video_selected_cut/${name}.avi"
 path_output="/media/wuliwei/data/NB_BBNC/giga_video/zijing16/video/${name}/"
 ./build/construct/construct $mode $path_img $raw_video_name $path_output
+ls /media/wuliwei/data/NB_BBNC/giga_video/zijing16/video/ | grep -e "^M" > /media/wuliwei/data/NB_BBNC/giga_video/zijing16/video/list.txt
 
 # mode="construct_video"
 # name="MVI_6878"
