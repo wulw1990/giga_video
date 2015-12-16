@@ -28,11 +28,11 @@ void Client::work() {
 	int dz = 0;
 
 	//send window size
-	vector<unsigned char> send_buf;
-	m_protocol->encodeXYZ(send_buf, 1700, 900, 0);
-	if ( ! m_transmitter->sendData(m_socket_id, send_buf) ) {
-		goto CONNECT_END;
-	}
+	// vector<unsigned char> send_buf;
+	// m_protocol->encodeXYZ(send_buf, 1700, 900, 0);
+	// if ( ! m_transmitter->sendData(m_socket_id, send_buf) ) {
+	// 	goto CONNECT_END;
+	// }
 
 	while (1) {
 		vector<unsigned char> recv_buf;
@@ -47,6 +47,10 @@ void Client::work() {
 		if (!m_transmitter->readData(m_socket_id, recv_buf, data_len)) {
 			goto CONNECT_END;
 		}
+
+		// for(int i=0; i<=255; ++i)
+  //               cout << i << "\t" << (int)recv_buf[i] << endl;
+  //           exit(-1);
 
 		Mat raw(1, recv_buf.size(), CV_8UC1, &recv_buf[0]);
 		Mat dec = imdecode(raw, 1);

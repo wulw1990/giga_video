@@ -4,7 +4,7 @@
 # ./build/construct/construct $mode $path
 
 
-name="MVI_6894"
+name="MVI_7294"
 
 # mode="cut_video"
 # name_src="/media/wuliwei/data/NB_BBNC/2015-06-20-zijing16/video_selected/${name}.MOV"

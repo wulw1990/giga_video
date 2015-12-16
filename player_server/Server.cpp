@@ -27,9 +27,10 @@ void Server::work()
         if ( ! m_transmitter->getClientId(m_server_id, client_id) ) {
             continue;
         }
+        cout << "serve it" << endl;
         //serve it
 
-        Size winsize;
+        Size winsize(1000, 500);
         {
             vector<unsigned char> recv_buf;
             if (!m_transmitter->readData(client_id, recv_buf, m_protocol->getHeadLen())) {
@@ -49,11 +50,15 @@ void Server::work()
             winsize.width = dx;
             winsize.height = dy;
         }
+        cout << "width: " << winsize.width << " height: " << winsize.height << endl;
 
         //get window size
         int n_layers = m_frame_provider->getNumLayers();
         Size top_layer_size(m_frame_provider->getLayerWidth(n_layers - 1), m_frame_provider->getLayerHeight(n_layers - 1));
         m_window_controller = make_shared<WindowController>(n_layers, top_layer_size, winsize);
+
+        // m_window_controller->zoom(4);
+        // m_window_controller->move(-1000, 500);
 
         while (1) {
             double x, y, z;
@@ -63,6 +68,14 @@ void Server::work()
             vector<unsigned char> jpg;
             imencode(".jpg", frame, jpg);
             // cout << jpg.size() << endl;
+
+            // cout << "cmd: " << "img" << " data_len: " << jpg.size() << endl;
+            // for(int i=0; i<=255; ++i){
+            //     jpg[i] = i;
+            // }
+            // cout << (int)jpg[0] << endl;
+            // cout << (int)jpg[255] << endl;
+
 
             vector<unsigned char> send_buf;
             m_protocol->encode(send_buf, "img", jpg);
@@ -83,13 +96,13 @@ void Server::work()
             }
             int dx, dy, dz;
             m_protocol->decodeDataXYZ(recv_buf, dx, dy, dz);
-            // if (dx != 0 && dy != 0 && dz != 0) {
-            //     cout << dx << " " << dy << " " << dz << endl;
-            //     for (size_t i = 0; i < recv_buf.size(); ++i) {
-            //         cout << (int)recv_buf[i] << " ";
-            //     }
-            //     cout << endl;
-            // }
+            if (dx != 0 || dy != 0 || dz != 0) {
+                cout << dx << " " << dy << " " << dz << endl;
+                // for (size_t i = 0; i < recv_buf.size(); ++i) {
+                //     cout << (int)recv_buf[i] << " ";
+                // }
+                // cout << endl;
+            }
             // cout << dx << " " << dy << " " << dz << endl;
             m_window_controller->move(dx, dy);
             m_window_controller->zoom(dz);

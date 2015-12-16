@@ -55,6 +55,24 @@ bool GigaAligner::alignStaticVideo(string path_scene, string input_video, string
 	// writeStaticInfo(output_txt, len, aligned_rect);
 	return true;
 }
+static std::vector<cv::Point2f> getCornerOnFrame(cv::Size size) {
+	int rows = size.height;
+	int cols = size.width;
+	vector<Point2f> corner_frame(4);
+	corner_frame[0] = Point2f(0, 0);
+	corner_frame[1] = Point2f(cols, 0);
+	corner_frame[2] = Point2f(cols, rows);
+	corner_frame[3] = Point2f(0, rows);
+
+	return corner_frame;
+}
+static std::vector<cv::Point2f> getCornerOnScene(cv::Size size, cv::Mat H) {
+	vector<Point2f> corner_frame = getCornerOnFrame(size);
+
+	vector<Point2f> corner_on_scene;
+	perspectiveTransform(corner_frame, corner_on_scene, H);
+	return corner_on_scene;
+}
 bool GigaAligner::alignFrameToScene(string path_scene, Mat frame, Mat& H, Rect& rect_on_scene)
 {
 	FrameProvider* rect_getter = new FrameProvider(path_scene, false);
@@ -75,8 +93,8 @@ bool GigaAligner::alignFrameToScene(string path_scene, Mat frame, Mat& H, Rect& 
 	showImage("frame", frame);
 
 
-	for (int r = 0; r * step_row < work_layer_size.height; ++r) {
-		for (int c = 0; c * step_col < work_layer_size.width; ++c) {
+	for (int r = 2; r * step_row < work_layer_size.height; ++r) {
+		for (int c = 20; c * step_col < work_layer_size.width; ++c) {
 			cout << r << "\t" << c << "\t";
 			cout .flush();
 
@@ -87,6 +105,8 @@ bool GigaAligner::alignFrameToScene(string path_scene, Mat frame, Mat& H, Rect& 
 			Timer timer;
 			timer.reset();
 			Mat win = rect_getter->getFrame(rect.width, rect.height, rect.x, rect.y, work_layer_id);
+			cout << "read ms : " << timer.getTimeUs() / 1000 << "\t";
+			cout.flush();
 			// cout << "time: " << timer.getTimeUs()/1000 << " ms" << endl;
 			// cout << rect.x << endl;
 			// cout << rect.width << endl;
@@ -97,12 +117,21 @@ bool GigaAligner::alignFrameToScene(string path_scene, Mat frame, Mat& H, Rect& 
 			// imwrite("../frame.jpg", frame);
 
 			showImage("win", win);
-			char key = waitKey(1);
+			// char key = waitKey(1);
 			// if (key != 'y') continue;
 
 			// timer.reset();
+			timer.reset();
 			bool matched = m_geometry_aligner->align(frame, win, H, rect_on_scene);
-			cout << matched  << "\tms : " << timer.getTimeUs() / 1000 << endl;
+			cout << matched  << "\tmatch ms : " << timer.getTimeUs() / 1000 << endl;
+
+			std::vector<cv::Point2f> corner_scene = getCornerOnScene(frame.size(), H);
+			line(win, corner_scene[0], corner_scene[1], Scalar(255, 0, 0), 3);
+			line(win, corner_scene[1], corner_scene[2], Scalar(255, 0, 0), 3);
+			line(win, corner_scene[2], corner_scene[3], Scalar(255, 0, 0), 3);
+			line(win, corner_scene[3], corner_scene[0], Scalar(255, 0, 0), 3);
+			showImage("win", win);
+			char key = waitKey(0);
 
 			if (matched) {
 				rect_on_scene.x += c * step_col;
