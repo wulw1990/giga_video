@@ -1,5 +1,12 @@
 #include "CameraSet.hpp"
 
+#include <iostream>
+#include <sstream>
+
+using namespace FlyCapture2;
+using namespace std;
+using namespace cv;
+
 void CameraSet::PrintBuildInfo(){
 	FC2Version fc2Version;
 	Utilities::GetLibraryVersion( &fc2Version );
@@ -85,6 +92,10 @@ CameraSet::CameraSet(){
 	setup();
 	release();
 	setup();
+}
+bool CameraSet::read(cv::Mat& frame, int index){
+	ErrorType error = getCapture(frame, index);
+	return (error == PGRERROR_OK);
 }
 ErrorType CameraSet::getCapture(Mat &getImage, int index){
 	Image rawImage;

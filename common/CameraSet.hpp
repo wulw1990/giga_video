@@ -2,35 +2,30 @@
 #define CameraSet_HPP_
 
 #include <FlyCapture2.h>
-#include <iostream>
-#include <sstream>
-#include <opencv2/opencv.hpp>
+#include "CameraBase.hpp"
 
-using namespace FlyCapture2;
-using namespace std;
-using namespace cv;
-
-class CameraSet
+class CameraSet: public CameraBase
 {
 	public:
 		CameraSet();
 		~CameraSet();
-		ErrorType getCapture(Mat & getImage, int index);
-		unsigned int getSerialNum(unsigned int index);
-		void PrintBuildInfo();
-		void PrintCameraInfo( CameraInfo* pCamInfo );
-		void PrintError(Error error);
-
+		bool read(cv::Mat& frame, int index);
 		int getNumCamera() {
 			return numCameras;
 		}
-
 	private:
 		unsigned int numCameras;
-		Camera** ppCameras;
+		FlyCapture2::Camera** ppCameras;
 
 		void setup();
 		void release();
+
+		unsigned int getSerialNum(unsigned int index);
+		void PrintBuildInfo();
+		void PrintCameraInfo( FlyCapture2::CameraInfo* pCamInfo );
+		void PrintError(FlyCapture2::Error error);
+
+		FlyCapture2::ErrorType getCapture(cv::Mat & getImage, int index);
 };
 
 #endif

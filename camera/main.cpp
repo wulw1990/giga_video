@@ -3,10 +3,14 @@
 #include <iostream>
 #include <cassert>
 #include <algorithm>
+#include <opencv2/opencv.hpp>
+#include <memory>
 using namespace std;
+using namespace cv;
 
 //#include "SocketServer.hpp"
 #include "CameraSet.hpp"
+#include "CameraVirtual.hpp"
 
 int demo(int argc, char** argv);
 
@@ -32,9 +36,22 @@ int main(int argc, char **argv) {
 // 	return frame[0];
 // }
 int demo(int argc, char** argv) {
-	CameraSet camera_set;
+	// CameraSet camera_set;
 
-	int n_cameras = camera_set.getNumCamera();
+	shared_ptr<CameraBase> camera_set;
+	if (0) {
+		camera_set = make_shared<CameraSet>();
+	} else {
+		string path = "/home/bbnc/data/zijing16/video/";
+		vector<string> name;
+		name.push_back(path + "MVI_6878/video.avi");
+		name.push_back(path + "MVI_6880/video.avi");
+		name.push_back(path + "MVI_6881/video.avi");
+		name.push_back(path + "MVI_6883/video.avi");
+		camera_set = make_shared<CameraVirtual>(name);
+	}
+
+	int n_cameras = camera_set->getNumCamera();
 	cout << "cameras: " << n_cameras << endl;
 
 #if 1
@@ -42,7 +59,7 @@ int demo(int argc, char** argv) {
 	while (1) {
 		// vector<Mat> frame(n_cameras);
 		// for(int i=0; i<n_cameras; ++i){
-		//           			camera_set.getCapture(frame[i], i);
+		//           			camera_set->read(frame[i], i);
 		// }
 		// Mat merged_frame = mergeFrame(frame);
 		//           		imshow("frame", merged_frame);
@@ -50,19 +67,19 @@ int demo(int argc, char** argv) {
 
 		int scale = 4;
 
-		camera_set.getCapture(frame, 0);
+		camera_set->read(frame, 0);
 		resize(frame, frame, Size(frame.cols / scale, frame.rows / scale));
 		imshow("frame0", frame);
 
-		camera_set.getCapture(frame, 1);
+		camera_set->read(frame, 1);
 		resize(frame, frame, Size(frame.cols / scale, frame.rows / scale));
 		imshow("frame1", frame);
 
-		camera_set.getCapture(frame, 2);
+		camera_set->read(frame, 2);
 		resize(frame, frame, Size(frame.cols / scale, frame.rows / scale));
 		imshow("frame2", frame);
 
-		camera_set.getCapture(frame, 3);
+		camera_set->read(frame, 3);
 		resize(frame, frame, Size(frame.cols / scale, frame.rows / scale));
 		imshow("frame3", frame);
 
