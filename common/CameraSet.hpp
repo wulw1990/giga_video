@@ -1,5 +1,5 @@
-#ifndef CameraSet_HPP
-#define CameraSet_HPP
+#ifndef CameraSet_HPP_
+#define CameraSet_HPP_
 
 #include <FlyCapture2.h>
 #include <iostream>
@@ -12,17 +12,25 @@ using namespace cv;
 
 class CameraSet
 {
-public:
-	 CameraSet();
-	~CameraSet();
-	ErrorType getCapture(Mat & getImage, int index);
-	unsigned int getSerialNum(unsigned int index);
-	void PrintBuildInfo();
-	void PrintCameraInfo( CameraInfo* pCamInfo );
-	void PrintError(Error error);
+	public:
+		CameraSet();
+		~CameraSet();
+		ErrorType getCapture(Mat & getImage, int index);
+		unsigned int getSerialNum(unsigned int index);
+		void PrintBuildInfo();
+		void PrintCameraInfo( CameraInfo* pCamInfo );
+		void PrintError(Error error);
 
-	unsigned int numCameras;
-	Camera** ppCameras;
+		int getNumCamera() {
+			return numCameras;
+		}
+
+	private:
+		unsigned int numCameras;
+		Camera** ppCameras;
+
+		void setup();
+		void release();
 };
 
 #endif
