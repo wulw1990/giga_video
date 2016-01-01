@@ -1,10 +1,12 @@
 #include "DataProvide.hpp"
-#include "Data.hpp"
 
 #include <sys/time.h>
 #include <cstdlib>
 using namespace std;
 using namespace cv;
+
+#include "Data.hpp"
+
 
 const Scalar default_color(127, 127, 127);
 
@@ -56,10 +58,10 @@ cv::Mat TileProvider::getTile(int x, int y, int z, int* is_cache) {
 	// cout << "name: " << name << endl;
 	if (m_cache.find(name) == m_cache.end()) {
 		m_cache[name] = make_pair(imread(path + name), getCurrentTimeFromStart());
-		if(is_cache){ *is_cache = 0; }
-	}else{
+		if (is_cache) { *is_cache = 0; }
+	} else {
 		// cout << "cached" << endl;
-		if(is_cache){ *is_cache = 1; }
+		if (is_cache) { *is_cache = 1; }
 	}
 	cv::Mat tile = m_cache[name].first;
 	m_cache[name].second = getCurrentTimeFromStart();
@@ -103,7 +105,7 @@ void TileProvider::resizeCache() {
 		sort(time_vec.begin(), time_vec.end());
 		// cout << time_vec.size() << endl;
 
-		long long thresh = time_vec[time_vec.size() - MAX_SIZE/2];
+		long long thresh = time_vec[time_vec.size() - MAX_SIZE / 2];
 		// cout << "thresh: " << thresh << endl;
 
 		// cout << m_cache.size() << endl;
@@ -122,38 +124,43 @@ void TileProvider::resizeCache() {
 		// cout << endl;
 	}
 }
-SceneFrameProvider::SceneFrameProvider(std::string path, std::string info_file) {
-	m_tile_provider = make_shared<TileProvider>(path, info_file);
+
+
+
+
+FrameProvider::FrameProvider(std::string path, bool enable_video) {
+	m_tile_provider = make_shared<TileProvider>(path, path + "info_scene.txt");
+
+	m_enable_video = enable_video;
+	if (m_enable_video) {
+		m_multi_video_data = make_shared<MultiVideoData>(path + "video/");
+	}
 }
-cv::Mat SceneFrameProvider::getFrame(int w, int h, double x, double y, double z) {
+cv::Mat FrameProvider::getFrame(int w, int h, double x, double y, double z) {
 	int layer_id = static_cast<int>(z + 1);
 	layer_id = max(layer_id, 0);
 	layer_id = min(layer_id, m_tile_provider->getNumLayers() - 1);
 
 	int pixel_x = static_cast<int>(x * m_tile_provider->getPixelColsOfLayer(layer_id));
 	int pixel_y = static_cast<int>(y * m_tile_provider->getPixelRowsOfLayer(layer_id));
-	pixel_x = max(pixel_x, 0);
-	pixel_x = min(pixel_x, m_tile_provider->getPixelColsOfLayer(layer_id));
-	pixel_y = max(pixel_y, 0);
-	pixel_y = min(pixel_y, m_tile_provider->getPixelRowsOfLayer(layer_id));
 
-
-	double zoom = pow(2.0, z - layer_id);
-	int sw = 1.0 / zoom * w;
-	int sh = 1.0 / zoom * h;
-
-	// pixel_x = 8896;
-	// pixel_y = 960;
-	// layer_id = 5;
+	double zoom = pow(2.0, (double)layer_id - z);
+	int sw = zoom * w;
+	int sh = zoom * h;
 
 	pixel_x -= sw / 2;
 	pixel_y -= sh / 2;
 
-	Mat result = getFrame(w, h, pixel_x, pixel_y, layer_id);
+	// cout << pixel_x << "\t" << pixel_y << endl;
+
+	Mat result = getFrame(sw, sh, pixel_x, pixel_y, layer_id);
+	// cout << zoom << endl;
+	// cout << sw << "\t" << sh << endl;
+	// cout << result.size() << endl;
 	resize(result, result, Size(w, h));
 	return result;
 }
-cv::Mat SceneFrameProvider::getFrame(int w, int h, int x, int y, int z) {
+cv::Mat FrameProvider::getFrame(int w, int h, int x, int y, int z) {
 	const int LEN = m_tile_provider->getTileLen();
 
 	Rect rect(x, y, w, h);
@@ -190,9 +197,58 @@ cv::Mat SceneFrameProvider::getFrame(int w, int h, int x, int y, int z) {
 	// cout << "cache_count: " << cache_count << endl;
 	// cout << "not_cache_count: " << not_cache_count << endl;
 
+
+
+	if (m_enable_video && z == m_tile_provider->getNumLayers() - 1) {
+		// cout << "hh " << endl;
+		int n_videos = m_multi_video_data->getNumVideos();
+		for (int i = 0; i < n_videos; ++i) {
+			Rect rect_video_on_scene = m_multi_video_data->getRectOnScene(i);
+			Rect rect_overlap = rect_video_on_scene & Rect(x, y, w, h);
+			if (rect_overlap.width > 0 && rect_overlap.height > 0) {
+				// cout << "dd " << endl;
+				Mat video_frame = m_multi_video_data->getFrame(i);
+				Rect rect_on_video = rect_overlap;
+				rect_on_video.x -= rect_video_on_scene.x;
+				rect_on_video.y -= rect_video_on_scene.y;
+
+				Rect rect_on_win = rect_overlap;
+				rect_on_win.x -= x;
+				rect_on_win.y -= y;
+
+				//TODO: Optic Aligner
+				Mat src = video_frame(rect_on_video);
+				Mat dst = result(rect_on_win);
+				for (int r = 0; r < src.rows; ++r) {
+					for (int c = 0; c < src.cols; ++c) {
+						if (src.at<Vec3b>(r, c) != Vec3b(0, 0, 0)) {
+							dst.at<Vec3b>(r, c) = src.at<Vec3b>(r, c);
+						}
+					}
+				}
+			}
+		}
+	} else if (m_enable_video) {
+		int n_videos = m_multi_video_data->getNumVideos();
+		for (int i = 0; i < n_videos; ++i) {
+			Rect rect_video_on_scene = m_multi_video_data->getRectOnScene(i);
+			double scale = pow(2, m_tile_provider->getNumLayers() - 1 - z);
+			rect_video_on_scene.x /= scale;
+			rect_video_on_scene.y /= scale;
+			rect_video_on_scene.width /= scale;
+			rect_video_on_scene.height /= scale;
+			Rect rect_overlap = rect_video_on_scene & Rect(x, y, w, h);
+			if (rect_overlap.width > 0 && rect_overlap.height > 0) {
+				rect_overlap.x -= x;
+				rect_overlap.y -= y;
+				rectangle( result, rect_overlap, Scalar(255, 0, 0), 2);
+			}
+		}
+	}
+
 	return result;
 }
-void SceneFrameProvider::copyMatToMat(Mat& src_mat, Rect& src_rect, Mat& dst_mat, Rect& dst_rect)
+void FrameProvider::copyMatToMat(Mat & src_mat, Rect & src_rect, Mat & dst_mat, Rect & dst_rect)
 {
 	Rect src(0, 0, src_mat.cols, src_mat.rows);
 	Rect dst(src_rect.x - dst_rect.x, src_rect.y - dst_rect.y, src_mat.cols, src_mat.rows);
@@ -226,27 +282,12 @@ void SceneFrameProvider::copyMatToMat(Mat& src_mat, Rect& src_rect, Mat& dst_mat
 	}
 	src_mat(src).copyTo(dst_mat(dst));
 }
-void SceneFrameProvider::incXY(double z, int dx, int dy, double& x, double& y) {
-	int layer_id = static_cast<int>(z);
-	int layer_num = m_tile_provider->getNumLayers();
-	layer_id = max(layer_id, 0);
-	layer_id = min(layer_id, layer_num - 1);
-
-	double zoom = pow(2.0, z - layer_id);
-	// cout << "zoom: " << zoom << endl;
-
-	x += 1.0 / zoom * static_cast<double>(dx) / m_tile_provider->getPixelColsOfLayer(layer_id);
-	y += 1.0 / zoom * static_cast<double>(dy) / m_tile_provider->getPixelRowsOfLayer(layer_id);
-
-	x = max(x, 0.0);
-	x = min(x, 1.0);
-
-	y = max(y, 0.0);
-	y = min(y, 1.0);
+int FrameProvider::getNumLayers() {
+	return m_tile_provider->getNumLayers();
 }
-int SceneFrameProvider::getLayerWidth(int layer_id) {
+int FrameProvider::getLayerWidth(int layer_id) {
 	return m_tile_provider->getPixelColsOfLayer(layer_id);
 }
-int SceneFrameProvider::getLayerHeight(int layer_id) {
+int FrameProvider::getLayerHeight(int layer_id) {
 	return m_tile_provider->getPixelRowsOfLayer(layer_id);
 }

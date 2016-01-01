@@ -5,7 +5,7 @@
 #include <algorithm>
 using namespace std;
 
-#include "SocketServer.hpp"
+#include "Server.hpp"
 
 int demo(int argc, char** argv);
 
@@ -25,8 +25,8 @@ int main(int argc, char **argv){
 	return 0;
 }
 int demo(int argc, char** argv){
-	cout << "server demo" << endl;
-	SocketServer server(6005);
+	assert(argc>=3);
+	Server server(argv[1], atoi(argv[2]));
 	server.work();
 	return 0;
 }

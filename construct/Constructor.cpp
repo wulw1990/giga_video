@@ -104,10 +104,10 @@ void Constructor::cutVideo(std::string name_src, std::string name_dst){
 	cout << "saving..." << endl;
 	capture.open(name_src);
 	assert(capture.isOpened());
-	VideoWriter writer(name_dst, CV_FOURCC('M', 'J', 'P', 'G'), 30, output_size);
+	VideoWriter writer(name_dst, CV_FOURCC('M', 'J', 'P', 'G'), 15, output_size);
 	assert(writer.isOpened());
 
-	for(int i=0; capture.read(frame); ++i){
+	for(int i=0; capture.read(frame), capture.read(frame); i+=2){
 		if(i>=index_head && i<=index_back){
 			writer << frame;
 		}

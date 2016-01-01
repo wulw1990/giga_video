@@ -10,7 +10,8 @@ if [ $# -eq 0 ]; then
 else
 	if [ $# -eq 1 -a "$1"=="clean" ]; then
 		# echo $1
-		rm -rf ../build
+		cd ..
+		rm -rf build
 		# make clean
 		echo "make clean end"
 	fi

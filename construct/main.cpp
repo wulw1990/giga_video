@@ -14,6 +14,7 @@ int construct_from_autopan(int argc, char** argv);
 int construct_video(int argc, char** argv);
 int cut_video(int argc, char** argv);
 int test_geo_align(int argc, char** argv);
+// int test_giga_align(int argc, char** argv);
 
 int main(int argc, char **argv) {
 	assert(argc >= 2);
@@ -27,6 +28,7 @@ int main(int argc, char **argv) {
 	else if (mode == "construct_video") construct_video(argc, argv);
 	else if (mode == "cut_video") cut_video(argc, argv);
 	else if (mode == "test_geo_align") test_geo_align(argc, argv);
+	// else if (mode == "test_giga_align") test_giga_align(argc, argv);
 	else {
 		cerr << "main mode error : " << mode << endl;
 		return -1;
@@ -65,20 +67,25 @@ int test_geo_align(int argc, char** argv) {
 	Mat scene = imread(argv[1]);
 	Mat frame = imread(argv[2]);
 	cv::Mat H;
-	cv::Size size;
-	cv::Point offset;
+	cv::Rect rect_on_scene;
 
 	GeometryAligner aligner;
-	bool is_matched = aligner.align(frame, scene, H, size, offset);
+	bool is_matched = aligner.align(frame, scene, H, rect_on_scene);
 	cout << "is_matched: " << is_matched << endl;
 
+
+	// Mat scene1(rect_on_scene.height, rect_on_scene.width, CV_8UC3);
+	// warpPerspective(frame, scene1, H, scene1.size());
+	// imwrite("../new_scene.jpg", scene1);
+
+
 	if (is_matched) {
-		Mat scene1 = scene.clone();
+		Mat scene1(rect_on_scene.height, rect_on_scene.width, CV_8UC3);
 		warpPerspective(frame, scene1, H, scene1.size());
-		for (int r = 0; r < scene.rows; ++r) {
-			for (int c = 0; c < scene.cols; ++c) {
+		for (int r = 0; r < scene1.rows; ++r) {
+			for (int c = 0; c < scene1.cols; ++c) {
 				if (scene1.at<Vec3b>(r, c) != Vec3b(0, 0, 0)) {
-					scene.at<Vec3b>(r, c) = scene1.at<Vec3b>(r, c);
+					scene.at<Vec3b>(r+rect_on_scene.y, c+rect_on_scene.x) = scene1.at<Vec3b>(r, c);
 				}
 			}
 		}

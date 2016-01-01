@@ -7,7 +7,7 @@
 using namespace std;
 using namespace cv;
 
-#include "SocketClient.hpp"
+#include "Client.hpp"
 
 int demo(int argc, char** argv);
 
@@ -27,9 +27,8 @@ int main(int argc, char **argv){
 	return 0;
 }
 int demo(int argc, char** argv){
-	cout << "client demo" << endl;
-	SocketClient client("166.111.74.31", 6005);
+	assert(argc>=3);
+	Client client(argv[1], atoi(argv[2]));
 	client.work();
-	// readImage("/home/wuliwei/Pictures/type.jpg");
 	return 0;
 }

@@ -8,9 +8,10 @@ using namespace cv;
 class GeometryAligner
 {
 public:
-	bool align(cv::Mat frame, cv::Mat scene, cv::Mat& H, cv::Size& size, cv::Point& offset);
-	bool align(Mat frame, Mat scene, Mat& dst_frame, Rect& dst_rect, Mat& T);
+	bool align(cv::Mat frame, cv::Mat scene, cv::Mat& H, cv::Rect& rect_on_scene);
 private:
+	bool align(Mat frame, Mat scene, Mat& dst_frame, Rect& dst_rect, Mat& T);
+	
 	void writeMatchResult(
 		Mat frame, Mat scene,
 		vector<KeyPoint>& keypoints_frame,
@@ -31,6 +32,10 @@ private:
 	bool isRectangle(std::vector<cv::Point2f>& corner);
 	bool isRightTriAngle(std::vector<cv::Point2f>& corner);
 	float getDistance(cv::Point2f p1, cv::Point2f& p2);
+	cv::Rect getRectFromCorner(std::vector<cv::Point2f>& corner);
+
+	bool cornerInScene(std::vector<cv::Point2f>& corner, cv::Size size);
+	bool cornerInScene(cv::Point2f& corner, cv::Size size);
 
 	//TODO
 	// bool validCorner(std::vector<cv::Point2f>& corner, cv::Size size);

@@ -2,9 +2,9 @@
 #include <fstream>
 #include <time.h>
 
-static const int debug = 1;
+static const int debug = 0;
 
-bool GeometryAligner::align(cv::Mat frame_, cv::Mat scene_, cv::Mat& H, cv::Size& size, cv::Point& offset) {
+bool GeometryAligner::align(cv::Mat frame_, cv::Mat scene_, cv::Mat& H, cv::Rect& rect_on_scene) {
 	const int max_width = 500;
 
 	// -- down scale ---
@@ -21,14 +21,21 @@ bool GeometryAligner::align(cv::Mat frame_, cv::Mat scene_, cv::Mat& H, cv::Size
 		return false;
 	}
 
-	vector<Point2f> corner_frame = getCornerOnFrame(scene.size());
-	vector<Point2f> corner_scene = getCornerOnScene(scene.size(), H);
+	vector<Point2f> corner_frame = getCornerOnFrame(frame.size());
+	vector<Point2f> corner_scene = getCornerOnScene(frame.size(), H);
 
-	for(size_t i=0; i<corner_frame.size(); ++i){
+	for (size_t i = 0; i < corner_frame.size(); ++i) {
 		corner_frame[i].x *= scale;
 		corner_frame[i].y *= scale;
 		corner_scene[i].x *= scale;
 		corner_scene[i].y *= scale;
+	}
+
+	rect_on_scene = getRectFromCorner(corner_scene);
+	// cout << rect_on_scene << endl;
+	for (size_t i = 0; i < corner_scene.size(); ++i) {
+		corner_scene[i].x -= rect_on_scene.x;
+		corner_scene[i].y -= rect_on_scene.y;
 	}
 
 	H = findHomography(corner_frame, corner_scene);
@@ -183,6 +190,21 @@ std::vector<cv::Point2f> GeometryAligner::getCornerOnScene(cv::Size size, cv::Ma
 	perspectiveTransform(corner_frame, corner_on_scene, H);
 	return corner_on_scene;
 }
+cv::Rect GeometryAligner::getRectFromCorner(std::vector<cv::Point2f>& corner) {
+	assert(!corner.empty());
+	int x1 = corner[0].x;
+	int y1 = corner[0].y;
+	int x2 = corner[0].x;
+	int y2 = corner[0].y;
+	for (size_t i = 0; i < corner.size(); ++i) {
+		if (corner[i].x < x1) x1 = corner[i].x;
+		if (corner[i].x > x2) x2 = corner[i].x;
+		if (corner[i].y < y1) y1 = corner[i].y;
+		if (corner[i].y > y2) y2 = corner[i].y;
+		// cout << corner[i] << endl;
+	}
+	return Rect(x1, y1, x2 - x1 + 1, y2 - y1 + 1);
+}
 void GeometryAligner::selectGoodMatch(vector<DMatch>& match) {
 	double max_dist = match[0].distance;
 	double min_dist = match[0].distance;
@@ -243,6 +265,21 @@ bool GeometryAligner::isRectangle(std::vector<cv::Point2f>& corner) {
 
 	return true;
 }
+bool GeometryAligner::cornerInScene(cv::Point2f& corner, cv::Size size) {
+	const int PAD_W = size.width/5;
+	const int PAD_H = size.height/5;
+	if(corner.x < -PAD_W) return false;
+	if(corner.x >= size.width + PAD_W) return false;
+	if(corner.y < -PAD_H) return false;
+	if(corner.y >= size.height + PAD_H) return false;
+	return true;
+}
+bool GeometryAligner::cornerInScene(std::vector<cv::Point2f>& corner, cv::Size size) {
+	for(size_t i=0; i<corner.size(); ++i){
+		if(!cornerInScene(corner[i], size)) return false;
+	}
+	return true;
+}
 bool GeometryAligner::imageMatchSurf(Mat frame, Mat scene, Mat& H, int thresh)
 {
 	vector<KeyPoint> keypoint_frame, keypoint_scene;
@@ -275,7 +312,7 @@ bool GeometryAligner::imageMatchSurf(Mat frame, Mat scene, Mat& H, int thresh)
 	}
 
 	selectGoodMatch(match);
-	if(debug) cout << match.size() << endl;
+	if (debug) cout << match.size() << endl;
 
 	vector<Point2f> matchpoint_frame, matchpoint_scene;
 	for (size_t i = 0; i < match.size(); i++) {
@@ -309,5 +346,7 @@ bool GeometryAligner::imageMatchSurf(Mat frame, Mat scene, Mat& H, int thresh)
 	if (debug) writeMatchResult(frame, scene, keypoint_frame, keypoint_scene, match, H, "../match_result_1.jpg");
 
 	if (!isRectangle(corner)) return false;
+	if (!cornerInScene(corner, scene.size())) return false;
+
 	return true;;
 }

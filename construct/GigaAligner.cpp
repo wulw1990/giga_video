@@ -5,6 +5,7 @@
 #include <time.h>
 #include "GeometryAligner.h"
 #include "OpticAligner.h"
+#include "Data.hpp"
 #include "DataProvide.hpp"
 #include "Timer.hpp"
 
@@ -23,7 +24,7 @@ GigaAligner::~GigaAligner()
 	delete m_optic_aligner;
 	delete m_geometry_aligner;
 }
-bool GigaAligner::alignStaticVideo(string path_scene, string input_video, string output_prefix)
+bool GigaAligner::alignStaticVideo(string path_scene, string input_video, string path_out)
 {
 	//read first frame
 	Mat frame = readFirstFrame(input_video);
@@ -31,30 +32,52 @@ bool GigaAligner::alignStaticVideo(string path_scene, string input_video, string
 	cout << "Frame Size : " << frame.size() << endl;
 
 	//align first frame
-	Mat aligned_frame;
-	Rect aligned_rect;
-	Mat T;
-	Mat model_hist;
+	Mat H;
+	Rect rect_on_scene;
 
-	if (!alignFrameToScene(path_scene, frame, aligned_frame, aligned_rect, T, model_hist))
+	if (!alignFrameToScene(path_scene, frame, H, rect_on_scene))
 		return false;
 
-	//save 
-	cout << "Saving..." << endl;
-	string output_video = output_prefix + ".avi";
-	string output_txt = output_prefix + ".txt";
+	cout << "align ok, saving..." << endl;
+	// cout << rect_on_scene << endl;
 
-	int len = writeStaticVideo(input_video, output_video, T, model_hist, aligned_frame.size());
-	cout << "n_frames saved: " << len << endl;;
-	writeStaticInfo(output_txt, len, aligned_rect);
+	VideoData video_data(path_out);
+	video_data.save(input_video, H, rect_on_scene);
+	// cout << H << endl;
+
+	//save
+	// cout << "Saving..." << endl;
+	// string output_video = output_prefix + ".avi";
+	// string output_txt = output_prefix + ".txt";
+
+	// int len = writeStaticVideo(input_video, output_video, T, model_hist, aligned_frame.size());
+	// cout << "n_frames saved: " << len << endl;;
+	// writeStaticInfo(output_txt, len, aligned_rect);
 	return true;
 }
-bool GigaAligner::alignFrameToScene(string path_scene, Mat frame, Mat& dst_frame, Rect& dst_rect, Mat& T, Mat& model_hist)
+static std::vector<cv::Point2f> getCornerOnFrame(cv::Size size) {
+	int rows = size.height;
+	int cols = size.width;
+	vector<Point2f> corner_frame(4);
+	corner_frame[0] = Point2f(0, 0);
+	corner_frame[1] = Point2f(cols, 0);
+	corner_frame[2] = Point2f(cols, rows);
+	corner_frame[3] = Point2f(0, rows);
+
+	return corner_frame;
+}
+static std::vector<cv::Point2f> getCornerOnScene(cv::Size size, cv::Mat H) {
+	vector<Point2f> corner_frame = getCornerOnFrame(size);
+
+	vector<Point2f> corner_on_scene;
+	perspectiveTransform(corner_frame, corner_on_scene, H);
+	return corner_on_scene;
+}
+bool GigaAligner::alignFrameToScene(string path_scene, Mat frame, Mat& H, Rect& rect_on_scene)
 {
-	SceneFrameProvider* rect_getter = new SceneFrameProvider(path_scene, path_scene + "info_scene.txt");
+	FrameProvider* rect_getter = new FrameProvider(path_scene, false);
 
 	int work_layer_id = 4;
-	int scale = 2;
 
 	// Size work_layer_size = rect_getter->getSceneLayerSizePixel(work_layer_id);
 	Size work_layer_size(rect_getter->getLayerWidth(work_layer_id), rect_getter->getLayerHeight(work_layer_id));
@@ -66,50 +89,56 @@ bool GigaAligner::alignFrameToScene(string path_scene, Mat frame, Mat& dst_frame
 	int step_row = frame.rows * 2;
 	int step_col = frame.cols * 2;
 
-	for (int r = 2; r*step_row < work_layer_size.height; ++r){
-		for (int c = 0; c*step_col < work_layer_size.width; ++c){
-			cout << r << "\t" << c << "\t" << "begin..." << endl;
 
-			Rect rect(c*step_col, r*step_row, win_cols, win_rows);
+	showImage("frame", frame);
+
+
+	for (int r = 2; r * step_row < work_layer_size.height; ++r) {
+		for (int c = 20; c * step_col < work_layer_size.width; ++c) {
+			cout << r << "\t" << c << "\t";
+			cout .flush();
+
+			Rect rect(c * step_col, r * step_row, win_cols, win_rows);
 			rect = rect & rect_max;
 
 			// Mat win = rect_getter->GetRectMat(rect, work_layer_id);
 			Timer timer;
 			timer.reset();
 			Mat win = rect_getter->getFrame(rect.width, rect.height, rect.x, rect.y, work_layer_id);
+			cout << "read ms : " << timer.getTimeUs() / 1000 << "\t";
+			cout.flush();
 			// cout << "time: " << timer.getTimeUs()/1000 << " ms" << endl;
 			// cout << rect.x << endl;
 			// cout << rect.width << endl;
 			// cout << rect.height << endl;
 
 
-			imwrite("../win.jpg", win);
-			imwrite("../frame.jpg", frame);
-
+			// imwrite("../win.jpg", win);
+			// imwrite("../frame.jpg", frame);
 
 			showImage("win", win);
-			char key = waitKey(0);
+			// char key = waitKey(1);
 			// if (key != 'y') continue;
 
+			// timer.reset();
 			timer.reset();
-			bool matched = m_geometry_aligner->align(frame, win, dst_frame, dst_rect, T);
-			cout << r << "\t" << c << "\t" << matched  << "\tms : " << timer.getTimeUs()/1000 << endl;
+			bool matched = m_geometry_aligner->align(frame, win, H, rect_on_scene);
+			cout << matched  << "\tmatch ms : " << timer.getTimeUs() / 1000 << endl;
 
-			if (matched){
-				model_hist = win(dst_rect).clone();
-				dst_rect.x += c * step_col;
-				dst_rect.y += r * step_row;
-				dst_rect.x *= scale;
-				dst_rect.y *= scale;
-				dst_rect.width *= scale;
-				dst_rect.height *= scale;
+			std::vector<cv::Point2f> corner_scene = getCornerOnScene(frame.size(), H);
+			line(win, corner_scene[0], corner_scene[1], Scalar(255, 0, 0), 3);
+			line(win, corner_scene[1], corner_scene[2], Scalar(255, 0, 0), 3);
+			line(win, corner_scene[2], corner_scene[3], Scalar(255, 0, 0), 3);
+			line(win, corner_scene[3], corner_scene[0], Scalar(255, 0, 0), 3);
+			showImage("win", win);
+			char key = waitKey(0);
+
+			if (matched) {
+				rect_on_scene.x += c * step_col;
+				rect_on_scene.y += r * step_row;
 				return true;
 			}
-
-
-
 			// goto END;
-
 		}
 	}
 	// END:
@@ -132,12 +161,12 @@ int GigaAligner::writeStaticVideo(string name_input, string name_output, Mat T, 
 	VideoWriter writer(name_output, CV_FOURCC('M', 'J', 'P', 'G'), OUTPUT_RATE, size);
 	assert(capture.isOpened());
 	assert(writer.isOpened());
-	
+
 	Mat frame;
 	Mat aligned_frame(size, CV_8UC3);
 	int input_frame_count = 0;
 	int output_frame_count = 0;
-	while (capture.read(frame) && !frame.empty()){
+	while (capture.read(frame) && !frame.empty()) {
 		if ((++input_frame_count) % DOWN_SAMPLE_RATE != 0) continue;
 
 		warpAffine(frame, aligned_frame, T, size);

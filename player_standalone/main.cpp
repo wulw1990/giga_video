@@ -5,7 +5,7 @@
 #include <algorithm>
 using namespace std;
 
-#include "ImagePlayer.hpp"
+#include "Player.hpp"
 
 int image(int argc, char** argv);
 int video(int argc, char** argv);
@@ -27,16 +27,14 @@ int main(int argc, char **argv){
 	return 0;
 }
 int image(int argc, char** argv){
-	cout << "image demo" << endl;
-	string window = "giga image player";
-	assert(argc>=3);
-
-	ImagePlayer player( argv[1], argv[2]);
+	assert(argc>=2);
+	Player player( argv[1], false);
 	player.play();
-
 	return 0;
 }
 int video(int argc, char** argv){
-	cout << "video demo" << endl;
+	assert(argc>=2);
+	Player player( argv[1], true);
+	player.play();
 	return 0;
 }
