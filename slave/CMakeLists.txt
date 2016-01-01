@@ -5,12 +5,13 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-result")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-variable")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unknown-pragmas")
+
 #set(FlyCapture_HEADERS "/usr/include/flycapture")
 #set(FlyCapture_LIBS "flycapture")
 
 LINK_DIRECTORIES( ${CMAKE_SOURCE_DIR}/../caffe/lib ${CMAKE_SOURCE_DIR}/SDK/lib )
 
-SET(NAME "camera")
+SET(NAME "slave")
 project({NAME})
 
 file( GLOB LIB_SOURCES *.cpp )
@@ -24,6 +25,3 @@ target_link_libraries( ${NAME} ${OpenCV_LIBS} ${FlyCapture_LIBS})
 
 include_directories(${CMAKE_SOURCE_DIR}/common)
 target_link_libraries( ${NAME} common )
-
-include_directories(${CMAKE_SOURCE_DIR}/player_src)
-target_link_libraries( ${NAME} player )

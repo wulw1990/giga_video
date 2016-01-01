@@ -6,4 +6,4 @@ port=5002
 echo "ip: " $server_ip
 echo "port: " $port
 
-./build/player_client/player_client $mode $server_ip $port
+./build/slave/slave $mode $server_ip $port

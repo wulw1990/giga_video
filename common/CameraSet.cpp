@@ -1,5 +1,7 @@
 #include "CameraSet.hpp"
 
+#ifdef FLY_CAPTRUE
+
 #include <iostream>
 #include <sstream>
 
@@ -128,3 +130,4 @@ void CameraSet::release() {
 CameraSet::~CameraSet(){
 	release();
 }
+#endif

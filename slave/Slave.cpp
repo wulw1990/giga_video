@@ -1,4 +1,4 @@
-#include "Client.hpp"
+#include "Slave.hpp"
 
 #include <vector>
 #include <opencv2/opencv.hpp>
@@ -7,7 +7,7 @@ using namespace cv;
 #include "Protocol.hpp"
 #include "Transmitter.hpp"
 
-Client::Client(std::string ip, int port ) {
+Slave::Slave(std::string ip, int port ) {
 	m_protocol = make_shared<Protocol>();
 	m_transmitter = make_shared<Transmitter>();
 
@@ -22,7 +22,7 @@ Client::Client(std::string ip, int port ) {
 	m_info.update = false;
 
 }
-void Client::work() {
+void Slave::work() {
 	int dx = 0;
 	int dy = 0;
 	int dz = 0;
@@ -84,7 +84,7 @@ CONNECT_END:
 	cout << "connect end" << endl;
 	m_transmitter->closeSocket(m_socket_id);
 }
-void Client::onMouse(int event, int x, int y, int, void* data)
+void Slave::onMouse(int event, int x, int y, int, void* data)
 {
 	if (event != EVENT_LBUTTONDOWN
 	        && event != EVENT_LBUTTONUP

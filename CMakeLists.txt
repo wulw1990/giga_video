@@ -20,4 +20,8 @@ ADD_SUBDIRECTORY(player_standalone)
 ADD_SUBDIRECTORY(player_server)
 ADD_SUBDIRECTORY(player_client)
 
+ADD_SUBDIRECTORY(master)
+ADD_SUBDIRECTORY(slave)
+
+
 ADD_SUBDIRECTORY(rtp)

@@ -1,8 +1,10 @@
 #ifndef CameraSet_HPP_
 #define CameraSet_HPP_
 
-#include <FlyCapture2.h>
 #include "CameraBase.hpp"
+
+#ifdef FLY_CAPTRUE
+#include <FlyCapture2.h>
 
 class CameraSet: public CameraBase
 {
@@ -27,5 +29,14 @@ class CameraSet: public CameraBase
 
 		FlyCapture2::ErrorType getCapture(cv::Mat & getImage, int index);
 };
+#else
+class CameraSet: public CameraBase
+{
+public:
+	bool read(cv::Mat& frame, int index){return false;}
+	int getNumCamera() {return 0;}
+};
+#endif
+
 
 #endif

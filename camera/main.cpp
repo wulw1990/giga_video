@@ -42,7 +42,7 @@ int demo(int argc, char** argv) {
 	if (0) {
 		camera_set = make_shared<CameraSet>();
 	} else {
-		string path = "/home/bbnc/data/zijing16/video/";
+		string path = "/media/wuliwei/data/NB_BBNC/giga_video/zijing16/video/";
 		vector<string> name;
 		name.push_back(path + "MVI_6878/video.avi");
 		name.push_back(path + "MVI_6880/video.avi");
