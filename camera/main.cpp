@@ -3,11 +3,10 @@
 #include <iostream>
 #include <cassert>
 #include <algorithm>
-#include <opencv2/opencv.hpp>
 using namespace std;
-using namespace cv;
 
-#include "SocketClient.hpp"
+//#include "SocketServer.hpp"
+#include "CameraSet.hpp"
 
 int demo(int argc, char** argv);
 
@@ -27,9 +26,13 @@ int main(int argc, char **argv){
 	return 0;
 }
 int demo(int argc, char** argv){
-	cout << "client demo" << endl;
-	SocketClient client("166.111.74.31", 6005);
-	client.work();
-	// readImage("/home/wuliwei/Pictures/type.jpg");
+	CameraSet camera_set;
+
+	while(1){
+		Mat frame;
+            		camera_set.getCapture(frame, 0);
+            		imshow("frame", frame);
+            		waitKey(33);
+	}
 	return 0;
 }

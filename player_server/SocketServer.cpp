@@ -7,6 +7,7 @@ using namespace std;
 using namespace cv;
 #include "Protocol.hpp"
 #include "Transmitter.hpp"
+#include "CameraSet.hpp"
 
 SocketServer::SocketServer(int port) {
     m_protocol = make_shared<Protocol>();
@@ -15,6 +16,8 @@ SocketServer::SocketServer(int port) {
 }
 void SocketServer::work()
 {
+    CameraSet myCamera;
+
     while (1) {
         //get a client
         cout << "waiting for a client" << endl;
@@ -24,18 +27,30 @@ void SocketServer::work()
         }
         //serve it
         // VideoCapture capture("/home/wuliwei/Videos/86-1.avi");
-        VideoCapture capture("/home/wlw/Videos/video.mp4");
+        /*
+        VideoCapture capture("/home/bbnc/test/test.MOV");
         assert(capture.isOpened());
+        */
         Mat frame;
         // while(capture.read(frame)){
         //     imshow("frame", frame);
         //     waitKey(33);
         // }
-
-
-        while (capture.read(frame)) {
+        Vector<Mat> imgs(10);  
+        for (int i = 0; i < 10; i++)
+        {
+            stringstream ss;
+            ss <<"/home/bbnc/picture/"<< i + 1 << ".png";
+            imgs[i] = imread(ss.str());
+        }
+        unsigned int index = 0;
+	unsigned int key = 0;
+        while (key ++ < 1000) {
+            //myCamera.getCapture(frame, index);
+            index = (index + 1) % 10;
+            
             vector<unsigned char> jpg;
-            imencode(".jpg", frame, jpg);
+            imencode(".jpg", imgs[index], jpg);
             cout << jpg.size() << endl;
 
             vector<unsigned char> send_buf;

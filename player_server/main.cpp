@@ -26,7 +26,7 @@ int main(int argc, char **argv){
 }
 int demo(int argc, char** argv){
 	cout << "server demo" << endl;
-	SocketServer server(5004);
+	SocketServer server(6005);
 	server.work();
 	return 0;
 }

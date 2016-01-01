@@ -3,6 +3,9 @@
 
 #include <string>
 #include <memory>
+#include <vector>
+#include <opencv2/opencv.hpp>
+using namespace cv;
 class Protocol;
 class Transmitter;
 
@@ -12,6 +15,7 @@ public:
 	SocketClient(std::string ip, int port);
 	~SocketClient(){}
 	void work();
+	void MultiImage_OneWin(const std::string& MultiShow_WinName, const vector<Mat>& SrcImg_V, CvSize SubPlot, CvSize ImgMax_Size = cvSize(400, 280));
 
 private:
 	std::shared_ptr<Protocol> m_protocol;
