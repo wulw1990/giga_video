@@ -9,12 +9,17 @@ using namespace std;
 #include "Constructor.hpp"
 #include "GeometryAligner.h"
 #include "DirDealer.h"
+#include "CameraVirtual.hpp"
+#include "GigaAligner.h"
+#include "IO.hpp"
 
 int construct_from_autopan(int argc, char** argv);
 int construct_video(int argc, char** argv);
 int cut_video(int argc, char** argv);
 int test_geo_align(int argc, char** argv);
 // int test_giga_align(int argc, char** argv);
+
+int construct_camera_set(int argc, char** argv);
 
 int main(int argc, char **argv) {
 	assert(argc >= 2);
@@ -28,6 +33,7 @@ int main(int argc, char **argv) {
 	else if (mode == "construct_video") construct_video(argc, argv);
 	else if (mode == "cut_video") cut_video(argc, argv);
 	else if (mode == "test_geo_align") test_geo_align(argc, argv);
+	else if (mode == "construct_camera_set") construct_camera_set(argc, argv);
 	// else if (mode == "test_giga_align") test_giga_align(argc, argv);
 	else {
 		cerr << "main mode error : " << mode << endl;
@@ -85,13 +91,45 @@ int test_geo_align(int argc, char** argv) {
 		for (int r = 0; r < scene1.rows; ++r) {
 			for (int c = 0; c < scene1.cols; ++c) {
 				if (scene1.at<Vec3b>(r, c) != Vec3b(0, 0, 0)) {
-					scene.at<Vec3b>(r+rect_on_scene.y, c+rect_on_scene.x) = scene1.at<Vec3b>(r, c);
+					scene.at<Vec3b>(r + rect_on_scene.y, c + rect_on_scene.x) = scene1.at<Vec3b>(r, c);
 				}
 			}
 		}
 		imwrite("../new_scene.jpg", scene);
 	}
 
+
+	return 0;
+}
+int construct_camera_set(int argc, char** argv) {
+	assert(argc >= 2);
+	string path(argv[1]);
+
+	vector<string> video_name;
+	video_name.push_back(path + "video/data/0.avi");
+	video_name.push_back(path + "video/data/1.avi");
+
+	CameraVirtual camera_set(video_name);
+
+	vector<Mat> frame(video_name.size());
+	for (size_t i = 0; i < video_name.size(); ++i) {
+		assert(camera_set.read(frame[i], i));
+		// imshow("frame", frame[i]);
+		// waitKey(0);
+	}
+
+	for (size_t i = 0; i < video_name.size(); ++i) {
+	// for (size_t i = 0; i < 1; ++i) {
+		Mat trans;
+		Rect rect;
+		GigaAligner aligner;
+		assert(aligner.alignFrameToScene(path, frame[i], trans, rect));
+
+		std::ofstream fout;
+		assert(IO::openOStream(fout, path + "video/" + to_string(i) + ".txt", "VideoData save"));
+		assert(IO::saveTransMat(fout, trans));
+		assert(IO::saveRect(fout, rect));
+	}
 
 	return 0;
 }

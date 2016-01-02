@@ -263,20 +263,41 @@ bool GeometryAligner::isRectangle(std::vector<cv::Point2f>& corner) {
 	tri.push_back(corner[0]);
 	if (!isRightTriAngle(tri)) return false;
 
+	tri.clear();
+	tri.push_back(corner[3]);
+	tri.push_back(corner[0]);
+	tri.push_back(corner[1]);
+	if (!isRightTriAngle(tri)) return false;
+
+	if (corner[1].y > corner[2].y) return false;
+
+	// cout << corner[0] << endl;
+	// cout << corner[1] << endl;
+	// cout << corner[2] << endl;
+	// cout << corner[3] << endl;
+
+	// Mat win(1000, 1000, CV_8UC3);
+	// line(win, corner[0], corner[1], Scalar(255, 0, 0), 3);
+	// line(win, corner[1], corner[2], Scalar(255, 0, 0), 3);
+	// line(win, corner[2], corner[3], Scalar(255, 0, 0), 3);
+	// line(win, corner[3], corner[0], Scalar(255, 0, 0), 3);
+	// showImage("win1", win);
+	// char key = waitKey(0);
+
 	return true;
 }
 bool GeometryAligner::cornerInScene(cv::Point2f& corner, cv::Size size) {
-	const int PAD_W = size.width/5;
-	const int PAD_H = size.height/5;
-	if(corner.x < -PAD_W) return false;
-	if(corner.x >= size.width + PAD_W) return false;
-	if(corner.y < -PAD_H) return false;
-	if(corner.y >= size.height + PAD_H) return false;
+	const int PAD_W = size.width / 5;
+	const int PAD_H = size.height / 5;
+	if (corner.x < -PAD_W) return false;
+	if (corner.x >= size.width + PAD_W) return false;
+	if (corner.y < -PAD_H) return false;
+	if (corner.y >= size.height + PAD_H) return false;
 	return true;
 }
 bool GeometryAligner::cornerInScene(std::vector<cv::Point2f>& corner, cv::Size size) {
-	for(size_t i=0; i<corner.size(); ++i){
-		if(!cornerInScene(corner[i], size)) return false;
+	for (size_t i = 0; i < corner.size(); ++i) {
+		if (!cornerInScene(corner[i], size)) return false;
 	}
 	return true;
 }
@@ -347,6 +368,9 @@ bool GeometryAligner::imageMatchSurf(Mat frame, Mat scene, Mat& H, int thresh)
 
 	if (!isRectangle(corner)) return false;
 	if (!cornerInScene(corner, scene.size())) return false;
+	if(getDistance(corner[0], corner[1])<frame.cols/10) return false;
+	// cout << getDistance(corner[0], corner[1]) << endl;
+	// cout << frame.cols / 10 << endl;
 
 	return true;;
 }

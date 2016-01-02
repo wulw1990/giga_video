@@ -94,8 +94,8 @@ bool GigaAligner::alignFrameToScene(string path_scene, Mat frame, Mat& H, Rect& 
 	showImage("frame", frame);
 
 
-	for (int r = 2; r * step_row < work_layer_size.height; ++r) {
-		for (int c = 20; c * step_col < work_layer_size.width; ++c) {
+	for (int r = 0; r * step_row < work_layer_size.height; ++r) {
+		for (int c = 0; c * step_col < work_layer_size.width; ++c) {
 			cout << r << "\t" << c << "\t";
 			cout .flush();
 
@@ -127,21 +127,28 @@ bool GigaAligner::alignFrameToScene(string path_scene, Mat frame, Mat& H, Rect& 
 			cout << matched  << "\tmatch ms : " << timer.getTimeUs() / 1000 << endl;
 
 			std::vector<cv::Point2f> corner_scene = getCornerOnScene(frame.size(), H);
+			for(size_t i=0; i<corner_scene.size(); ++i){
+				corner_scene[i].x += rect_on_scene.x;
+				corner_scene[i].y += rect_on_scene.y;
+			}
 			line(win, corner_scene[0], corner_scene[1], Scalar(255, 0, 0), 3);
 			line(win, corner_scene[1], corner_scene[2], Scalar(255, 0, 0), 3);
 			line(win, corner_scene[2], corner_scene[3], Scalar(255, 0, 0), 3);
 			line(win, corner_scene[3], corner_scene[0], Scalar(255, 0, 0), 3);
 			showImage("win", win);
-			char key = waitKey(0);
+			char key = waitKey(1);
 
 			if (matched) {
 				rect_on_scene.x += c * step_col;
 				rect_on_scene.y += r * step_row;
+				// waitKey(0);
 				return true;
 			}
 			// goto END;
 		}
 	}
+
+
 	// END:
 	return false;
 }

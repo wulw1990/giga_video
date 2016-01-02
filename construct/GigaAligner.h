@@ -15,6 +15,7 @@ public:
 	GigaAligner();
 	~GigaAligner();
 	bool alignStaticVideo(string path_scene, string input_video, string path_out);
+	bool alignFrameToScene(string path_scene, Mat frame, Mat& H, Rect& rect_on_scene);
 	//TODO
 	//void manualSelect(string path_scene, string input_video);
 
@@ -22,7 +23,6 @@ private:
 	OpticAligner* m_optic_aligner;
 	GeometryAligner* m_geometry_aligner;
 
-	bool alignFrameToScene(string path_scene, Mat frame, Mat& H, Rect& rect_on_scene);
 	Mat readFirstFrame(string name);
 
 	int writeStaticVideo(string name_input, string name_output, Mat T, Mat hist, Size size);

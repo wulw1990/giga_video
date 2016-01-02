@@ -24,8 +24,11 @@ void Player::play() {
 		double x, y, z;
 		m_info.m_window_controller->getXYZ(x, y, z);
 		// cout << x << "\t" << y << "\t" << z << endl;
-		m_info.frame = m_info.m_frame_provider->getFrame(m_info.w, m_info.h, x, y, z);
-		imshow(m_info.win_title, m_info.frame);
+		Mat frame, mask;
+		m_info.m_frame_provider->getFrameWithMask(frame, mask, m_info.w, m_info.h, x, y, z);
+		// m_info.frame = m_info.m_frame_provider->getFrame(m_info.w, m_info.h, x, y, z);
+		imshow(m_info.win_title, frame);
+		imshow(m_info.win_title + "mask", mask);
 		cv::setMouseCallback(m_info.win_title, onMouse, &m_info);
 
 		m_info.update = false;
