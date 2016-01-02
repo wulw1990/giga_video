@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 class Protocol;
 class Transmitter;
 class FrameProvider;
@@ -11,7 +12,7 @@ class WindowController;
 class Master
 {
 	public:
-		Master(std::string path, int port) ;
+		Master(std::string path, int port);
 		void work();
 
 	private:
@@ -24,6 +25,7 @@ class Master
 		std::shared_ptr<FrameProvider> m_frame_provider;
 		std::shared_ptr<WindowController> m_window_controller;
 
+		std::vector<int> m_slave_id;
 };
 void init_server();
 

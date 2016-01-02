@@ -39,7 +39,6 @@ int Transmitter::initSocketServer(int port) {
 		exit(0);
 	}
 
-	printf("======waiting for client's request======\n");
 	return listenfd;
 }
 int Transmitter::initSocketClient( std::string ip, int port ) {

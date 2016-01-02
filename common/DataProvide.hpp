@@ -51,6 +51,8 @@ class FrameProvider {
 		FrameProvider(std::string path, bool enable_video);
 		cv::Mat getFrame(int w, int h, double x, double y, double z);
 		cv::Mat getFrame(int w, int h, int x, int y, int z);
+		void getFrameWithMask(cv::Mat& frame, cv::Mat& mask, int w, int h, double x, double y, double z);
+		void getFrameWithMask(cv::Mat& frame, cv::Mat& mask, int w, int h, int x, int y, int z);
 		int getNumLayers();
 		int getLayerWidth(int layer_id);
 		int getLayerHeight(int layer_id);
