@@ -6,7 +6,7 @@ using namespace std;
 using namespace cv;
 #include "Protocol.hpp"
 #include "Transmitter.hpp"
-#include "DataProvide.hpp"
+#include "FrameProvider.hpp"
 
 Slave::Slave(std::string path, std::string ip, int port, std::string name ) {
 	m_protocol = make_shared<Protocol>();

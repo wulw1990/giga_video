@@ -1,18 +1,18 @@
-#ifndef CameraSet_HPP_
-#define CameraSet_HPP_
+#ifndef CameraSetFly2_HPP_
+#define CameraSetFly2_HPP_
 
-#include "CameraBase.hpp"
+#include "CameraSetBase.hpp"
 
-#define FLY_CAPTRUE 
+// #define FLY_CAPTRUE 
 
 #ifdef FLY_CAPTRUE
 #include <FlyCapture2.h>
 
-class CameraSet: public CameraBase
+class CameraSetFly2: public CameraSetBase
 {
 	public:
-		CameraSet();
-		~CameraSet();
+		CameraSetFly2();
+		~CameraSetFly2();
 		bool read(cv::Mat& frame, int index);
 		int getNumCamera() {
 			return numCameras;
@@ -32,11 +32,18 @@ class CameraSet: public CameraBase
 		FlyCapture2::ErrorType getCapture(cv::Mat & getImage, int index);
 };
 #else
-class CameraSet: public CameraBase
+#include <iostream>
+class CameraSetFly2: public CameraSetBase
 {
 public:
-	bool read(cv::Mat& frame, int index){return false;}
-	int getNumCamera() {return 0;}
+	bool read(cv::Mat& frame, int index){
+		std::cerr << "no fly capture" << std::endl;
+		return false;
+	}
+	int getNumCamera() {
+		std::cerr << "no fly capture" << std::endl;
+		return 0;
+	}
 };
 #endif
 

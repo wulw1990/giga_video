@@ -6,16 +6,15 @@
 
 using namespace std;
 
-#include "Constructor.hpp"
-#include "GeometryAligner.h"
+#include "GeometryAligner.hpp"
 #include "DirDealer.h"
-#include "CameraVirtual.hpp"
-#include "CameraSet.hpp"
-#include "GigaAligner.h"
+#include "CameraSetVirtual.hpp"
+#include "CameraSetFly2.hpp"
+#include "GigaAligner.hpp"
 #include "IO.hpp"
+#include "TileProvider.hpp"
 
 int construct_from_autopan(int argc, char** argv);
-int construct_video(int argc, char** argv);
 int cut_video(int argc, char** argv);
 int test_geo_align(int argc, char** argv);
 // int test_giga_align(int argc, char** argv);
@@ -31,7 +30,6 @@ int main(int argc, char **argv) {
 	transform(mode.begin(), mode.end(), mode.begin(), ::tolower);
 
 	if (mode == "construct_from_autopan") construct_from_autopan(argc, argv);
-	else if (mode == "construct_video") construct_video(argc, argv);
 	else if (mode == "cut_video") cut_video(argc, argv);
 	else if (mode == "test_geo_align") test_geo_align(argc, argv);
 	else if (mode == "construct_camera_set") construct_camera_set(argc, argv);
@@ -44,19 +42,21 @@ int main(int argc, char **argv) {
 }
 int construct_from_autopan(int argc, char** argv) {
 	cout << "construct_from_autopan demo" << endl;
-	assert(argc >= 2);
-	Constructor constructor;
-	constructor.writeInfoForAutopan(argv[1]);
-	return 0;
-}
-int construct_video(int argc, char** argv) {
-	cout << "construct_video demo" << endl;
-	assert(argc >= 4);
-	DirDealer dir_dealer;
-	dir_dealer.mkdir_p(argv[3]);
+	assert(argc >= 3);
 
-	Constructor constructor;
-	constructor.constructVideo(argv[1], argv[2], argv[3]);
+	string path = argv[1];
+	int n_layers = atoi(argv[2]);
+	string name = "info_scene.txt";
+
+	SceneData scene_data;
+	scene_data.loadFromDisk(path);
+	scene_data.save(path + name);
+
+	cout << "verify..." << endl;
+	SceneData scene_data_ver;
+	scene_data_ver.load(path + name);
+	scene_data_ver.save(path + name);
+
 	return 0;
 }
 int cut_video(int argc, char** argv) {
@@ -65,8 +65,77 @@ int cut_video(int argc, char** argv) {
 	string name_src(argv[1]);
 	string name_dst(argv[2]);
 
-	Constructor constructor;
-	constructor.cutVideo(name_src, name_dst);
+	cout << "cutVideo: " << endl;
+	cout << "name_src: " << name_src << endl;
+	cout << "name_dst: " << name_dst << endl;
+
+	assert(name_dst.substr(name_dst.length()-3, 3)=="avi");
+
+	Size output_size;
+
+	VideoCapture capture(name_src.c_str());
+	assert(capture.isOpened());
+	vector<Mat> frame_vec;
+	Mat frame;
+	const int MAX_FRAMES = 1000;
+	cout << "reading video" << endl;
+	for(int i=0; capture.read(frame) && i<MAX_FRAMES; ++i){
+		output_size = frame.size();
+		resize(frame, frame, Size(frame.cols/4, frame.rows/4));
+		frame_vec.push_back(frame);
+	}
+	capture.release();
+
+	cout << "cut video..." << endl;
+	int index_head = 0;
+	int index_back = 0;
+	cout << "index_head: " << index_head << " index_back: " << index_back << endl;
+	for(int i=0; i<(int)frame_vec.size(); ++i){
+		frame = frame_vec[i];
+		const int PAD = frame.rows / 10;
+		Mat show(frame.rows + PAD * 2, frame.cols, CV_8UC3, Scalar(255, 0, 0));
+		frame.copyTo(show(Rect(0, 0, frame.cols, frame.rows)));
+		rectangle(show, Rect(0, frame.rows, frame.cols*i/(int)frame_vec.size(), PAD), Scalar(0, 0, 255), -1);
+
+		if(index_back>index_head){
+			int x = frame.cols*index_head/(int)frame_vec.size();
+			int w = frame.cols*(index_back-index_head)/(int)frame_vec.size();
+			rectangle(show, Rect(x, frame.rows + PAD, w, PAD), Scalar(0, 255, 0), -1);
+		}else{
+			int x = frame.cols*index_head/(int)frame_vec.size();
+			rectangle(show, Rect(x, frame.rows + PAD, 2, PAD), Scalar(0, 255, 0), -1);
+		}
+		imshow("frame", show);
+		char key = waitKey(0);
+		if(key == 'b'){
+			index_head = i;
+			cout << "index_head: " << index_head << " index_back: " << index_back << endl;
+		}else if(key=='e'){
+			index_back = i;
+			cout << "index_head: " << index_head << " index_back: " << index_back << endl;
+		}else if(key=='p' && i>0){
+			i-=2;
+		}else if(key=='r'){
+			i = -1;
+		}else if(key=='q'){
+			break;
+		}
+	}
+	destroyAllWindows();
+
+	cout << "saving..." << endl;
+	capture.open(name_src);
+	assert(capture.isOpened());
+	VideoWriter writer(name_dst, CV_FOURCC('M', 'J', 'P', 'G'), 15, output_size);
+	assert(writer.isOpened());
+
+	for(int i=0; capture.read(frame), capture.read(frame); i+=2){
+		if(i>=index_head && i<=index_back){
+			writer << frame;
+		}
+	}
+	capture.release();
+	writer.release();
 	return 0;
 }
 int test_geo_align(int argc, char** argv) {
@@ -106,11 +175,11 @@ int construct_camera_set(int argc, char** argv) {
 	assert(argc >= 2);
 	string path(argv[1]);
 
-#if 0
+#if 1
 	vector<string> video_name;
 	video_name.push_back(path + "video/data/0.avi");
 	video_name.push_back(path + "video/data/1.avi");
-	CameraVirtual camera_set(video_name);
+	CameraSetVirtual camera_set(video_name);
 #else
 	CameraSet camera_set;
 #endif
@@ -127,8 +196,8 @@ int construct_camera_set(int argc, char** argv) {
 		// for (size_t i = 0; i < 1; ++i) {
 		Mat trans;
 		Rect rect;
-		GigaAligner aligner;
-		if (aligner.alignFrameToScene(path, frame[i], trans, rect)) {
+		GigaAligner aligner(path);
+		if (aligner.alignFrame(frame[i], trans, rect)) {
 			std::ofstream fout;
 			assert(IO::openOStream(fout, path + "video/" + to_string(i) + ".txt", "VideoData save"));
 			assert(IO::saveTransMat(fout, trans));

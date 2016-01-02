@@ -2,7 +2,7 @@
 using namespace std;
 using namespace cv;
 
-#include "DataProvide.hpp"
+#include "FrameProvider.hpp"
 #include "WindowController.hpp"
 
 const string win_title = "giga player";

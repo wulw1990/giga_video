@@ -1,60 +1,19 @@
-#include "GigaAligner.h"
+#include "GigaAligner.hpp"
 
 #include <iostream>
 #include <fstream>
 #include <time.h>
-#include "GeometryAligner.h"
-#include "OpticAligner.h"
-#include "Data.hpp"
-#include "VideoData.hpp"
-#include "DataProvide.hpp"
+using namespace std;
+using namespace cv;
+
+#include "GeometryAligner.hpp"
+#include "FrameProvider.hpp"
 #include "Timer.hpp"
 
-const int DOWN_SAMPLE_RATE = 2;
-const int MAX_OUTPUT_FRAME = 100;
-const double INPUT_RATE = 25;
-const double OUTPUT_RATE = INPUT_RATE / DOWN_SAMPLE_RATE;
-
-GigaAligner::GigaAligner()
+GigaAligner::GigaAligner(string path)
 {
-	m_optic_aligner = new OpticAligner;
-	m_geometry_aligner = new GeometryAligner;
-}
-GigaAligner::~GigaAligner()
-{
-	delete m_optic_aligner;
-	delete m_geometry_aligner;
-}
-bool GigaAligner::alignStaticVideo(string path_scene, string input_video, string path_out)
-{
-	//read first frame
-	Mat frame = readFirstFrame(input_video);
-	//showImage("first frame", frame);
-	cout << "Frame Size : " << frame.size() << endl;
-
-	//align first frame
-	Mat H;
-	Rect rect_on_scene;
-
-	if (!alignFrameToScene(path_scene, frame, H, rect_on_scene))
-		return false;
-
-	cout << "align ok, saving..." << endl;
-	// cout << rect_on_scene << endl;
-
-	VideoData video_data(path_out);
-	video_data.save(input_video, H, rect_on_scene);
-	// cout << H << endl;
-
-	//save
-	// cout << "Saving..." << endl;
-	// string output_video = output_prefix + ".avi";
-	// string output_txt = output_prefix + ".txt";
-
-	// int len = writeStaticVideo(input_video, output_video, T, model_hist, aligned_frame.size());
-	// cout << "n_frames saved: " << len << endl;;
-	// writeStaticInfo(output_txt, len, aligned_rect);
-	return true;
+	m_geometry_aligner = make_shared<GeometryAligner>();
+	m_frame_provider = make_shared<FrameProvider>(path, false);
 }
 static std::vector<cv::Point2f> getCornerOnFrame(cv::Size size) {
 	int rows = size.height;
@@ -74,14 +33,9 @@ static std::vector<cv::Point2f> getCornerOnScene(cv::Size size, cv::Mat H) {
 	perspectiveTransform(corner_frame, corner_on_scene, H);
 	return corner_on_scene;
 }
-bool GigaAligner::alignFrameToScene(string path_scene, Mat frame, Mat& H, Rect& rect_on_scene)
-{
-	FrameProvider* rect_getter = new FrameProvider(path_scene, false);
-
-	int work_layer_id = 4;
-
-	// Size work_layer_size = rect_getter->getSceneLayerSizePixel(work_layer_id);
-	Size work_layer_size(rect_getter->getLayerWidth(work_layer_id), rect_getter->getLayerHeight(work_layer_id));
+bool GigaAligner::alignFrame(Mat frame, Mat& H, Rect& rect_on_scene){
+	int work_layer_id = m_frame_provider->getNumLayers()-1;
+	Size work_layer_size(m_frame_provider->getLayerWidth(work_layer_id), m_frame_provider->getLayerHeight(work_layer_id));
 
 	Rect rect_max(0, 0, work_layer_size.width, work_layer_size.height);
 
@@ -90,9 +44,7 @@ bool GigaAligner::alignFrameToScene(string path_scene, Mat frame, Mat& H, Rect& 
 	int step_row = frame.rows * 2;
 	int step_col = frame.cols * 2;
 
-
 	showImage("frame", frame);
-
 
 	for (int r = 0; r * step_row < work_layer_size.height; ++r) {
 		for (int c = 0; c * step_col < work_layer_size.width; ++c) {
@@ -102,32 +54,20 @@ bool GigaAligner::alignFrameToScene(string path_scene, Mat frame, Mat& H, Rect& 
 			Rect rect(c * step_col, r * step_row, win_cols, win_rows);
 			rect = rect & rect_max;
 
-			// Mat win = rect_getter->GetRectMat(rect, work_layer_id);
 			Timer timer;
 			timer.reset();
-			Mat win = rect_getter->getFrame(rect.width, rect.height, rect.x, rect.y, work_layer_id);
+			Mat win = m_frame_provider->getFrame(rect.width, rect.height, rect.x, rect.y, work_layer_id);
 			cout << "read ms : " << timer.getTimeUs() / 1000 << "\t";
 			cout.flush();
-			// cout << "time: " << timer.getTimeUs()/1000 << " ms" << endl;
-			// cout << rect.x << endl;
-			// cout << rect.width << endl;
-			// cout << rect.height << endl;
-
-
-			// imwrite("../win.jpg", win);
-			// imwrite("../frame.jpg", frame);
 
 			showImage("win", win);
-			// char key = waitKey(1);
-			// if (key != 'y') continue;
 
-			// timer.reset();
 			timer.reset();
 			bool matched = m_geometry_aligner->align(frame, win, H, rect_on_scene);
 			cout << matched  << "\tmatch ms : " << timer.getTimeUs() / 1000 << endl;
 
 			std::vector<cv::Point2f> corner_scene = getCornerOnScene(frame.size(), H);
-			for(size_t i=0; i<corner_scene.size(); ++i){
+			for (size_t i = 0; i < corner_scene.size(); ++i) {
 				corner_scene[i].x += rect_on_scene.x;
 				corner_scene[i].y += rect_on_scene.y;
 			}
@@ -144,77 +84,11 @@ bool GigaAligner::alignFrameToScene(string path_scene, Mat frame, Mat& H, Rect& 
 				// waitKey(0);
 				return true;
 			}
-			// goto END;
 		}
 	}
-
-
-	// END:
 	return false;
 }
-Mat GigaAligner::readFirstFrame(string name)
-{
-	Mat frame;
-	VideoCapture capture(name);
-	assert(capture.isOpened());
-	capture >> frame;
-	capture.release();
-	assert(!frame.empty());
-	cout << "GigaAligner::readFirstFrame OK" << endl;
-	return frame;
-}
-int GigaAligner::writeStaticVideo(string name_input, string name_output, Mat T, Mat hist, Size size)
-{
-	VideoCapture capture(name_input);
-	VideoWriter writer(name_output, CV_FOURCC('M', 'J', 'P', 'G'), OUTPUT_RATE, size);
-	assert(capture.isOpened());
-	assert(writer.isOpened());
-
-	Mat frame;
-	Mat aligned_frame(size, CV_8UC3);
-	int input_frame_count = 0;
-	int output_frame_count = 0;
-	while (capture.read(frame) && !frame.empty()) {
-		if ((++input_frame_count) % DOWN_SAMPLE_RATE != 0) continue;
-
-		warpAffine(frame, aligned_frame, T, size);
-		aligned_frame = m_optic_aligner->getMatchRGBImg(aligned_frame, hist);
-		writer << aligned_frame;
-
-		//cout << "input_frame_count: " << input_frame_count << endl;
-		//imshow("frame", frame);
-		//waitKey(1);
-
-		if (++output_frame_count >= MAX_OUTPUT_FRAME) break;
-	}
-	writer.release();
-	capture.release();
-	return output_frame_count - 1;
-}
-bool GigaAligner::writeStaticInfo(string name, int n, Rect rect)
-{
-	ofstream ofs(name);
-	assert (ofs.is_open());
-	ofs << 0 << endl;//0--static
-	ofs << n << endl;
-	ofs << rect.x << "\t" << rect.y << "\t" << rect.width << "\t" << rect.height << endl;
-	ofs.close();
-	return true;
-}
-bool GigaAligner::writeDynamicInfo(string name, int n, vector<Rect> rect)
-{
-	ofstream ofs(name);
-	assert(ofs.is_open());
-	assert((int)rect.size() != 0);
-	ofs << 1 << endl;//1--dynamic
-	ofs << n << endl;
-	for (int i = 0; i < n;  ++i)
-		ofs << rect[i].x << "\t" << rect[i].y << "\t" << rect[i].width << "\t" << rect[i].height << endl;
-	ofs.close();
-	return true;
-}
-void GigaAligner::showImage(string win_name, Mat img)
-{
+void GigaAligner::showImage(string win_name, Mat img){
 	const int w_max = 1800;
 	const int h_max = 900;
 	Mat show = img.clone();

@@ -10,8 +10,8 @@ using namespace cv;
 #include <time.h>
 
 //#include "SocketServer.hpp"
-#include "CameraSet.hpp"
-#include "CameraVirtual.hpp"
+#include "CameraSetFly2.hpp"
+#include "CameraSetVirtual.hpp"
 
 int demo(int argc, char** argv);
 int record(int argc, char** argv);
@@ -43,9 +43,9 @@ int demo(int argc, char** argv) {
 	assert(argc>=2);
 	int scale = atoi(argv[1]);
 
-	shared_ptr<CameraBase> camera_set;
+	shared_ptr<CameraSetBase> camera_set;
 	if (1) {
-		camera_set = make_shared<CameraSet>();
+		camera_set = make_shared<CameraSetFly2>();
 	} else {
 		string path = "/media/wuliwei/data/NB_BBNC/giga_video/zijing16/video/";
 		vector<string> name;
@@ -53,7 +53,7 @@ int demo(int argc, char** argv) {
 		name.push_back(path + "MVI_6880/video.avi");
 		name.push_back(path + "MVI_6881/video.avi");
 		name.push_back(path + "MVI_6883/video.avi");
-		camera_set = make_shared<CameraVirtual>(name);
+		camera_set = make_shared<CameraSetVirtual>(name);
 	}
 
 	int n_cameras = camera_set->getNumCamera();
@@ -96,8 +96,8 @@ int record(int argc, char** argv) {
 	assert(argc >= 2);
 	string path(argv[1]);
 
-	shared_ptr<CameraBase> camera_set;
-	camera_set = make_shared<CameraSet>();
+	shared_ptr<CameraSetBase> camera_set;
+	camera_set = make_shared<CameraSetFly2>();
 
 	int n_cameras = camera_set->getNumCamera();
 	cout << "cameras: " << n_cameras << endl;

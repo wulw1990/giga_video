@@ -9,44 +9,9 @@
 
 class SceneData;
 class MultiVideoData;
-class CameraSetData;
+class VideoProvider;
+class TileProvider;
 
-class TileProvider {
-	public:
-		TileProvider(std::string path, std::string info_file);
-		int getTileLen();
-		int getNumLayers();
-		int getRowsOfLayer(int layer_id);
-		int getColsOfLayer(int layer_id);
-		int getPixelRowsOfLayer(int layer_id);
-		int getPixelColsOfLayer(int layer_id);
-
-		cv::Mat getTile(int x, int y, int z, int* is_cache = NULL); //cached
-
-	private:
-		std::string path;
-		std::shared_ptr<SceneData> m_scene_data;
-		std::vector<int> m_pixel_rows;
-		std::vector<int> m_pixel_cols;
-
-		// class Node
-		// {
-		// 	public:
-		// 		Node(cv::Mat data_) {
-		// 			data = data_.clone();
-		// 			updateTime();
-		// 		}
-		// 		void updateTime();
-		// 		float getTime() {return t;}
-		// 		cv::Mat getData() {return data;}
-		// 	private:
-		// 		cv::Mat data;
-		// 		float t;
-		// };
-		std::map<std::string, std::pair<cv::Mat, long long> > m_cache;
-		long long getCurrentTimeFromStart();
-		void resizeCache();
-};
 class FrameProvider {
 	public:
 		FrameProvider(std::string path, bool enable_video);
@@ -63,7 +28,7 @@ class FrameProvider {
 
 		bool m_enable_video;
 		// std::shared_ptr<MultiVideoData> m_multi_video_data;
-		std::shared_ptr<CameraSetData> m_video_data;
+		std::shared_ptr<VideoProvider> m_video_data;
 
 		int frame_width;
 		int frame_height;

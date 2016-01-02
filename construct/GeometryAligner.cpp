@@ -1,4 +1,4 @@
-#include "GeometryAligner.h"
+#include "GeometryAligner.hpp"
 #include <fstream>
 #include <time.h>
 

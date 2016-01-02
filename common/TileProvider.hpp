@@ -1,9 +1,10 @@
-#ifndef DATA_HPP_
-#define DATA_HPP_
+#ifndef TILE_PROVIDER_HPP_
+#define TILE_PROVIDER_HPP_
 
 #include <vector>
 #include <string>
 #include <fstream>
+#include <memory>
 #include <opencv2/opencv.hpp>
 
 class LayerData {
@@ -53,6 +54,43 @@ class SceneData
 	private:
 		std::vector<LayerData> layer;
 		int tile_len;
+};
+
+class TileProvider {
+	public:
+		TileProvider(std::string path, std::string info_file);
+		int getTileLen();
+		int getNumLayers();
+		int getRowsOfLayer(int layer_id);
+		int getColsOfLayer(int layer_id);
+		int getPixelRowsOfLayer(int layer_id);
+		int getPixelColsOfLayer(int layer_id);
+
+		cv::Mat getTile(int x, int y, int z, int* is_cache = NULL); //cached
+
+	private:
+		std::string path;
+		std::shared_ptr<SceneData> m_scene_data;
+		std::vector<int> m_pixel_rows;
+		std::vector<int> m_pixel_cols;
+
+		// class Node
+		// {
+		// 	public:
+		// 		Node(cv::Mat data_) {
+		// 			data = data_.clone();
+		// 			updateTime();
+		// 		}
+		// 		void updateTime();
+		// 		float getTime() {return t;}
+		// 		cv::Mat getData() {return data;}
+		// 	private:
+		// 		cv::Mat data;
+		// 		float t;
+		// };
+		std::map<std::string, std::pair<cv::Mat, long long> > m_cache;
+		long long getCurrentTimeFromStart();
+		void resizeCache();
 };
 
 

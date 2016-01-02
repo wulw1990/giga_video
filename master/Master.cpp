@@ -6,7 +6,7 @@ using namespace std;
 using namespace cv;
 #include "Protocol.hpp"
 #include "Transmitter.hpp"
-#include "DataProvide.hpp"
+#include "FrameProvider.hpp"
 #include "WindowController.hpp"
 
 const int SLAVE_NUM = 2;

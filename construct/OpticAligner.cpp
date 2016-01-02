@@ -1,4 +1,4 @@
-#include "OpticAligner.h"
+#include "OpticAligner.hpp"
 
 using namespace std;
 using namespace cv;
