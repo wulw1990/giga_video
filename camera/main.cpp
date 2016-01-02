@@ -7,12 +7,14 @@
 #include <memory>
 using namespace std;
 using namespace cv;
+#include <time.h>
 
 //#include "SocketServer.hpp"
 #include "CameraSet.hpp"
 #include "CameraVirtual.hpp"
 
 int demo(int argc, char** argv);
+int record(int argc, char** argv);
 
 int main(int argc, char **argv) {
 	assert(argc >= 2);
@@ -23,6 +25,7 @@ int main(int argc, char **argv) {
 	transform(mode.begin(), mode.end(), mode.begin(), ::tolower);
 
 	if (mode == "demo") demo(argc, argv);
+	else if (mode == "record") record(argc, argv);
 	else {
 		cerr << "main mode error : " << mode << endl;
 		return -1;
@@ -86,5 +89,56 @@ int demo(int argc, char** argv) {
 		waitKey(33);
 	}
 #endif
+	return 0;
+}
+int record(int argc, char** argv) {
+	assert(argc >= 2);
+	string path(argv[1]);
+
+	shared_ptr<CameraBase> camera_set;
+	camera_set = make_shared<CameraSet>();
+
+	int n_cameras = camera_set->getNumCamera();
+	cout << "cameras: " << n_cameras << endl;
+	if (n_cameras < 1) {
+		cerr << "no camera!" << endl;
+		return -1;
+	}
+
+	Mat frame;
+	assert(camera_set->read(frame, 0));
+	Size size = frame.size();
+
+	vector<VideoWriter> writer(n_cameras);
+
+
+
+	for (int i = 0; i < n_cameras; ++i) {
+		writer[i].open( path + to_string(i) + ".avi", CV_FOURCC('M', 'J', 'P', 'G'), 15,  size);
+		assert(writer[i].isOpened());
+	}
+
+	const int scale = 8;
+
+	for (int t = 0; t < 100; ++t) {
+		clock_t start_time = clock();
+		cout << "time: " << t << endl;
+		for (int i = 0 ; i < n_cameras; ++i) {
+			assert(camera_set->read(frame, i));
+			writer[i] << frame;
+
+			Mat tmp;
+			resize(frame, tmp, Size(frame.cols / scale, frame.rows / scale));
+			imshow("frame" + to_string(i), tmp	);
+		}
+		int delay = 66 - (clock() - start_time) ;
+		delay = max(1, delay);
+		cout << "delay : " << delay << endl;
+		waitKey(delay);
+	}
+
+	for (int i = 0; i < n_cameras; ++i) {
+		writer[i].release();
+	}
 	return 0;
 }

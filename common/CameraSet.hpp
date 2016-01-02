@@ -3,6 +3,8 @@
 
 #include "CameraBase.hpp"
 
+#define FLY_CAPTRUE 
+
 #ifdef FLY_CAPTRUE
 #include <FlyCapture2.h>
 
