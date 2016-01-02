@@ -6,6 +6,7 @@
 #include "GeometryAligner.h"
 #include "OpticAligner.h"
 #include "Data.hpp"
+#include "VideoData.hpp"
 #include "DataProvide.hpp"
 #include "Timer.hpp"
 

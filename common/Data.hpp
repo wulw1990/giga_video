@@ -54,44 +54,6 @@ class SceneData
 		std::vector<LayerData> layer;
 		int tile_len;
 };
-class VideoData {
-	public:
-		VideoData(std::string path);
-		void load();
-		void save(std::string video_src, cv::Mat H, cv::Rect rect_on_scene);
 
-		cv::Mat getH() {return H.clone();}
-		cv::Rect getRectOnScene() {return rect_on_scene;}
-		cv::Mat getFrame();
-
-	private:
-		std::string path;
-		const std::string NAME_VIDEO;
-		const std::string NAME_INFO;
-		cv::Mat H;
-		cv::Rect rect_on_scene;
-
-		cv::VideoCapture capture;
-		void openCapture();
-};
-
-class MultiVideoData {
-	public:
-		MultiVideoData(std::string path);
-		int getNumVideos() {return static_cast<int>(video_data.size());}
-		cv::Rect getRectOnScene(int video_id) {
-			assert(video_id >= 0 && video_id < getNumVideos() );
-			return video_data[video_id].getRectOnScene();
-		}
-		cv::Mat getFrame(int video_id) {
-			assert(video_id >= 0 && video_id < getNumVideos() );
-			return video_data[video_id].getFrame();
-		}
-
-	private:
-		std::string path;
-		const std::string NAME_LIST;
-		std::vector<VideoData> video_data;
-};
 
 #endif

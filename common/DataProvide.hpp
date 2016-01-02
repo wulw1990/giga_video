@@ -9,6 +9,7 @@
 
 class SceneData;
 class MultiVideoData;
+class CameraSetData;
 
 class TileProvider {
 	public:
@@ -61,7 +62,8 @@ class FrameProvider {
 		std::shared_ptr<TileProvider> m_tile_provider;
 
 		bool m_enable_video;
-		std::shared_ptr<MultiVideoData> m_multi_video_data;
+		// std::shared_ptr<MultiVideoData> m_multi_video_data;
+		std::shared_ptr<CameraSetData> m_video_data;
 
 		int frame_width;
 		int frame_height;

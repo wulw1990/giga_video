@@ -12,3 +12,11 @@ each slave has multi camera
 ### application
 
 now mobile(android) supported
+
+
+## TODO
+construct camera set
+
+giga show camera set
+
+transmit between master and slave

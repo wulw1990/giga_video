@@ -8,6 +8,7 @@ using namespace std;
 using namespace cv;
 
 #include "Data.hpp"
+#include "VideoData.hpp"
 
 int test_multi_video_data(int argc, char** argv);
 
