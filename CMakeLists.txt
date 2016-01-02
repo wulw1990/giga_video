@@ -6,7 +6,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-write-strings")
-
+set(FlyCapture_HEADERS "/usr/include/flycapture")
+set(FlyCapture_LIBS "flycapture")
 
 ADD_SUBDIRECTORY(common)
 ADD_SUBDIRECTORY(common_test)
@@ -22,6 +23,5 @@ ADD_SUBDIRECTORY(player_client)
 
 ADD_SUBDIRECTORY(master)
 ADD_SUBDIRECTORY(slave)
-
 
 ADD_SUBDIRECTORY(rtp)

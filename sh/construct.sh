@@ -1,6 +1,6 @@
 # mode="construct_from_autopan"
 # # path="/home/wuliwei/dataset/bbnc/giga_image/"
-# path="/media/wlw/data/NB_BBNC/giga_video/zijing16/"
+# path="/home/bbnc/data/20160101-pano/main_buildingdata/_group_0___mg_9234___36/"
 # ./build/construct/construct $mode $path
 
 
@@ -35,5 +35,6 @@
 
 
 mode="construct_camera_set"
-path="/media/wuliwei/data/NB_BBNC/giga_video/zijing16-slave1/"
+# path="/media/wuliwei/data/NB_BBNC/giga_video/zijing16-slave1/"
+path="/home/bbnc/data/20160101-pano/main_buildingdata/_group_0___mg_9234___36/"
 ./build/construct/construct $mode $path

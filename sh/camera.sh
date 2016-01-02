@@ -1,3 +1,7 @@
-mode="demo"
+# mode="record"
+# path="/home/bbnc/data/record/"
+# ./build/camera/camera $mode $path
 
-./build/camera/camera $mode
+mode="demo"
+scale=4
+./build/camera/camera $mode $scale
