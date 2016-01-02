@@ -40,9 +40,11 @@ int main(int argc, char **argv) {
 // }
 int demo(int argc, char** argv) {
 	// CameraSet camera_set;
+	assert(argc>=2);
+	int scale = atoi(argv[1]);
 
 	shared_ptr<CameraBase> camera_set;
-	if (0) {
+	if (1) {
 		camera_set = make_shared<CameraSet>();
 	} else {
 		string path = "/media/wuliwei/data/NB_BBNC/giga_video/zijing16/video/";
@@ -68,7 +70,6 @@ int demo(int argc, char** argv) {
 		//           		imshow("frame", merged_frame);
 		Mat frame;
 
-		int scale = 4;
 
 		camera_set->read(frame, 0);
 		resize(frame, frame, Size(frame.cols / scale, frame.rows / scale));

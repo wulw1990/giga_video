@@ -10,6 +10,7 @@ using namespace std;
 #include "GeometryAligner.h"
 #include "DirDealer.h"
 #include "CameraVirtual.hpp"
+#include "CameraSet.hpp"
 #include "GigaAligner.h"
 #include "IO.hpp"
 
@@ -105,30 +106,34 @@ int construct_camera_set(int argc, char** argv) {
 	assert(argc >= 2);
 	string path(argv[1]);
 
+#if 0
 	vector<string> video_name;
 	video_name.push_back(path + "video/data/0.avi");
 	video_name.push_back(path + "video/data/1.avi");
-
 	CameraVirtual camera_set(video_name);
+#else
+	CameraSet camera_set;
+#endif
 
-	vector<Mat> frame(video_name.size());
-	for (size_t i = 0; i < video_name.size(); ++i) {
+	int n_cameras = camera_set.getNumCamera();
+	vector<Mat> frame(n_cameras);
+	for (int i = 0; i < n_cameras; ++i) {
 		assert(camera_set.read(frame[i], i));
 		// imshow("frame", frame[i]);
 		// waitKey(0);
 	}
 
-	for (size_t i = 0; i < video_name.size(); ++i) {
-	// for (size_t i = 0; i < 1; ++i) {
+	for (int i = 0; i < n_cameras; ++i) {
+		// for (size_t i = 0; i < 1; ++i) {
 		Mat trans;
 		Rect rect;
 		GigaAligner aligner;
-		assert(aligner.alignFrameToScene(path, frame[i], trans, rect));
-
-		std::ofstream fout;
-		assert(IO::openOStream(fout, path + "video/" + to_string(i) + ".txt", "VideoData save"));
-		assert(IO::saveTransMat(fout, trans));
-		assert(IO::saveRect(fout, rect));
+		if (aligner.alignFrameToScene(path, frame[i], trans, rect)) {
+			std::ofstream fout;
+			assert(IO::openOStream(fout, path + "video/" + to_string(i) + ".txt", "VideoData save"));
+			assert(IO::saveTransMat(fout, trans));
+			assert(IO::saveRect(fout, rect));
+		}
 	}
 
 	return 0;
