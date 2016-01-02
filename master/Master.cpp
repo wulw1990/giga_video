@@ -12,10 +12,10 @@ using namespace cv;
 const int SLAVE_NUM = 2;
 
 const string win_title = "giga player";
-const int w = 1700;
-const int h = 900;
+int w = 1700;
+int h = 900;
 
-// #define ENABLE_APP
+#define ENABLE_APP
 
 Master::Master(std::string path, int port) {
     m_protocol = make_shared<Protocol>();
@@ -122,15 +122,94 @@ void Master::work()
     while (1) {
 #ifdef ENABLE_APP
         //get a client
-        cout << endl;
-        cout << "----------waiting for a client------------" << endl;
+        cout << "waiting for a client" << endl;
         int client_id;
         if ( ! m_transmitter->getClientId(m_server_id, client_id) ) {
             continue;
         }
-        cout << "Welcome, I have " << SLAVE_NUM << " slave!" << endl;
+        cout << "serve it" << endl;
+        //serve it
 
-// CONNECT_END:
+        {
+            vector<unsigned char> recv_buf;
+            if (!m_transmitter->readData(client_id, recv_buf, m_protocol->getHeadLen())) {
+                cout << "connect end" << endl;
+                break;
+            }
+            string cmd;
+            int data_len;
+            m_protocol->decodeHead(recv_buf, cmd, data_len);
+            // cout << "cmd: " << cmd << " data_len: " << data_len << endl;
+            if (!m_transmitter->readData(client_id, recv_buf, data_len)) {
+                cout << "connect end" << endl;
+                break;
+            }
+            int dx, dy, dz;
+            m_protocol->decodeDataXYZ(recv_buf, dx, dy, dz);
+            w = dx;
+            h = dy;
+        }
+        cout << "width: " << w << " height: " << h << endl;
+
+        //get window size
+        int n_layers = m_info.m_frame_provider->getNumLayers();
+        Size top_layer_size(m_info.m_frame_provider->getLayerWidth(n_layers - 1), m_info.m_frame_provider->getLayerHeight(n_layers - 1));
+        m_info.m_window_controller = make_shared<WindowController>(n_layers, top_layer_size, Size(w, h));
+
+        // m_window_controller->zoom(4);
+        // m_window_controller->move(-1000, 500);
+
+        while (1) {
+            double x, y, z;
+            m_info.m_window_controller->getXYZ(x, y, z);
+
+            // Mat frame = m_info.m_frame_provider->getFrame(w, h, x, y, z);
+            Mat frame = getFrame();
+
+            vector<unsigned char> jpg;
+            imencode(".jpg", frame, jpg);
+            // cout << jpg.size() << endl;
+
+            // cout << "cmd: " << "img" << " data_len: " << jpg.size() << endl;
+            // for(int i=0; i<=255; ++i){
+            //     jpg[i] = i;
+            // }
+            // cout << (int)jpg[0] << endl;
+            // cout << (int)jpg[255] << endl;
+
+
+            vector<unsigned char> send_buf;
+            m_protocol->encode(send_buf, "img", jpg);
+            if ( ! m_transmitter->sendData(client_id, send_buf) ) {
+                goto CONNECT_END;
+            }
+
+            vector<unsigned char> recv_buf;
+            if (!m_transmitter->readData(client_id, recv_buf, m_protocol->getHeadLen())) {
+                goto CONNECT_END;
+            }
+            string cmd;
+            int data_len;
+            m_protocol->decodeHead(recv_buf, cmd, data_len);
+            // cout << "cmd: " << cmd << " data_len: " << data_len << endl;
+            if (!m_transmitter->readData(client_id, recv_buf, data_len)) {
+                goto CONNECT_END;
+            }
+            int dx, dy, dz;
+            m_protocol->decodeDataXYZ(recv_buf, dx, dy, dz);
+            if (dx != 0 || dy != 0 || dz != 0) {
+                cout << dx << " " << dy << " " << dz << endl;
+                // for (size_t i = 0; i < recv_buf.size(); ++i) {
+                //     cout << (int)recv_buf[i] << " ";
+                // }
+                // cout << endl;
+            }
+            // cout << dx << " " << dy << " " << dz << endl;
+            m_info.m_window_controller->move(dx, dy);
+            m_info.m_window_controller->zoom(dz);
+
+        }
+CONNECT_END:
         cout << "connect end" << endl;
         m_transmitter->closeSocket(client_id);
 #else
