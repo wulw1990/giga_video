@@ -22,12 +22,8 @@ public:
 		{
 			int pre_x;
 			int pre_y;
-			int w;
-			int h;
 			std::shared_ptr<FrameProvider> m_frame_provider;
 			std::shared_ptr<WindowController> m_window_controller;
-			std::string win_title;
-			cv::Mat frame;
 			bool update;
 		};
 		Info m_info;

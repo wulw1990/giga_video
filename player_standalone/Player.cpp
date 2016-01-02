@@ -5,10 +5,11 @@ using namespace cv;
 #include "DataProvide.hpp"
 #include "WindowController.hpp"
 
+const string win_title = "giga player";
+const int w = 1700;
+const int h = 900;
+
 Player::Player(std::string path, bool enable_video ) {
-	m_info.win_title = "giga  player";
-	m_info.w = 1700;
-	m_info.h = 900;
 	m_info.m_frame_provider = make_shared<FrameProvider>(path, enable_video);
 
 	int n_layers = m_info.m_frame_provider->getNumLayers();
@@ -20,19 +21,17 @@ Player::Player(std::string path, bool enable_video ) {
 }
 void Player::play() {
 	while (1) {
-		// if (m_info.update) {
 		double x, y, z;
 		m_info.m_window_controller->getXYZ(x, y, z);
-		// cout << x << "\t" << y << "\t" << z << endl;
+		
 		Mat frame, mask;
-		m_info.m_frame_provider->getFrameWithMask(frame, mask, m_info.w, m_info.h, x, y, z);
-		// m_info.frame = m_info.m_frame_provider->getFrame(m_info.w, m_info.h, x, y, z);
-		imshow(m_info.win_title, frame);
-		imshow(m_info.win_title + "mask", mask);
-		cv::setMouseCallback(m_info.win_title, onMouse, &m_info);
+		m_info.m_frame_provider->getFrameWithMask(frame, mask, w, h, x, y, z);
+		imshow(win_title, frame);
+		imshow(win_title + "mask", mask);
+		
+		cv::setMouseCallback(win_title, onMouse, &m_info);
 
 		m_info.update = false;
-		// }
 		waitKey(1);
 	}
 }
@@ -61,8 +60,4 @@ void Player::onMouse(int event, int x, int y, int, void* data)
 		break;
 	}
 	info->update = true;
-	// double qx, qy, qz;
-	// info->m_window_controller->getXYZ(qx, qy, qz);
-	// cout << qx << "\t" << qy << "\t" << qz << endl;
-	// info->frame = info->m_frame_provider->getFrame(info->w, info->h, qx, qy, qz);
 }

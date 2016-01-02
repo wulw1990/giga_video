@@ -14,6 +14,10 @@ class Protocol
 		    std::vector<unsigned char>& buf,
 		    std::string cmd, const std::vector<unsigned char>& data );
 
+		void encodeHead(
+		    std::vector<unsigned char>& head,
+		    std::string cmd, int data_len );
+
 		void decodeHead(
 		    const std::vector<unsigned char>& buf,
 		    std::string& cmd, int& data_len );
@@ -26,7 +30,15 @@ class Protocol
 		    const std::vector<unsigned char>& buf,
 		    int& x, int& y, int& z);
 
+		void encodeFloatVector(
+			const std::vector<float>& vec,
+			std::vector<unsigned char>& buf
+			);
 
+		void decodeFloatVector(
+			const std::vector<unsigned char>& buf,
+			std::vector<float>& fvec
+		);
 
 		int getHeadLen() {
 			return CMD_LEN + LEN_LEN;

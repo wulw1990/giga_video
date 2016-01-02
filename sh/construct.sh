@@ -35,5 +35,5 @@
 
 
 mode="construct_camera_set"
-path="/media/wuliwei/data/NB_BBNC/giga_video/zijing16-master/"
+path="/media/wuliwei/data/NB_BBNC/giga_video/zijing16-slave1/"
 ./build/construct/construct $mode $path

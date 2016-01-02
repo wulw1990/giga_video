@@ -11,7 +11,7 @@ void Protocol::encode(
     std::vector<unsigned char>& buf,
     std::string cmd, const std::vector<unsigned char>& data ) {
 
-	assert(static_cast<int>(cmd.length()) <= CMD_LEN);
+	assert(static_cast<int>(cmd.length()) < CMD_LEN);
 	buf.resize(CMD_LEN + LEN_LEN + data.size());
 	memset(&buf[0], 0, buf.size());
 	memcpy(&buf[0], &cmd[0], cmd.length());
@@ -21,6 +21,21 @@ void Protocol::encode(
 	memcpy(&buf[CMD_LEN], &len_buf[0], len_buf.size());
 
 	memcpy(&buf[CMD_LEN + LEN_LEN], &data[0], data.size());
+}
+void Protocol::encodeHead(
+    std::vector<unsigned char>& head,
+    std::string cmd, int data_len ) {
+
+	assert(static_cast<int>(cmd.length()) < CMD_LEN);
+
+	head.resize(CMD_LEN + LEN_LEN);
+
+	memset(&head[0], 0, head.size());
+	memcpy(&head[0], &cmd[0], cmd.length());
+
+	vector<unsigned char> len_buf;
+	int2Vector(data_len, len_buf);
+	memcpy(&head[CMD_LEN], &len_buf[0], len_buf.size());
 }
 void Protocol::decodeHead(
     const std::vector<unsigned char>& buf,
@@ -111,4 +126,26 @@ void Protocol::vector2Int(int& value, const std::vector<unsigned char>& vec) {
 	if (vec[0] == 1) {
 		value = -value;
 	}
+}
+
+void Protocol::encodeFloatVector(
+    const std::vector<float>& vec,
+    std::vector<unsigned char>& buf
+) {
+	const size_t data_size = vec.size() * sizeof(float);
+    encodeHead(buf, "fvec", data_size);
+
+    vector<unsigned char> data(data_size);
+	memcpy(&data[0], &vec[0], buf.size());
+
+	buf.insert(buf.end(), data.begin(), data.end());
+}
+
+void Protocol::decodeFloatVector(
+    const std::vector<unsigned char>& buf,
+    std::vector<float>& vec
+) {
+	assert(buf.size() % sizeof(float) == 0);
+	vec.resize( buf.size() / sizeof(float) );
+	memcpy(&vec[0], &buf[0], buf.size());
 }

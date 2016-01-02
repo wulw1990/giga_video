@@ -27,9 +27,9 @@ int main(int argc, char **argv){
 	return 0;
 }
 int demo(int argc, char** argv){
-	assert(argc>=3);
+	assert(argc>=4);
 	cout << "slave" << endl;
-	Slave client(argv[1], atoi(argv[2]));
+	Slave client(argv[1], argv[2], atoi(argv[3]), argv[4]);
 	client.work();
 	return 0;
 }
