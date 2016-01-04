@@ -32,13 +32,15 @@ static std::vector<cv::Point2f> getCornerOnScene(cv::Size size, cv::Mat H) {
 VideoProvider::VideoProvider(string path) {
 	m_path = path;
 
+#if 0
 	string video_path = path + "data/";
 	vector<string> video_name;
 	video_name.push_back(video_path + "0.avi");
-	video_name.push_back(video_path + "1.avi");
-
+	// video_name.push_back(video_path + "1.avi");
 	m_camera_set = make_shared<CameraSetVirtual>(video_name);
-
+#else
+	m_camera_set = make_shared<CameraSetFly2>();
+#endif
 	int n_cameras = m_camera_set->getNumCamera();
 	m_trans.resize(n_cameras);
 	m_rect.resize(n_cameras);

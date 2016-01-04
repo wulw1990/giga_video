@@ -9,7 +9,7 @@ using namespace cv;
 #include "FrameProvider.hpp"
 #include "WindowController.hpp"
 
-const int SLAVE_NUM = 2;
+const int SLAVE_NUM = 0;
 
 const string win_title = "giga player";
 int w = 1700;

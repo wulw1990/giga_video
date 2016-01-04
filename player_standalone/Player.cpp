@@ -27,7 +27,7 @@ void Player::play() {
 		Mat frame, mask;
 		m_info.m_frame_provider->getFrameWithMask(frame, mask, w, h, x, y, z);
 		imshow(win_title, frame);
-		imshow(win_title + "mask", mask);
+		// imshow(win_title + "mask", mask);
 		
 		cv::setMouseCallback(win_title, onMouse, &m_info);
 

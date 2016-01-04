@@ -1,6 +1,6 @@
-# mode="record"
-# path="/home/bbnc/data/record/"
-# ./build/camera/camera $mode $path
+ #mode="record"
+ #path="/home/bbnc/data/record/"
+ #./build/camera/camera $mode $path
 
 mode="demo"
 scale=4

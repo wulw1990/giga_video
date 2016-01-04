@@ -85,7 +85,7 @@ void FrameProvider::getFrameWithMask(cv::Mat& frame, cv::Mat& mask, int w, int h
 
 
 
-	if (m_enable_video && z == m_tile_provider->getNumLayers() - 1) {
+	if (m_enable_video && z >= m_tile_provider->getNumLayers() - 1) {
 		// cout << "hh " << endl;
 		// int n_videos = m_multi_video_data->getNumVideos();
 		int n_videos = m_video_data->getNumCamera();

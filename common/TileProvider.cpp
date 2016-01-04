@@ -95,7 +95,7 @@ void SceneData::save(std::string file) {
 	}
 }
 void SceneData::loadFromDisk(std::string path) {
-	const int n_layers = 6;
+	const int n_layers = 7;
 	tile_len = 512;
 	DirDealer dir_dealer;
 	vector<string> list_layer(n_layers);

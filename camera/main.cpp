@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
 // }
 int demo(int argc, char** argv) {
 	// CameraSet camera_set;
-	assert(argc>=2);
+	assert(argc >= 2);
 	int scale = atoi(argv[1]);
 
 	shared_ptr<CameraSetBase> camera_set;
@@ -70,23 +70,11 @@ int demo(int argc, char** argv) {
 		//           		imshow("frame", merged_frame);
 		Mat frame;
 
-
-		camera_set->read(frame, 0);
-		resize(frame, frame, Size(frame.cols / scale, frame.rows / scale));
-		imshow("frame0", frame);
-
-		camera_set->read(frame, 1);
-		resize(frame, frame, Size(frame.cols / scale, frame.rows / scale));
-		imshow("frame1", frame);
-
-		camera_set->read(frame, 2);
-		resize(frame, frame, Size(frame.cols / scale, frame.rows / scale));
-		imshow("frame2", frame);
-
-		camera_set->read(frame, 3);
-		resize(frame, frame, Size(frame.cols / scale, frame.rows / scale));
-		imshow("frame3", frame);
-
+		for (int i = 0; i < n_cameras; ++i) {
+			camera_set->read(frame, i);
+			resize(frame, frame, Size(frame.cols / scale, frame.rows / scale));
+			imshow("frame" + to_string(i), frame);
+		}
 		waitKey(33);
 	}
 #endif
@@ -99,7 +87,8 @@ int record(int argc, char** argv) {
 	shared_ptr<CameraSetBase> camera_set;
 	camera_set = make_shared<CameraSetFly2>();
 
-	int n_cameras = camera_set->getNumCamera();
+	// int n_cameras = camera_set->getNumCamera();
+	int n_cameras = 1;
 	cout << "cameras: " << n_cameras << endl;
 	if (n_cameras < 1) {
 		cerr << "no camera!" << endl;
@@ -113,9 +102,12 @@ int record(int argc, char** argv) {
 	vector<VideoWriter> writer(n_cameras);
 
 
+	int fps = 5;
+	int ms = 1000 / fps;
+
 
 	for (int i = 0; i < n_cameras; ++i) {
-		writer[i].open( path + to_string(i) + ".avi", CV_FOURCC('M', 'J', 'P', 'G'), 15,  size);
+		writer[i].open( path + to_string(i) + ".avi", CV_FOURCC('M', 'J', 'P', 'G'), fps,  size);
 		assert(writer[i].isOpened());
 	}
 
@@ -132,7 +124,8 @@ int record(int argc, char** argv) {
 			resize(frame, tmp, Size(frame.cols / scale, frame.rows / scale));
 			imshow("frame" + to_string(i), tmp	);
 		}
-		int delay = 66 - (clock() - start_time) ;
+		int delay = ms - (clock() - start_time) / 1000 ;
+		cout << "delay : " << delay << endl;
 		delay = max(1, delay);
 		cout << "delay : " << delay << endl;
 		waitKey(delay);

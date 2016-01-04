@@ -175,13 +175,13 @@ int construct_camera_set(int argc, char** argv) {
 	assert(argc >= 2);
 	string path(argv[1]);
 
-#if 1
+#if 0
 	vector<string> video_name;
 	video_name.push_back(path + "video/data/0.avi");
 	video_name.push_back(path + "video/data/1.avi");
 	CameraSetVirtual camera_set(video_name);
 #else
-	CameraSet camera_set;
+	CameraSetFly2 camera_set;
 #endif
 
 	int n_cameras = camera_set.getNumCamera();

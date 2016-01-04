@@ -35,6 +35,7 @@ static std::vector<cv::Point2f> getCornerOnScene(cv::Size size, cv::Mat H) {
 }
 bool GigaAligner::alignFrame(Mat frame, Mat& H, Rect& rect_on_scene){
 	int work_layer_id = m_frame_provider->getNumLayers()-1;
+	cout << "work_layer_id: " << work_layer_id << endl;
 	Size work_layer_size(m_frame_provider->getLayerWidth(work_layer_id), m_frame_provider->getLayerHeight(work_layer_id));
 
 	Rect rect_max(0, 0, work_layer_size.width, work_layer_size.height);
