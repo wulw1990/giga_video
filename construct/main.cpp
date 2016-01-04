@@ -10,7 +10,8 @@ using namespace std;
 #include "DirDealer.h"
 #include "CameraSetVirtual.hpp"
 #include "CameraSetFly2.hpp"
-#include "GigaAligner.hpp"
+#include "GigaAlignerAuto.hpp"
+#include "GigaAlignerManual.hpp"
 #include "IO.hpp"
 #include "TileProvider.hpp"
 
@@ -69,7 +70,7 @@ int cut_video(int argc, char** argv) {
 	cout << "name_src: " << name_src << endl;
 	cout << "name_dst: " << name_dst << endl;
 
-	assert(name_dst.substr(name_dst.length()-3, 3)=="avi");
+	assert(name_dst.substr(name_dst.length() - 3, 3) == "avi");
 
 	Size output_size;
 
@@ -79,9 +80,9 @@ int cut_video(int argc, char** argv) {
 	Mat frame;
 	const int MAX_FRAMES = 1000;
 	cout << "reading video" << endl;
-	for(int i=0; capture.read(frame) && i<MAX_FRAMES; ++i){
+	for (int i = 0; capture.read(frame) && i < MAX_FRAMES; ++i) {
 		output_size = frame.size();
-		resize(frame, frame, Size(frame.cols/4, frame.rows/4));
+		resize(frame, frame, Size(frame.cols / 4, frame.rows / 4));
 		frame_vec.push_back(frame);
 	}
 	capture.release();
@@ -90,34 +91,34 @@ int cut_video(int argc, char** argv) {
 	int index_head = 0;
 	int index_back = 0;
 	cout << "index_head: " << index_head << " index_back: " << index_back << endl;
-	for(int i=0; i<(int)frame_vec.size(); ++i){
+	for (int i = 0; i < (int)frame_vec.size(); ++i) {
 		frame = frame_vec[i];
 		const int PAD = frame.rows / 10;
 		Mat show(frame.rows + PAD * 2, frame.cols, CV_8UC3, Scalar(255, 0, 0));
 		frame.copyTo(show(Rect(0, 0, frame.cols, frame.rows)));
-		rectangle(show, Rect(0, frame.rows, frame.cols*i/(int)frame_vec.size(), PAD), Scalar(0, 0, 255), -1);
+		rectangle(show, Rect(0, frame.rows, frame.cols * i / (int)frame_vec.size(), PAD), Scalar(0, 0, 255), -1);
 
-		if(index_back>index_head){
-			int x = frame.cols*index_head/(int)frame_vec.size();
-			int w = frame.cols*(index_back-index_head)/(int)frame_vec.size();
+		if (index_back > index_head) {
+			int x = frame.cols * index_head / (int)frame_vec.size();
+			int w = frame.cols * (index_back - index_head) / (int)frame_vec.size();
 			rectangle(show, Rect(x, frame.rows + PAD, w, PAD), Scalar(0, 255, 0), -1);
-		}else{
-			int x = frame.cols*index_head/(int)frame_vec.size();
+		} else {
+			int x = frame.cols * index_head / (int)frame_vec.size();
 			rectangle(show, Rect(x, frame.rows + PAD, 2, PAD), Scalar(0, 255, 0), -1);
 		}
 		imshow("frame", show);
 		char key = waitKey(0);
-		if(key == 'b'){
+		if (key == 'b') {
 			index_head = i;
 			cout << "index_head: " << index_head << " index_back: " << index_back << endl;
-		}else if(key=='e'){
+		} else if (key == 'e') {
 			index_back = i;
 			cout << "index_head: " << index_head << " index_back: " << index_back << endl;
-		}else if(key=='p' && i>0){
-			i-=2;
-		}else if(key=='r'){
+		} else if (key == 'p' && i > 0) {
+			i -= 2;
+		} else if (key == 'r') {
 			i = -1;
-		}else if(key=='q'){
+		} else if (key == 'q') {
 			break;
 		}
 	}
@@ -129,8 +130,8 @@ int cut_video(int argc, char** argv) {
 	VideoWriter writer(name_dst, CV_FOURCC('M', 'J', 'P', 'G'), 15, output_size);
 	assert(writer.isOpened());
 
-	for(int i=0; capture.read(frame), capture.read(frame); i+=2){
-		if(i>=index_head && i<=index_back){
+	for (int i = 0; capture.read(frame), capture.read(frame); i += 2) {
+		if (i >= index_head && i <= index_back) {
 			writer << frame;
 		}
 	}
@@ -172,32 +173,45 @@ int test_geo_align(int argc, char** argv) {
 	return 0;
 }
 int construct_camera_set(int argc, char** argv) {
-	assert(argc >= 2);
+	assert(argc >= 4);
 	string path(argv[1]);
+	string video_mode(argv[2]);
+	string align_mode(argv[3]);
 
-#if 1
-	vector<string> video_name;
-	video_name.push_back(path + "video/data/0.avi");
-	video_name.push_back(path + "video/data/1.avi");
-	CameraSetVirtual camera_set(video_name);
-#else
-	CameraSet camera_set;
-#endif
+	shared_ptr<CameraSetBase> camera_set;
+	shared_ptr<GigaAlignerBase> giga_aligner;
 
-	int n_cameras = camera_set.getNumCamera();
+	if (video_mode == "fly2") {
+		camera_set = make_shared<CameraSetFly2>();
+	} else if (video_mode == "virtual") {
+		vector<string> video_name;
+		video_name.push_back(path + "video/data/0.avi");
+		video_name.push_back(path + "video/data/1.avi");
+		camera_set = make_shared<CameraSetVirtual>(video_name);
+	}else{
+		cerr << "error video mode: " << video_mode << endl;
+	}
+
+	if(align_mode=="auto"){
+		giga_aligner = make_shared<GigaAlignerAuto>(path);
+	}else if(align_mode=="manual"){
+		giga_aligner = make_shared<GigaAlignerManual>(path);
+	}
+
+	int n_cameras = camera_set->getNumCamera();
 	vector<Mat> frame(n_cameras);
 	for (int i = 0; i < n_cameras; ++i) {
-		assert(camera_set.read(frame[i], i));
+		assert(camera_set->read(frame[i], i));
 		// imshow("frame", frame[i]);
 		// waitKey(0);
 	}
 
 	for (int i = 0; i < n_cameras; ++i) {
 		// for (size_t i = 0; i < 1; ++i) {
+		cout << "align No." << i << " ..." << endl;
 		Mat trans;
 		Rect rect;
-		GigaAligner aligner(path);
-		if (aligner.alignFrame(frame[i], trans, rect)) {
+		if (giga_aligner->align(frame[i], trans, rect)) {
 			std::ofstream fout;
 			assert(IO::openOStream(fout, path + "video/" + to_string(i) + ".txt", "VideoData save"));
 			assert(IO::saveTransMat(fout, trans));

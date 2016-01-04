@@ -14,7 +14,9 @@
 # frame="../frame.jpg"
 # ./build/construct/construct $mode $scene $frame
 
-# mode="construct_camera_set"
-# path="/media/wuliwei/data/NB_BBNC/giga_video/zijing16-slave1/"
-# # path="/media/wuliwei/data/NB_BBNC/giga_video/main_building/"
-# ./build/construct/construct $mode $path
+mode="construct_camera_set"
+path="/media/wuliwei/data/NB_BBNC/giga_video/zijing16-slave1/"
+# path="/media/wuliwei/data/NB_BBNC/giga_video/main_building/"
+video_mode="virtual"
+align_mode="auto"
+./build/construct/construct $mode $path $video_mode $align_mode
