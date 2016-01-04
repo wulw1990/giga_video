@@ -8,7 +8,9 @@ using namespace cv;
 #include "Transmitter.hpp"
 #include "FrameProvider.hpp"
 #include "WindowController.hpp"
+#include "Timer.hpp"
 
+const int MS = 200;
 const int SLAVE_NUM = 0;
 
 const string win_title = "giga player";
@@ -159,7 +161,9 @@ void Master::work()
         // m_window_controller->zoom(4);
         // m_window_controller->move(-1000, 500);
 
+        Timer timer;
         while (1) {
+            timer.reset();
             double x, y, z;
             m_info.m_window_controller->getXYZ(x, y, z);
 
@@ -208,6 +212,11 @@ void Master::work()
             m_info.m_window_controller->move(dx, dy);
             m_info.m_window_controller->zoom(dz);
 
+            int ms = timer.getTimeUs()/1000;
+            cout << "ms: " << ms << endl;
+            if(ms<MS){
+                waitKey(MS - ms);
+            }
         }
 CONNECT_END:
         cout << "connect end" << endl;

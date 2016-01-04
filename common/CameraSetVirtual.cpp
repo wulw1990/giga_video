@@ -14,6 +14,11 @@ CameraSetVirtual::CameraSetVirtual(const std::vector<std::string>& video_name){
 		}
 	}
 }
+static bool readFrame(VideoCapture& capture, Mat& frame){
+	capture.read(frame);
+	capture.read(frame);
+	return capture.read(frame);
+}
 bool CameraSetVirtual::read(cv::Mat& frame, int index){
 	if(index>=(int)m_video_name.size()){
 		return false;
@@ -24,13 +29,13 @@ bool CameraSetVirtual::read(cv::Mat& frame, int index){
 			return false;
 		}
 	}
-	if(!m_capture[index].read(frame)){
+	if(!readFrame(m_capture[index], frame)){
 		m_capture[index].release();
 		m_capture[index].open(m_video_name[index]);
 		if(!m_capture[index].isOpened()){
 			return false;
 		}
-		if(!m_capture[index].read(frame)){
+		if(!readFrame(m_capture[index], frame)){
 			return false;
 		}
 	}
