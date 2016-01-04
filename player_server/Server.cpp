@@ -8,6 +8,10 @@ using namespace cv;
 #include "Transmitter.hpp"
 #include "FrameProvider.hpp"
 #include "WindowController.hpp"
+#include "Timer.hpp"
+
+const int MS = 200;
+const string win_name = "giga";
 
 Server::Server(std::string path, int port) {
     m_protocol = make_shared<Protocol>();
@@ -15,8 +19,6 @@ Server::Server(std::string path, int port) {
     m_server_id = m_transmitter->initSocketServer(port);
 
     m_frame_provider = make_shared<FrameProvider>(path, true);
-
-
 }
 void Server::work()
 {
@@ -60,10 +62,14 @@ void Server::work()
         // m_window_controller->zoom(4);
         // m_window_controller->move(-1000, 500);
 
+        Timer timer;
         while (1) {
+            timer.reset();
             double x, y, z;
             m_window_controller->getXYZ(x, y, z);
             Mat frame = m_frame_provider->getFrame(winsize.width, winsize.height, x, y, z);
+            imshow("frame", frame);
+            waitKey(1);
 
             vector<unsigned char> jpg;
             imencode(".jpg", frame, jpg);
@@ -107,10 +113,17 @@ void Server::work()
             m_window_controller->move(dx, dy);
             m_window_controller->zoom(dz);
 
+            int ms = timer.getTimeUs()/1000;
+            cout << "ms: " << ms << endl;
+            if(ms<MS){
+                waitKey(MS - ms);
+            }
+
         }
 CONNECT_END:
         cout << "connect end" << endl;
         m_transmitter->closeSocket(client_id);
+        // destroyAllWindows();
     }
     m_transmitter->closeSocket(m_server_id);
 }
