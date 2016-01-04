@@ -34,7 +34,7 @@ int image(int argc, char** argv){
 }
 int video(int argc, char** argv){
 	assert(argc>=2);
-	Player player( argv[1], false);
+	Player player( argv[1], true);
 	player.play();
 	return 0;
 }

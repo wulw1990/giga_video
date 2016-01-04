@@ -39,11 +39,11 @@ void Player::play() {
 		m_info.update = false;
 
 		int ms = timer.getTimeUs()/1000;
-		cout << "ms: " << ms << endl;
+		// cout << "ms: " << ms << endl;
 		if(ms < MS){
 			waitKey(MS - ms);
 		}
-		cout << "time: " << timer.getTimeUs()/1000 << " ms" << endl;
+		// cout << "time: " << timer.getTimeUs()/1000 << " ms" << endl;
 	}
 }
 void Player::onMouse(int event, int x, int y, int, void* data)

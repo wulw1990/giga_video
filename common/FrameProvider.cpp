@@ -85,10 +85,12 @@ void FrameProvider::getFrameWithMask(cv::Mat& frame, cv::Mat& mask, int w, int h
 
 
 
-	if (m_enable_video && z >= m_tile_provider->getNumLayers() - 1) {
-		// cout << "hh " << endl;
+	if (m_enable_video && z == m_tile_provider->getNumLayers() - 1) {
+		cout << "hh " << endl;
 		// int n_videos = m_multi_video_data->getNumVideos();
 		int n_videos = m_video_data->getNumCamera();
+		cout << "n_videos:  " << n_videos << endl;
+
 		for (int i = 0; i < n_videos; ++i) {
 			// Rect rect_video_on_scene = m_multi_video_data->getRectOnScene(i);
 			Rect rect_video_on_scene;
@@ -100,6 +102,7 @@ void FrameProvider::getFrameWithMask(cv::Mat& frame, cv::Mat& mask, int w, int h
 				// Mat video_frame = m_multi_video_data->getFrame(i);
 				Mat video_frame;
 				assert(m_video_data->getFrame(video_frame, i));
+				// imshow("video_frame", video_frame);
 
 				Rect rect_on_video = rect_overlap;
 				rect_on_video.x -= rect_video_on_scene.x;

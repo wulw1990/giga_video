@@ -50,21 +50,23 @@ static cv::Rect getRectFromCorner(std::vector<cv::Point2f>& corner) {
 }
 bool GigaAlignerManual::alignToWin(cv::Mat frame, cv::Mat win, cv::Mat& trans, cv::Rect& rect) {
 	// cout << "align manually..." << endl;
+	m_point_frame.clear();
+	m_point_win.clear();
 
 	Mat show_frame;
 	Mat show_win;
 	float scale_frame = getShowImage(frame, show_frame);
 	float scale_win = getShowImage(win, show_win);
 
-	cout << "scale_frame: " << scale_frame << endl;
-	cout << "scale_win: " << scale_win << endl;
+	// cout << "scale_frame: " << scale_frame << endl;
+	// cout << "scale_win: " << scale_win << endl;
 
 
 	while (1) {
-		for(size_t i=0; i<m_point_frame.size(); ++i){
+		for (size_t i = 0; i < m_point_frame.size(); ++i) {
 			circle(show_frame, m_point_frame[i], 3, Scalar(255, 0, 0), -1);
 		}
-		for(size_t i=0; i<m_point_win.size(); ++i){
+		for (size_t i = 0; i < m_point_win.size(); ++i) {
 			circle(show_win, m_point_win[i], 3, Scalar(255, 0, 0), -1);
 		}
 
@@ -75,25 +77,32 @@ bool GigaAlignerManual::alignToWin(cv::Mat frame, cv::Mat win, cv::Mat& trans, c
 		cv::setMouseCallback("win", onMouseWin, &m_point_win);
 
 		char key = waitKey(33);
-		if(key=='q'){
+		if (key == 'o') {
+			cout << "key o" << endl;
 			break;
+		} else if (key == 'q') {
+			cout << "key q" << endl;
+			return false;
 		}
 	}
-	if(m_point_win.size()!=m_point_frame.size()){
+	if (m_point_win.size() != m_point_frame.size()) {
 		return false;
 	}
-	for(size_t i=0; i<m_point_frame.size(); ++i){
+	for (size_t i = 0; i < m_point_frame.size(); ++i) {
 		m_point_frame[i].x *= scale_frame;
 		m_point_frame[i].y *= scale_frame;
 		m_point_win[i].x *= scale_win;
 		m_point_win[i].y *= scale_win;
 	}
-
 	trans = findHomography(m_point_frame, m_point_win);
-
 	vector<Point2f> corner_scene = getCornerOnScene(frame.size(), trans);
-
 	rect = getRectFromCorner(corner_scene);
+
+	for (size_t i = 0; i < m_point_win.size(); ++i) {
+		m_point_win[i].x -= rect.x;
+		m_point_win[i].y -= rect.y;
+	}
+	trans = findHomography(m_point_frame, m_point_win);
 
 
 	return true;

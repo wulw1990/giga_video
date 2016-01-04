@@ -21,6 +21,6 @@ mode="construct_camera_set"
 # path="/media/wuliwei/data/NB_BBNC/giga_video/main_building/"
 # path="/home/bbnc/data/20160101-pano/main_buildingdata/_group_0___mg_9234___36/"
 path="/home/bbnc/data/20160104_2/panorama1data/_group_0___mg_0001___36/"
-video_mode="virtual"
+video_mode="fly2"
 align_mode="manual"
 ./build/construct/construct $mode $path $video_mode $align_mode

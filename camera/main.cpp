@@ -8,10 +8,14 @@
 using namespace std;
 using namespace cv;
 #include <time.h>
+#include "Timer.hpp"
+#include "DirDealer.h"
 
 //#include "SocketServer.hpp"
 #include "CameraSetFly2.hpp"
+#include "CameraSetParallel.hpp"
 #include "CameraSetVirtual.hpp"
+#include "CameraSetRecorder.hpp"
 
 int demo(int argc, char** argv);
 int record(int argc, char** argv);
@@ -39,13 +43,13 @@ int main(int argc, char **argv) {
 // 	return frame[0];
 // }
 int demo(int argc, char** argv) {
-	// CameraSet camera_set;
 	assert(argc >= 2);
 	int scale = atoi(argv[1]);
 
 	shared_ptr<CameraSetBase> camera_set;
 	if (1) {
-		camera_set = make_shared<CameraSetFly2>();
+		camera_set = make_shared<CameraSetParallel>();
+		// camera_set = make_shared<CameraSetFly2>();
 	} else {
 		string path = "/media/wuliwei/data/NB_BBNC/giga_video/zijing16/video/";
 		vector<string> name;
@@ -59,80 +63,28 @@ int demo(int argc, char** argv) {
 	int n_cameras = camera_set->getNumCamera();
 	cout << "cameras: " << n_cameras << endl;
 
-#if 1
-	// for (int i = 0; i < 100; i ++){
+	Timer timer;
 	while (1) {
-		// vector<Mat> frame(n_cameras);
-		// for(int i=0; i<n_cameras; ++i){
-		//           			camera_set->read(frame[i], i);
-		// }
-		// Mat merged_frame = mergeFrame(frame);
-		//           		imshow("frame", merged_frame);
+		timer.reset();
 		Mat frame;
-
 		for (int i = 0; i < n_cameras; ++i) {
-			camera_set->read(frame, i);
+			assert(camera_set->read(frame, i));
+			// cout << frame.size() << endl;
 			resize(frame, frame, Size(frame.cols / scale, frame.rows / scale));
 			imshow("frame" + to_string(i), frame);
+			waitKey(1);
 		}
-		waitKey(33);
+		// cout << timer.getTimeUs()/1000 << endl;
+		// waitKey(33);
 	}
-#endif
 	return 0;
 }
 int record(int argc, char** argv) {
 	assert(argc >= 2);
 	string path(argv[1]);
 
-	shared_ptr<CameraSetBase> camera_set;
-	camera_set = make_shared<CameraSetFly2>();
+	CameraSetRecorder recorder( make_shared<CameraSetParallel>() );
+	recorder.record(path);
 
-	// int n_cameras = camera_set->getNumCamera();
-	int n_cameras = 1;
-	cout << "cameras: " << n_cameras << endl;
-	if (n_cameras < 1) {
-		cerr << "no camera!" << endl;
-		return -1;
-	}
-
-	Mat frame;
-	assert(camera_set->read(frame, 0));
-	Size size = frame.size();
-
-	vector<VideoWriter> writer(n_cameras);
-
-
-	int fps = 5;
-	int ms = 1000 / fps;
-
-
-	for (int i = 0; i < n_cameras; ++i) {
-		writer[i].open( path + to_string(i) + ".avi", CV_FOURCC('M', 'J', 'P', 'G'), fps,  size);
-		assert(writer[i].isOpened());
-	}
-
-	const int scale = 8;
-
-	for (int t = 0; t < 100; ++t) {
-		clock_t start_time = clock();
-		cout << "time: " << t << endl;
-		for (int i = 0 ; i < n_cameras; ++i) {
-			assert(camera_set->read(frame, i));
-			writer[i] << frame;
-
-			Mat tmp;
-			resize(frame, tmp, Size(frame.cols / scale, frame.rows / scale));
-			imshow("frame" + to_string(i), tmp	);
-		}
-		int delay = ms - (clock() - start_time) / 1000 ;
-		cout << "delay : " << delay << endl;
-		delay = max(1, delay);
-		cout << "delay : " << delay << endl;
-		waitKey(delay);
-	}
-
-	for (int i = 0; i < n_cameras; ++i) {
-		writer[i].release();
-	}
 	return 0;
 }

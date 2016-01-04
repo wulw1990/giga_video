@@ -46,9 +46,12 @@ bool GigaAlignerBase::align(Mat frame, Mat& H, Rect& rect_on_scene){
 	int step_row = frame.rows * 2;
 	int step_col = frame.cols * 2;
 
+	cout << "step_row: " << step_row << endl;
+	cout << "step_col: " << step_col << endl;
+
 	showImage("frame", frame);
 
-	for (int r = 2; r * step_row < work_layer_size.height; ++r) {
+	for (int r = 0; r * step_row < work_layer_size.height; ++r) {
 		for (int c = 0; c * step_col < work_layer_size.width; ++c) {
 			cout << r << "\t" << c << "\t";
 			cout .flush();
@@ -68,6 +71,7 @@ bool GigaAlignerBase::align(Mat frame, Mat& H, Rect& rect_on_scene){
 			bool matched = alignToWin(frame, win, H, rect_on_scene);
 			cout << matched  << "\tmatch ms : " << timer.getTimeUs() / 1000 << endl;
 
+#if 0
 			std::vector<cv::Point2f> corner_scene = getCornerOnScene(frame.size(), H);
 			for (size_t i = 0; i < corner_scene.size(); ++i) {
 				corner_scene[i].x += rect_on_scene.x;
@@ -79,7 +83,7 @@ bool GigaAlignerBase::align(Mat frame, Mat& H, Rect& rect_on_scene){
 			line(win, corner_scene[3], corner_scene[0], Scalar(255, 0, 0), 3);
 			showImage("win", win);
 			char key = waitKey(1);
-
+#endif
 			if (matched) {
 				rect_on_scene.x += c * step_col;
 				rect_on_scene.y += r * step_row;

@@ -16,7 +16,7 @@ class CameraSetFly2: public CameraSetBase
 		bool read(cv::Mat& frame, int index);
 		int getNumCamera() {
 			// return numCameras;
-			return 1;
+			return 4;
 		}
 	private:
 		unsigned int numCameras;
@@ -31,6 +31,7 @@ class CameraSetFly2: public CameraSetBase
 		void PrintError(FlyCapture2::Error error);
 
 		FlyCapture2::ErrorType getCapture(cv::Mat & getImage, int index);
+
 };
 #else
 #include <iostream>

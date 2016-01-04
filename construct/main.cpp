@@ -206,7 +206,8 @@ int construct_camera_set(int argc, char** argv) {
 		// waitKey(0);
 	}
 
-	for (int i = 0; i < n_cameras; ++i) {
+	// for (int i = 0; i < n_cameras; ++i) {
+	for (int i = 3; i < n_cameras; ++i) {
 		// for (size_t i = 0; i < 1; ++i) {
 		cout << "align No." << i << " ..." << endl;
 		Mat trans;

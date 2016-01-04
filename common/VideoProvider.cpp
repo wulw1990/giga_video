@@ -66,9 +66,15 @@ bool VideoProvider::getFrame(cv::Mat& frame, int index) {
 	if(! m_camera_set->read(frame, index) ){
 		return false;
 	}
+	Mat show;
+	resize(frame, show, Size(frame.cols/8, frame.rows/8));
+	imshow("video", show);
 	// cout << H << endl;
 	Mat dst(m_rect[index].height, m_rect[index].width, CV_8UC3);
 	warpPerspective(frame, dst, m_trans[index], dst.size());
+
+	resize(dst, show, Size(frame.cols/8, frame.rows/8));
+	imshow("video-warp", show);
 
 	// TODO: remove black edge
 	std::vector<cv::Point2f> corner_frame = getCornerOnFrame(frame.size());

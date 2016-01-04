@@ -36,8 +36,8 @@ void CameraSetFly2::PrintError( Error error ){
 	error.PrintErrorTrace();
 }
 void CameraSetFly2::setup() {
-	PrintBuildInfo();
-	cout << "start set\n";
+	// PrintBuildInfo();
+	// cout << "start set\n";
 	Error error;
 	BusManager busMgr;
 
@@ -46,7 +46,7 @@ void CameraSetFly2::setup() {
 		PrintError( error );
 		return;
 	}
-	cout << "Number of cameras detected: " << numCameras << endl;
+	// cout << "Number of cameras detected: " << numCameras << endl;
 	if ( numCameras < 1 ){
 		cout << "Insufficient number of cameras... press Enter to exit." << endl; ;
 		cin.ignore();
@@ -77,7 +77,7 @@ void CameraSetFly2::setup() {
 			PrintError( error );
 			return;
 		}
-		PrintCameraInfo(&camInfo);
+		// PrintCameraInfo(&camInfo);
 
 		error = ppCameras[i]->StartCapture();
 		if ( error == PGRERROR_ISOCH_BANDWIDTH_EXCEEDED ){
@@ -91,9 +91,11 @@ void CameraSetFly2::setup() {
 	}
 }
 CameraSetFly2::CameraSetFly2(){
+	cout << "init camera set...  "; cout.flush();
 	setup();
 	release();
 	setup();
+	cout << "n_cameras=" << numCameras << endl;
 }
 bool CameraSetFly2::read(cv::Mat& frame, int index){
 	ErrorType error = getCapture(frame, index);
