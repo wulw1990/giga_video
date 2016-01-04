@@ -9,8 +9,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-write-strings")
 
 
-set(FlyCapture_HEADERS "/usr/include/flycapture")
-set(FlyCapture_LIBS "flycapture")
+#set(FlyCapture_HEADERS "/usr/include/flycapture")
+#set(FlyCapture_LIBS "flycapture")
 
 ADD_SUBDIRECTORY(common)
 
