@@ -3,7 +3,8 @@
 #include <cassert>
 #include <iostream>
 #include <algorithm>
-
+#include <iomanip>
+#include <sstream>
 using namespace std;
 
 #include "GeometryAligner.hpp"
@@ -14,6 +15,7 @@ using namespace std;
 #include "GigaAlignerManual.hpp"
 #include "IO.hpp"
 #include "TileProvider.hpp"
+#include "Timer.hpp"
 
 int construct_from_autopan(int argc, char** argv);
 int cut_video(int argc, char** argv);
@@ -21,6 +23,7 @@ int test_geo_align(int argc, char** argv);
 // int test_giga_align(int argc, char** argv);
 
 int construct_camera_set(int argc, char** argv);
+int construct_xiaoyun(int argc, char** argv);
 
 int main(int argc, char **argv) {
 	assert(argc >= 2);
@@ -34,6 +37,7 @@ int main(int argc, char **argv) {
 	else if (mode == "cut_video") cut_video(argc, argv);
 	else if (mode == "test_geo_align") test_geo_align(argc, argv);
 	else if (mode == "construct_camera_set") construct_camera_set(argc, argv);
+	else if (mode == "construct_xiaoyun") construct_xiaoyun(argc, argv);
 	// else if (mode == "test_giga_align") test_giga_align(argc, argv);
 	else {
 		cerr << "main mode error : " << mode << endl;
@@ -41,13 +45,8 @@ int main(int argc, char **argv) {
 	}
 	return 0;
 }
-int construct_from_autopan(int argc, char** argv) {
-	cout << "construct_from_autopan demo" << endl;
-	assert(argc >= 4);
-
-	string path = argv[1];
-	int n_layers = atoi(argv[2]);
-	int head_layers = atoi(argv[3]);
+void constructFromAutopan(string path, int n_layers, int head_layers) {
+	cout << "path: " << path << endl;
 	string name = "info_scene.txt";
 
 	SceneData scene_data;
@@ -58,6 +57,16 @@ int construct_from_autopan(int argc, char** argv) {
 	SceneData scene_data_ver;
 	scene_data_ver.load(path + name);
 	scene_data_ver.save(path + name);
+}
+int construct_from_autopan(int argc, char** argv) {
+	cout << "construct_from_autopan demo" << endl;
+	assert(argc >= 4);
+
+	string path = argv[1];
+	int n_layers = atoi(argv[2]);
+	int head_layers = atoi(argv[3]);
+
+	constructFromAutopan(path, n_layers, head_layers);
 
 	return 0;
 }
@@ -194,13 +203,13 @@ int construct_camera_set(int argc, char** argv) {
 		// video_name.push_back(path + "video/data/5.avi");
 		// video_name.push_back(path + "video/data/6.avi");
 		camera_set = make_shared<CameraSetVideo>(video_name);
-	}else{
+	} else {
 		cerr << "error video mode: " << video_mode << endl;
 	}
 
-	if(align_mode=="auto"){
+	if (align_mode == "auto") {
 		giga_aligner = make_shared<GigaAlignerAuto>(path);
-	}else if(align_mode=="manual"){
+	} else if (align_mode == "manual") {
 		giga_aligner = make_shared<GigaAlignerManual>(path);
 	}
 
@@ -227,5 +236,60 @@ int construct_camera_set(int argc, char** argv) {
 		}
 	}
 
+	return 0;
+}
+int construct_xiaoyun(int argc, char** argv) {
+	assert(argc > 3);
+	string path_in(argv[1]);
+	string path_out(argv[2]);
+	int n_frames = atoi(argv[3]);
+
+	const int len = 512;
+	int n_layers = 4;
+
+#if 0
+	DirDealer dir_dealer;
+	Timer timer;
+	for (int i = 0; i < n_frames; ++i) {
+		cout << endl << "frame id: " << i << endl;
+		string name;
+		{
+			std::stringstream stream;
+			stream << "xiaoyun_" << setfill('0') << setw(4) << i << ".jpg";
+			name = stream.str();
+		}
+
+		timer.reset();
+		Mat frame = imread(path_in + name);
+		cout << frame.size() << endl;
+		cout << "read time: " << timer.getTimeUs() / 1000 << endl;
+
+		for (int layer = n_layers - 1; layer >= 0; --layer) {
+			cout << "layer: " << layer << endl;
+
+			for (int row = 0; row < frame.rows; row += len) {
+				int end_row = min(row + len, frame.rows);
+				for (int col = 0; col < frame.cols; col += len) {
+					int end_col = min(col + len, frame.cols);
+					// cout << "row: " << row << "\tcol: " << col << endl;
+					// cout << "row end: " << end_row << "\tcol end: " << end_col << endl;
+					Rect rect(col, row, end_col - col, end_row - row);
+					Mat tile = frame(rect).clone();
+					string path = path_out + to_string(i) + "/" + to_string(layer) + "/" + to_string(row / len) + "/";
+					dir_dealer.mkdir_p(path);
+					imwrite(  path + to_string(col / len) + ".jpg", tile);
+				}
+			}
+			// cout << frame.size() << endl;
+			// break;
+			resize(frame, frame, Size(frame.cols / 2, frame.rows / 2));
+		}
+	}
+#endif
+	for (int i = 0; i < n_frames; ++i) {
+		string path = path_out + to_string(i) + "/";
+		int head_layers = 0;
+		constructFromAutopan(path, n_layers, head_layers);
+	}
 	return 0;
 }

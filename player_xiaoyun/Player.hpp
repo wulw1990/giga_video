@@ -11,28 +11,24 @@ class WindowController;
 
 class Player
 {
-	public:
-		Player(std::string path, int n_frames, std::string output_video="" );
-		~Player() {}
-
-		void play();
+public:
+	Player(std::string path, bool enable_video );
+	~Player(){}
+	
+	void play();
 
 	private:
 		struct Info
 		{
 			int pre_x;
 			int pre_y;
+			std::shared_ptr<FrameProvider> m_frame_provider;
 			std::shared_ptr<WindowController> m_window_controller;
 			bool update;
 		};
 		Info m_info;
 
-		std::vector<std::shared_ptr<FrameProvider> > m_frame_provider;
-		int m_frame_id;
-
-		cv::VideoWriter m_video_writer;
-
-		static void onMouse(int event, int x, int y, int, void* data);
+	static void onMouse(int event, int x, int y, int, void* data);
 };
 
 #endif
