@@ -8,7 +8,7 @@ using namespace cv;
 #include "DirDealer.h"
 #include "CameraSetBase.hpp"
 #include "CameraSetFly2.hpp"
-#include "CameraSetVirtual.hpp"
+#include "CameraSetVideo.hpp"
 #include "IO.hpp"
 
 static std::vector<cv::Point2f> getCornerOnFrame(cv::Size size) {
@@ -32,12 +32,15 @@ static std::vector<cv::Point2f> getCornerOnScene(cv::Size size, cv::Mat H) {
 VideoProvider::VideoProvider(string path) {
 	m_path = path;
 
-#if 0
+#if 1
 	string video_path = path + "data/";
 	vector<string> video_name;
 	video_name.push_back(video_path + "0.avi");
-	// video_name.push_back(video_path + "1.avi");
-	m_camera_set = make_shared<CameraSetVirtual>(video_name);
+	video_name.push_back(video_path + "1.avi");
+	video_name.push_back(video_path + "2.avi");
+	video_name.push_back(video_path + "3.avi");
+	video_name.push_back(video_path + "4.avi");
+	m_camera_set = make_shared<CameraSetVideo>(video_name);
 #else
 	m_camera_set = make_shared<CameraSetFly2>();
 #endif
@@ -68,13 +71,13 @@ bool VideoProvider::getFrame(cv::Mat& frame, int index) {
 	}
 	Mat show;
 	resize(frame, show, Size(frame.cols/8, frame.rows/8));
-	imshow("video", show);
+	// imshow("video", show);
 	// cout << H << endl;
 	Mat dst(m_rect[index].height, m_rect[index].width, CV_8UC3);
 	warpPerspective(frame, dst, m_trans[index], dst.size());
 
 	resize(dst, show, Size(frame.cols/8, frame.rows/8));
-	imshow("video-warp", show);
+	// imshow("video-warp", show);
 
 	// TODO: remove black edge
 	std::vector<cv::Point2f> corner_frame = getCornerOnFrame(frame.size());

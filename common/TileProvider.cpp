@@ -26,14 +26,20 @@ void LayerData::load(std::ifstream& fin) {
 		fin >> tile_name_list[i];
 	}
 }
-void LayerData::loadFromDisk(std::string path, std::string dir) {
+static bool isHeadLayer(string dir, int head_layers){
+	for(int i=0; i<head_layers; ++i){
+		if(dir==to_string(i)) return true;
+	}
+	return false;
+}
+void LayerData::loadFromDisk(std::string path, std::string dir, int head_layers) {
 	this->dir = dir;
 	string path_layer = path + dir + "/";
 	DirDealer dir_dealer;
 	rows = 0;
 	cols = 0;
 	tile_name_list.clear();
-	if (dir == "0" || dir == "1" || dir == "2") {
+	if (isHeadLayer(dir, head_layers)) {
 		vector<string> list = dir_dealer.getFileList(path_layer);
 		for (size_t i = 0; i < list.size(); ++i) {
 			// cout << tile_name_list[i] << endl;
@@ -94,8 +100,8 @@ void SceneData::save(std::string file) {
 		layer[i].save(fout);
 	}
 }
-void SceneData::loadFromDisk(std::string path) {
-	const int n_layers = 7;
+void SceneData::loadFromDisk(std::string path, int n_layers, int head_layers) {
+	// const int n_layers = 7;
 	tile_len = 512;
 	DirDealer dir_dealer;
 	vector<string> list_layer(n_layers);
@@ -109,7 +115,7 @@ void SceneData::loadFromDisk(std::string path) {
 	layer.resize(n_layers);
 	for (size_t i = 0; i < list_layer.size(); ++i) {
 		cout << "loading layer " << i << endl;
-		layer[i].loadFromDisk(path, list_layer[i]);
+		layer[i].loadFromDisk(path, list_layer[i], head_layers);
 	}
 }
 TileProvider::TileProvider(std::string path, std::string info_file) {
@@ -130,10 +136,8 @@ TileProvider::TileProvider(std::string path, std::string info_file) {
 	for (int i = top_id - 1; i >= 0; --i ) {
 		m_pixel_rows[i] = m_pixel_rows[i + 1] / 2;
 		m_pixel_cols[i] = m_pixel_cols[i + 1] / 2;
+		// cout << i << "\trows: " << m_pixel_rows[i] << "\tcols: " << m_pixel_cols[i] << endl;
 	}
-	// for (size_t i = 0; i < m_pixel_cols.size(); ++i) {
-	// 	cout << m_pixel_rows[i] << "\t" << m_pixel_cols[i] << endl;
-	// }
 }
 int TileProvider::getTileLen() {
 	return m_scene_data->getTileLen();
@@ -157,26 +161,25 @@ int TileProvider::getPixelColsOfLayer(int layer_id) {
 }
 cv::Mat TileProvider::getTile(int x, int y, int z, int* is_cache) {
 	string name = m_scene_data->getTileName(x, y, z);
-	// cout << "name: " << name << endl;
 	if (m_cache.find(name) == m_cache.end()) {
 		m_cache[name] = make_pair(imread(path + name), getCurrentTimeFromStart());
 		if (is_cache) { *is_cache = 0; }
 	} else {
-		// cout << "cached" << endl;
 		if (is_cache) { *is_cache = 1; }
 	}
 	cv::Mat tile = m_cache[name].first;
 	m_cache[name].second = getCurrentTimeFromStart();
-	// cout << m_scene_data->getTileName(x, y, z) << endl;
 
 	assert(!tile.empty());
 	if (tile.rows < getTileLen() || tile.cols < getTileLen()) {
+		// cout << "hh" << endl;
 		Mat tmp(getTileLen(), getTileLen(), tile.type());
 		tmp.setTo(default_color);
 		Rect rect(0, 0, tile.cols, tile.rows);
 		tile.copyTo(tmp(rect));
 		tile = tmp;
 	}
+	// cout << rand() << endl;
 	resizeCache();
 
 	return tile;
@@ -190,27 +193,19 @@ long long TileProvider::getCurrentTimeFromStart() {
 	}
 	struct timeval t2;
 	gettimeofday(&t2, NULL);
-	// cout << "t_.tv_sec: " << t_.tv_sec << endl;
-	// cout << "t_.tv_usec: " << t_.tv_usec << endl;
 	return (t2.tv_sec - t1.tv_sec) * 1e6 + (t2.tv_usec - t1.tv_usec);
 }
 void TileProvider::resizeCache() {
 	const int MAX_SIZE = 1024;
 	if (m_cache.size() > MAX_SIZE) {
-		// cout << m_cache.size() << endl;
 		vector<long long> time_vec;
 		for (auto iter = m_cache.begin(); iter != m_cache.end(); ++iter) {
 			time_vec.push_back(iter->second.second);
-			// cout << iter->second.second << " ";
 		}
-		// cout << endl;
 		sort(time_vec.begin(), time_vec.end());
-		// cout << time_vec.size() << endl;
 
 		long long thresh = time_vec[time_vec.size() - MAX_SIZE / 2];
-		// cout << "thresh: " << thresh << endl;
 
-		// cout << m_cache.size() << endl;
 		for (auto iter = m_cache.begin(); iter != m_cache.end(); ) {
 			if (iter->second.second < thresh) {
 				iter = m_cache.erase(iter);
@@ -218,11 +213,5 @@ void TileProvider::resizeCache() {
 				++iter;
 			}
 		}
-		// cout << m_cache.size() << endl;
-
-		// for (auto iter = m_cache.begin(); iter != m_cache.end(); ++iter) {
-		// cout << iter->second.second << " ";
-		// }
-		// cout << endl;
 	}
 }

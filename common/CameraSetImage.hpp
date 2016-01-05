@@ -1,14 +1,14 @@
-#ifndef CAMERA_VITUAL_BHH_
-#define CAMERA_VITUAL_BHH_
+#ifndef CAMERA_SET_IMAGE_HPP_
+#define CAMERA_SET_IMAGE_HPP_
 
 #include "CameraSetBase.hpp"
 #include <string>
 #include <vector>
 
-class CameraSetVirtual: public CameraSetBase
+class CameraSetImage: public CameraSetBase
 {
 	public:
-		CameraSetVirtual(const std::vector<std::string>& video_name);
+		CameraSetImage(const std::vector<std::string>& video_name);
 
 		bool read(cv::Mat& frame, int index);
 		int getNumCamera() {
@@ -16,7 +16,9 @@ class CameraSetVirtual: public CameraSetBase
 		}
 	private:
 		std::vector<std::string> m_video_name;
-		std::vector<cv::VideoCapture> m_capture;
+		std::vector<int> m_frame_num;
+		std::vector<int> m_frame_id;
 };
+
 
 #endif

@@ -14,11 +14,10 @@ FrameProvider::FrameProvider(std::string path, bool enable_video) {
 
 	m_enable_video = enable_video;
 	if (m_enable_video) {
-		// m_multi_video_data = make_shared<MultiVideoData>(path + "video/");
 		m_video_data = make_shared<VideoProvider>( path + "video/");
 	}
 }
-void FrameProvider::getFrameWithMask(cv::Mat& frame, cv::Mat& mask, int w, int h, double x, double y, double z){
+void FrameProvider::getFrameWithMask(cv::Mat& frame, cv::Mat& mask, int w, int h, double x, double y, double z) {
 	int layer_id = static_cast<int>(z + 1);
 	layer_id = max(layer_id, 0);
 	layer_id = min(layer_id, m_tile_provider->getNumLayers() - 1);
@@ -33,17 +32,12 @@ void FrameProvider::getFrameWithMask(cv::Mat& frame, cv::Mat& mask, int w, int h
 	pixel_x -= sw / 2;
 	pixel_y -= sh / 2;
 
-	// cout << pixel_x << "\t" << pixel_y << endl;
-
-	// Mat frame, mask;
 	getFrameWithMask(frame, mask, sw, sh, pixel_x, pixel_y, layer_id);
-	// cout << zoom << endl;
-	// cout << sw << "\t" << sh << endl;
-	// cout << result.size() << endl;
 	resize(frame, frame, Size(w, h));
 	resize(mask, mask, Size(w, h));
 }
-void FrameProvider::getFrameWithMask(cv::Mat& frame, cv::Mat& mask, int w, int h, int x, int y, int z){
+void FrameProvider::getFrameWithMask(cv::Mat& frame, cv::Mat& mask, int w, int h, int x, int y, int z) {
+	// cout << "z: " << z << endl;
 	const int LEN = m_tile_provider->getTileLen();
 
 	Rect rect(x, y, w, h);
@@ -66,7 +60,12 @@ void FrameProvider::getFrameWithMask(cv::Mat& frame, cv::Mat& mask, int w, int h
 			Mat tile;
 			const int ROWS = m_tile_provider->getRowsOfLayer(z);
 			const int COLS = m_tile_provider->getColsOfLayer(z);
+
+			// cout << "ROWS: " << ROWS << "\tCOLS: " << COLS << endl;
+			// cout << "x: " << x << "\ty: " << y << endl;
+			
 			if (x >= 0 && x < COLS  && y >= 0 && y < ROWS) {
+				// cout << "z: " << z << endl;
 				int is_cache;
 				tile = m_tile_provider->getTile(x, y, z, &is_cache);
 				cache_count += is_cache;
@@ -80,29 +79,19 @@ void FrameProvider::getFrameWithMask(cv::Mat& frame, cv::Mat& mask, int w, int h
 			copyMatToMat(tile, tile_rect, frame, rect);
 		}
 	}
-	// cout << "cache_count: " << cache_count << endl;
-	// cout << "not_cache_count: " << not_cache_count << endl;
-
-
 
 	if (m_enable_video && z == m_tile_provider->getNumLayers() - 1) {
-		cout << "hh " << endl;
-		// int n_videos = m_multi_video_data->getNumVideos();
 		int n_videos = m_video_data->getNumCamera();
-		cout << "n_videos:  " << n_videos << endl;
+		// cout << "n_videos:  " << n_videos << endl;
 
 		for (int i = 0; i < n_videos; ++i) {
-			// Rect rect_video_on_scene = m_multi_video_data->getRectOnScene(i);
 			Rect rect_video_on_scene;
 			assert(m_video_data->getRectOnScene(rect_video_on_scene, i));
 
 			Rect rect_overlap = rect_video_on_scene & Rect(x, y, w, h);
 			if (rect_overlap.width > 0 && rect_overlap.height > 0) {
-				// cout << "dd " << endl;
-				// Mat video_frame = m_multi_video_data->getFrame(i);
 				Mat video_frame;
 				assert(m_video_data->getFrame(video_frame, i));
-				// imshow("video_frame", video_frame);
 
 				Rect rect_on_video = rect_overlap;
 				rect_on_video.x -= rect_video_on_scene.x;
@@ -112,7 +101,6 @@ void FrameProvider::getFrameWithMask(cv::Mat& frame, cv::Mat& mask, int w, int h
 				rect_on_win.x -= x;
 				rect_on_win.y -= y;
 
-				//TODO: Optic Aligner
 				Mat src = video_frame(rect_on_video);
 				Mat dst = frame(rect_on_win);
 				Mat dst2 = mask(rect_on_win);
@@ -127,12 +115,10 @@ void FrameProvider::getFrameWithMask(cv::Mat& frame, cv::Mat& mask, int w, int h
 			}
 		}
 	} else if (m_enable_video) {
-		// int n_videos = m_multi_video_data->getNumVideos();
 		int n_videos = m_video_data->getNumCamera();
 		for (int i = 0; i < n_videos; ++i) {
 			Rect rect_video_on_scene;
 			assert(m_video_data->getRectOnScene(rect_video_on_scene, i));
-			// Rect rect_video_on_scene = m_multi_video_data->getRectOnScene(i);
 			double scale = pow(2, m_tile_provider->getNumLayers() - 1 - z);
 			rect_video_on_scene.x /= scale;
 			rect_video_on_scene.y /= scale;

@@ -28,6 +28,7 @@ void Player::play() {
 		timer.reset();
 		double x, y, z;
 		m_info.m_window_controller->getXYZ(x, y, z);
+		// cout << "x: " << x << "\ty: " << y << "\tz: " << z << endl;
 
 		Mat frame, mask;
 		m_info.m_frame_provider->getFrameWithMask(frame, mask, w, h, x, y, z);
@@ -36,7 +37,6 @@ void Player::play() {
 
 		cv::setMouseCallback(win_title, onMouse, &m_info);
 		waitKey(1);
-		m_info.update = false;
 
 		int ms = timer.getTimeUs()/1000;
 		// cout << "ms: " << ms << endl;

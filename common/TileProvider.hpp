@@ -11,7 +11,7 @@ class LayerData {
 	public:
 		void load(std::ifstream& fin);
 		void save(std::ofstream& fout);
-		void loadFromDisk(std::string path, std::string dir);//slow
+		void loadFromDisk(std::string path, std::string dir, int head_layers);
 
 		int getRows() {return rows;}
 		int getCols() {return cols;}
@@ -29,7 +29,7 @@ class SceneData
 	public:
 		void load(std::string file);
 		void save(std::string file);
-		void loadFromDisk(std::string path);//slow
+		void loadFromDisk(std::string path, int n_layers, int head_layers);
 
 		int getTileLen() {
 			return tile_len;

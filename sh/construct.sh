@@ -1,9 +1,11 @@
 # mode="construct_from_autopan"
-# # # path="/home/wuliwei/dataset/bbnc/giga_image/"
+# # path="/home/wuliwei/dataset/bbnc/giga_image/"
 # # path="/media/wuliwei/data/NB_BBNC/giga_video/main_building/"
-# path="/home/bbnc/data/20160104_2/panorama1data/_group_0___mg_0001___36/"
+# # path="/home/bbnc/data/20160104_2/panorama1data/_group_0___mg_0001___36/"
+# path="/media/wuliwei/data/NB_BBNC/0104/giga_video/"
 # n_layaers=7
-# ./build/construct/construct $mode $path $n_layaers
+# head_layers=4
+# ./build/construct/construct $mode $path $n_layaers $head_layers
 
 # name="MVI_7294"
 # mode="cut_video"
@@ -20,7 +22,9 @@ mode="construct_camera_set"
 # path="/media/wuliwei/data/NB_BBNC/giga_video/zijing16-slave1/"
 # path="/media/wuliwei/data/NB_BBNC/giga_video/main_building/"
 # path="/home/bbnc/data/20160101-pano/main_buildingdata/_group_0___mg_9234___36/"
-path="/home/bbnc/data/20160104_2/panorama1data/_group_0___mg_0001___36/"
-video_mode="fly2"
+# path="/home/bbnc/data/20160104_2/panorama1data/_group_0___mg_0001___36/"
+# path="/media/wuliwei/data/NB_BBNC/0104/giga_video/"
+path="/media/wuliwei/win8/data/0104/giga_video/"
+video_mode="virtual"
 align_mode="manual"
 ./build/construct/construct $mode $path $video_mode $align_mode

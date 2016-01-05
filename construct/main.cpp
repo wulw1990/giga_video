@@ -8,7 +8,7 @@ using namespace std;
 
 #include "GeometryAligner.hpp"
 #include "DirDealer.h"
-#include "CameraSetVirtual.hpp"
+#include "CameraSetVideo.hpp"
 #include "CameraSetFly2.hpp"
 #include "GigaAlignerAuto.hpp"
 #include "GigaAlignerManual.hpp"
@@ -43,14 +43,15 @@ int main(int argc, char **argv) {
 }
 int construct_from_autopan(int argc, char** argv) {
 	cout << "construct_from_autopan demo" << endl;
-	assert(argc >= 3);
+	assert(argc >= 4);
 
 	string path = argv[1];
 	int n_layers = atoi(argv[2]);
+	int head_layers = atoi(argv[3]);
 	string name = "info_scene.txt";
 
 	SceneData scene_data;
-	scene_data.loadFromDisk(path);
+	scene_data.loadFromDisk(path, n_layers, head_layers);
 	scene_data.save(path + name);
 
 	cout << "verify..." << endl;
@@ -187,7 +188,12 @@ int construct_camera_set(int argc, char** argv) {
 		vector<string> video_name;
 		video_name.push_back(path + "video/data/0.avi");
 		video_name.push_back(path + "video/data/1.avi");
-		camera_set = make_shared<CameraSetVirtual>(video_name);
+		video_name.push_back(path + "video/data/2.avi");
+		video_name.push_back(path + "video/data/3.avi");
+		video_name.push_back(path + "video/data/4.avi");
+		// video_name.push_back(path + "video/data/5.avi");
+		// video_name.push_back(path + "video/data/6.avi");
+		camera_set = make_shared<CameraSetVideo>(video_name);
 	}else{
 		cerr << "error video mode: " << video_mode << endl;
 	}
@@ -207,7 +213,8 @@ int construct_camera_set(int argc, char** argv) {
 	}
 
 	// for (int i = 0; i < n_cameras; ++i) {
-	for (int i = 3; i < n_cameras; ++i) {
+	// for (int i = 0; i < n_cameras; ++i) {
+	for (int i = 4; i < 5; ++i) {
 		// for (size_t i = 0; i < 1; ++i) {
 		cout << "align No." << i << " ..." << endl;
 		Mat trans;

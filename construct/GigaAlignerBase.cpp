@@ -41,18 +41,19 @@ bool GigaAlignerBase::align(Mat frame, Mat& H, Rect& rect_on_scene){
 
 	Rect rect_max(0, 0, work_layer_size.width, work_layer_size.height);
 
-	int win_rows = frame.rows * 4;
-	int win_cols = frame.cols * 4;
-	int step_row = frame.rows * 2;
-	int step_col = frame.cols * 2;
+	const int win_scale = 2;
+	int win_rows = frame.rows * win_scale;
+	int win_cols = frame.cols * win_scale;
+	int step_row = win_rows / 2;
+	int step_col = win_cols / 2;
 
 	cout << "step_row: " << step_row << endl;
 	cout << "step_col: " << step_col << endl;
 
 	showImage("frame", frame);
 
-	for (int r = 0; r * step_row < work_layer_size.height; ++r) {
-		for (int c = 0; c * step_col < work_layer_size.width; ++c) {
+	for (int r = 4; r * step_row < work_layer_size.height; ++r) {
+		for (int c = 5; c * step_col < work_layer_size.width; ++c) {
 			cout << r << "\t" << c << "\t";
 			cout .flush();
 
