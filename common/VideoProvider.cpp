@@ -82,10 +82,10 @@ bool VideoProvider::getFrame(cv::Mat& frame, int index) {
 	// TODO: remove black edge
 	std::vector<cv::Point2f> corner_frame = getCornerOnFrame(frame.size());
 	std::vector<cv::Point2f> corner_scene = getCornerOnScene(frame.size(), m_trans[index]);
-	line(dst, corner_scene[0], corner_scene[1], Scalar(255, 0, 0), 3);
-	line(dst, corner_scene[1], corner_scene[2], Scalar(255, 0, 0), 3);
-	line(dst, corner_scene[2], corner_scene[3], Scalar(255, 0, 0), 3);
-	line(dst, corner_scene[3], corner_scene[0], Scalar(255, 0, 0), 3);
+	line(dst, corner_scene[0], corner_scene[1], Scalar(0, 0, 0), 20);
+	line(dst, corner_scene[1], corner_scene[2], Scalar(0, 0, 0), 20);
+	line(dst, corner_scene[2], corner_scene[3], Scalar(0, 0, 0), 20);
+	line(dst, corner_scene[3], corner_scene[0], Scalar(0, 0, 0), 20);
 
 	// cout << dst.size() << endl;
 	frame = dst;

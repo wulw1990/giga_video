@@ -10,17 +10,27 @@ const string win_title = "giga player";
 const int w = 1700;
 const int h = 900;
 
-const int MS = 200;
+const int FPS = 5;
+const int MS = 1000/FPS;
 
-Player::Player(std::string path, bool enable_video ) {
-	m_info.m_frame_provider = make_shared<FrameProvider>(path, enable_video);
+Player::Player(std::string path, int n_frames, string output_video ) {
+	m_frame_provider.clear();
+	for (int i = 0; i < n_frames; ++i) {
+		m_frame_provider.push_back(make_shared<FrameProvider>(path + to_string(i) + "/", false));
+	}
 
-	int n_layers = m_info.m_frame_provider->getNumLayers();
-	Size top_layer_size(m_info.m_frame_provider->getLayerWidth(n_layers - 1), m_info.m_frame_provider->getLayerHeight(n_layers - 1));
-	Size winsize(1000, 500);
+	int n_layers = m_frame_provider[0]->getNumLayers();
+	Size top_layer_size(m_frame_provider[0]->getLayerWidth(n_layers - 1), m_frame_provider[0]->getLayerHeight(n_layers - 1));
+	Size winsize(w, h);
 	m_info.m_window_controller = make_shared<WindowController>(n_layers, top_layer_size, winsize);
 
 	m_info.update = true;
+	m_frame_id = 0;
+
+	if(output_video!=""){
+		m_video_writer.open( output_video, CV_FOURCC('M', 'J', 'P', 'G'), FPS,  winsize);
+		assert(m_video_writer.isOpened());
+	}
 }
 void Player::play() {
 	Timer timer;
@@ -31,20 +41,27 @@ void Player::play() {
 		// cout << "x: " << x << "\ty: " << y << "\tz: " << z << endl;
 
 		Mat frame, mask;
-		m_info.m_frame_provider->getFrameWithMask(frame, mask, w, h, x, y, z);
+		m_frame_provider[m_frame_id]->getFrameWithMask(frame, mask, w, h, x, y, z);
 		imshow(win_title, frame);
 		// imshow(win_title + "-mask", mask);
 
 		cv::setMouseCallback(win_title, onMouse, &m_info);
-		waitKey(1);
+		char key = waitKey(1);
+		if(key=='q') break;
 
-		int ms = timer.getTimeUs()/1000;
+		m_video_writer << frame;
+
+		int ms = timer.getTimeUs() / 1000;
 		// cout << "ms: " << ms << endl;
-		if(ms < MS){
+		if (ms < MS) {
 			waitKey(MS - ms);
 		}
+
+		m_frame_id++;
+		if(m_frame_id==(int)m_frame_provider.size()) m_frame_id=0;
 		// cout << "time: " << timer.getTimeUs()/1000 << " ms" << endl;
 	}
+	m_video_writer.release();
 }
 void Player::onMouse(int event, int x, int y, int, void* data)
 {

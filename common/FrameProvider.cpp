@@ -80,7 +80,8 @@ void FrameProvider::getFrameWithMask(cv::Mat& frame, cv::Mat& mask, int w, int h
 		}
 	}
 
-	if (m_enable_video && z == m_tile_provider->getNumLayers() - 1) {
+	// if (m_enable_video && z == m_tile_provider->getNumLayers() - 1) {
+	if (m_enable_video) {
 		int n_videos = m_video_data->getNumCamera();
 		// cout << "n_videos:  " << n_videos << endl;
 
@@ -88,10 +89,20 @@ void FrameProvider::getFrameWithMask(cv::Mat& frame, cv::Mat& mask, int w, int h
 			Rect rect_video_on_scene;
 			assert(m_video_data->getRectOnScene(rect_video_on_scene, i));
 
+			int max_layer_id = m_tile_provider->getNumLayers() - 1;
+			double zoom = pow(2.0, (double)max_layer_id - z);
+			rect_video_on_scene.x /= zoom;
+			rect_video_on_scene.y /= zoom;
+			rect_video_on_scene.width /= zoom;
+			rect_video_on_scene.height /= zoom;
+
 			Rect rect_overlap = rect_video_on_scene & Rect(x, y, w, h);
+
 			if (rect_overlap.width > 0 && rect_overlap.height > 0) {
 				Mat video_frame;
 				assert(m_video_data->getFrame(video_frame, i));
+
+				resize(video_frame, video_frame, Size(video_frame.cols/zoom, video_frame.rows/zoom));
 
 				Rect rect_on_video = rect_overlap;
 				rect_on_video.x -= rect_video_on_scene.x;
