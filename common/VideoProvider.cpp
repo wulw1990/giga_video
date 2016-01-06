@@ -9,6 +9,7 @@ using namespace cv;
 #include "CameraSetBase.hpp"
 #include "CameraSetFly2.hpp"
 #include "CameraSetVideo.hpp"
+#include "CameraSetParallel.hpp"
 #include "IO.hpp"
 
 static std::vector<cv::Point2f> getCornerOnFrame(cv::Size size) {
@@ -40,8 +41,10 @@ VideoProvider::VideoProvider(string path) {
 	video_name.push_back(video_path + "2.avi");
 	video_name.push_back(video_path + "3.avi");
 	video_name.push_back(video_path + "4.avi");
+	// m_camera_set = make_shared<CameraSetParallel>(make_shared<CameraSetVideo>(video_name));
 	m_camera_set = make_shared<CameraSetVideo>(video_name);
 #else
+	m_camera_set = make_shared<CameraSetParallel>(make_shared<CameraSetFly2>());
 	m_camera_set = make_shared<CameraSetFly2>();
 #endif
 	int n_cameras = m_camera_set->getNumCamera();

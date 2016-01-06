@@ -12,7 +12,7 @@ class WindowController;
 class Player
 {
 public:
-	Player(std::string path, bool enable_video );
+	Player(std::string path, bool enable_video, std::string output_video="" );
 	~Player(){}
 	
 	void play();
@@ -27,6 +27,8 @@ public:
 			bool update;
 		};
 		Info m_info;
+
+	cv::VideoWriter m_video_writer;
 
 	static void onMouse(int event, int x, int y, int, void* data);
 };

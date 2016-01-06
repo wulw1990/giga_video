@@ -8,4 +8,6 @@ mode="video"
 # path="/media/wuliwei/data/NB_BBNC/0104/giga_video/"
 path="/media/wuliwei/win8/data/0104/giga_video/"
 # path="/media/wuliwei/data/NB_BBNC/Xiaoyun/construct/53/"
-./build/player_standalone/player_standalone $mode $path
+
+output_name="screen.avi"
+./build/player_standalone/player_standalone $mode $path $output_name

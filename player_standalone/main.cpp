@@ -33,8 +33,8 @@ int image(int argc, char** argv){
 	return 0;
 }
 int video(int argc, char** argv){
-	assert(argc>=2);
-	Player player( argv[1], true);
+	assert(argc>=3);
+	Player player( argv[1], true, argv[2]);
 	player.play();
 	return 0;
 }
