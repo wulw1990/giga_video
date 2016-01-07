@@ -247,7 +247,7 @@ int construct_xiaoyun(int argc, char** argv) {
 	const int len = 512;
 	int n_layers = 4;
 
-#if 0
+#if 1
 	DirDealer dir_dealer;
 	Timer timer;
 	for (int i = 0; i < n_frames; ++i) {
@@ -255,7 +255,7 @@ int construct_xiaoyun(int argc, char** argv) {
 		string name;
 		{
 			std::stringstream stream;
-			stream << "xiaoyun_" << setfill('0') << setw(4) << i << ".jpg";
+			stream << "" << setfill('0') << setw(4) << i << ".jpg";
 			name = stream.str();
 		}
 

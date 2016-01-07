@@ -4,4 +4,5 @@
 
 mode="record"
 path="/home/bbnc/rec/"
-./build/camera/camera $mode $path
+n_frames=10
+./build/camera/camera $mode $path $n_frames

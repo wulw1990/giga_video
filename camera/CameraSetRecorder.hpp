@@ -11,7 +11,7 @@ class CameraSetRecorder
 {
 public:
 	CameraSetRecorder(std::shared_ptr<CameraSetBase> camera_set);
-	bool record(std::string path);
+	bool record(std::string path, int n_frames=100);
 
 private:
 	std::shared_ptr<CameraSetBase> m_camera_set; 
