@@ -42,3 +42,22 @@ transmit between master and slave
 4. 编辑./sh/player_standalone, mode设置为image，设置其他对应参数
 
 5. 运行./sh/player_standalone 浏览。双击放大，右键双击缩小。按下左键拖动表示移动画面。
+
+
+## 录制摄像头视频-单机模式
+编辑./sh/camera.sh 设置mode="record" 设置对应参数
+
+运行脚本./sh/camera.sh 进行录制
+
+## 录制摄像头视频-多机模式
+选择其中一台机器作为master，其他作为slave
+
+在master机器上，编辑./sh/record_master.sh 设置对应参数
+
+运行脚本./sh/record_master.sh
+
+在slave机器上，编辑./sh/record_slave.sh 设置对应参数
+
+运行脚本./sh/record_slave.sh 
+
+./sh/record_master.sh中制定了slave的数量，当所有slave连接到master后，各个机器分别开始录制。
