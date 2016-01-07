@@ -172,7 +172,7 @@ int record_master(int argc, char** argv) {
 
 	//init camera, and recorder
 	shared_ptr<CameraSetBase> camera_set;
-	if (1) {
+	if (0) {
 		string path = "/media/wuliwei/data/NB_BBNC/giga_video/zijing16/video/";
 		vector<string> name;
 		name.push_back(path + "MVI_6878/video.avi");
@@ -213,7 +213,7 @@ int record_slave(int argc, char** argv) {
 
 	//init camera, and recorder
 	shared_ptr<CameraSetBase> camera_set;
-	if (1) {
+	if (0) {
 		string path = "/media/wuliwei/data/NB_BBNC/giga_video/zijing16/video/";
 		vector<string> name;
 		name.push_back(path + "MVI_6878/video.avi");

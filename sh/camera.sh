@@ -3,6 +3,6 @@
 # ./build/camera/camera $mode $scale
 
 mode="record"
-path="/home/bbnc/rec/"
-n_frames=10
+path="/home/bbncnuc1/rec/"
+n_frames=100
 ./build/camera/camera $mode $path $n_frames
