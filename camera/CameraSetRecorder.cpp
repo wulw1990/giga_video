@@ -16,7 +16,7 @@ CameraSetRecorder::CameraSetRecorder(std::shared_ptr<CameraSetBase> camera_set) 
 	m_camera_set = camera_set;
 	m_thread.resize(m_camera_set->getNumCamera());
 }
-bool CameraSetRecorder::record(std::string path) {
+bool CameraSetRecorder::record(std::string path, int n_frames) {
 	int n_cameras = m_camera_set->getNumCamera();
 	//int n_cameras = 4;
 	if (n_cameras < 1) {
@@ -45,7 +45,7 @@ bool CameraSetRecorder::record(std::string path) {
 	Timer timer;
 	vector<Mat> frame(n_cameras);
 	vector<string> name(n_cameras);
-	for (int t = 0; t < 100; ++t) {
+	for (int t = 0; t < n_frames; ++t) {
 		timer.reset();
 		for (int i = 0 ; i < n_cameras; ++i) {
 			assert(m_camera_set->read(frame[i], i));
