@@ -88,11 +88,12 @@ int demo(int argc, char** argv) {
 	return 0;
 }
 int record(int argc, char** argv) {
-	assert(argc >= 2);
+	assert(argc >= 3);
 	string path(argv[1]);
+	int n_frames = atoi(argv[2]);
 
 	CameraSetRecorder recorder( make_shared<CameraSetParallel>() );
-	recorder.record(path);
+	recorder.record(path, n_frames);
 
 	return 0;
 }
