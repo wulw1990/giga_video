@@ -24,6 +24,7 @@ class Player
 			int pre_y;
 			std::shared_ptr<WindowController> m_window_controller;
 			bool update;
+			int sZoom;
 		};
 		Info m_info;
 
