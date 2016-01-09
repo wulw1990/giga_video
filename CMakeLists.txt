@@ -8,13 +8,14 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-write-strings")
 
-set(FlyCapture_HEADERS "/usr/include/flycapture")
-set(FlyCapture_LIBS "flycapture")
+add_definitions(-DENABLE_FLY_CAPTRUE)
+if(DEFINED ENABLE_FLY_CAPTRUE)
+	set(FlyCapture_HEADERS "/usr/include/flycapture")
+	set(FlyCapture_LIBS "flycapture")
+endif()
 
 ADD_SUBDIRECTORY(common)
-
 ADD_SUBDIRECTORY(construct)
-
 ADD_SUBDIRECTORY(camera)
 
 ADD_SUBDIRECTORY(player_src)

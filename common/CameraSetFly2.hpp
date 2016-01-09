@@ -3,9 +3,7 @@
 
 #include "CameraSetBase.hpp"
 
-#define FLY_CAPTRUE 
-
-#ifdef FLY_CAPTRUE
+#ifdef ENABLE_FLY_CAPTRUE
 #include <FlyCapture2.h>
 
 class CameraSetFly2: public CameraSetBase

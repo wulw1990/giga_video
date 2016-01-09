@@ -21,6 +21,23 @@ giga show camera set
 
 transmit between master and slave
 
+## 选择是否编译FlyCapture
+如果不在采集设备上运行，编译项目会出现FlyCapture的编译错误。
+
+编辑最外层目录的CMakeLists.txt
+
+如果启用FlyCapture，则解注释：
+
+```
+add_definitions(-DENABLE_FLY_CAPTRUE)
+```
+
+否则，将其注释掉
+
+```
+#add_definitions(-DENABLE_FLY_CAPTRUE)
+```
+
 ## 肖赟demo的构建和浏览
 编辑./sh/construct.sh 调用mode="construct_xiaoyun"，设置对应的参数
 
