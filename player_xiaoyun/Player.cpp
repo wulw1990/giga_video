@@ -25,6 +25,7 @@ Player::Player(std::string path, int n_frames, string output_video ) {
 	m_info.m_window_controller = make_shared<WindowController>(n_layers, top_layer_size, winsize);
 
 	m_info.update = true;
+	m_info.sZoom = 0;
 	m_frame_id = 0;
 
 	if(output_video!=""){
@@ -34,9 +35,15 @@ Player::Player(std::string path, int n_frames, string output_video ) {
 }
 void Player::play() {
 	Timer timer;
+
 	while (1) {
 		timer.reset();
 		double x, y, z;
+		if(m_info.sZoom != 0.0)
+		{
+			m_info.m_window_controller->zoom(0.1*(double)m_info.sZoom/abs(m_info.sZoom));
+			m_info.sZoom -= m_info.sZoom/abs(m_info.sZoom);
+		}
 		m_info.m_window_controller->getXYZ(x, y, z);
 		// cout << "x: " << x << "\ty: " << y << "\tz: " << z << endl;
 
@@ -53,7 +60,7 @@ void Player::play() {
 
 		int ms = timer.getTimeUs() / 1000;
 		// cout << "ms: " << ms << endl;
-		if (ms < MS) {
+		if (ms < MS && m_info.sZoom == 0) {
 			waitKey(MS - ms);
 		}
 
@@ -65,26 +72,46 @@ void Player::play() {
 }
 void Player::onMouse(int event, int x, int y, int, void* data)
 {
+	static bool sLButtonDown = false;
+	Mat frame,mask;
 	if (event != EVENT_LBUTTONDOWN
 	        && event != EVENT_LBUTTONUP
 	        && event != EVENT_LBUTTONDBLCLK
-	        && event != EVENT_RBUTTONDBLCLK)
+	        && event != EVENT_RBUTTONDBLCLK
+	        && event != EVENT_MOUSEMOVE)
 		return;
 	Info* info = (Info*)data;
+	
+	if(info->sZoom != 0)
+	{
+		return;
+	}
 	switch (event)
 	{
 	case EVENT_LBUTTONDOWN:
+		sLButtonDown = true;
 		info->pre_x = x;
 		info->pre_y = y;
 		break;
 	case EVENT_LBUTTONUP:
+		sLButtonDown = false;
 		info->m_window_controller->move(info->pre_x - x, info->pre_y - y);
 		break;
 	case EVENT_LBUTTONDBLCLK:
-		info->m_window_controller->zoom(1);
+		info->sZoom = 10;
+		sLButtonDown = false;
 		break;
 	case EVENT_RBUTTONDBLCLK:
-		info->m_window_controller->zoom(-1);
+		info->sZoom = -10;
+		sLButtonDown = false;
+		break;
+	case EVENT_MOUSEMOVE:
+		if(sLButtonDown)
+		{
+			info->m_window_controller->move(info->pre_x - x, info->pre_y - y);
+			info->pre_x = x;
+			info->pre_y = y;
+		}
 		break;
 	}
 	info->update = true;

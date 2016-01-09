@@ -35,7 +35,7 @@
 
 
 mode="construct_xiaoyun"
-path_in="/media/wuliwei/data/NB_BBNC/Xiaoyun2/result_07012016/"
-path_out="/media/wuliwei/data/NB_BBNC/Xiaoyun2/construct/"
-n_frames=50
+path_in="/home/bbncnuc1/code/data/2/"
+path_out="/home/bbncnuc1/code/data/2_out/"
+n_frames=10
 ./build/construct/construct $mode $path_in $path_out $n_frames

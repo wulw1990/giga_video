@@ -3,7 +3,7 @@
 
 #include "CameraSetBase.hpp"
 
-// #define FLY_CAPTRUE 
+#define FLY_CAPTRUE 
 
 #ifdef FLY_CAPTRUE
 #include <FlyCapture2.h>
@@ -15,8 +15,8 @@ class CameraSetFly2: public CameraSetBase
 		~CameraSetFly2();
 		bool read(cv::Mat& frame, int index);
 		int getNumCamera() {
-			// return numCameras;
-			return 4;
+			return numCameras;
+			// return min(4, numCameras);
 		}
 	private:
 		unsigned int numCameras;
