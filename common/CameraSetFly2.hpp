@@ -7,11 +7,12 @@
 
 #ifdef FLY_CAPTRUE
 #include <FlyCapture2.h>
+#include <memory>
 
 class CameraSetFly2: public CameraSetBase
 {
 	public:
-		CameraSetFly2();
+		CameraSetFly2(double shutter = -1.0);
 		~CameraSetFly2();
 		bool read(cv::Mat& frame, int index);
 		int getNumCamera() {
@@ -20,9 +21,9 @@ class CameraSetFly2: public CameraSetBase
 		}
 	private:
 		unsigned int numCameras;
-		FlyCapture2::Camera** ppCameras;
+		std::vector<std::shared_ptr<FlyCapture2::Camera> > m_camera;
 
-		void setup();
+		void setup(double shutter);
 		void release();
 
 		unsigned int getSerialNum(unsigned int index);

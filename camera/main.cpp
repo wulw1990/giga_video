@@ -57,7 +57,7 @@ int demo(int argc, char** argv) {
 	shared_ptr<CameraSetBase> camera_set;
 	if (1) {
 		// camera_set = make_shared<CameraSetParallel>();
-		camera_set = make_shared<CameraSetFly2>();
+		camera_set = make_shared<CameraSetFly2>(10);
 		camera_set = make_shared<CameraSetParallel>(camera_set);
 	} else {
 		string path = "/media/wuliwei/data/NB_BBNC/giga_video/zijing16/video/";

@@ -35,7 +35,7 @@
 
 
 mode="construct_xiaoyun"
-path_in="/home/bbncnuc1/code/data/2/"
-path_out="/home/bbncnuc1/code/data/2_out/"
-n_frames=10
+path_in="/home/bbncnuc1/code/data/9/"
+path_out="/home/bbncnuc1/code/data/9_out/"
+n_frames=50
 ./build/construct/construct $mode $path_in $path_out $n_frames

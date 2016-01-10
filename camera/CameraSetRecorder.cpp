@@ -31,7 +31,7 @@ bool CameraSetRecorder::record(std::string path, int n_frames) {
 	}
 
 	// vector<VideoWriter> writer(n_cameras);
-	int fps = 5;
+	int fps = 4;
 	int MS = 1000 / fps;
 	// cout << "*************n_cameras = " << n_cameras << "********************" <<endl;
 	// for (int i = 0; i < n_cameras; ++i) {
