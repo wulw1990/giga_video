@@ -26,16 +26,18 @@ transmit between master and slave
 
 编辑最外层目录的CMakeLists.txt
 
-如果启用FlyCapture，则解注释：
+如果启用FlyCapture：
 
 ```
-add_definitions(-DENABLE_FLY_CAPTRUE)
+if(1)
+	add_definitions(-DENABLE_FLY_CAPTRUE)
 ```
 
-否则，将其注释掉
+否则:
 
 ```
-#add_definitions(-DENABLE_FLY_CAPTRUE)
+if(0)
+	add_definitions(-DENABLE_FLY_CAPTRUE)
 ```
 
 ## 肖赟demo的构建和浏览

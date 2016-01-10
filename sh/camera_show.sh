@@ -1,5 +1,5 @@
 mode="demo"
-scale=8
+scale=4
 ./build/camera/camera $mode $scale
 
 # mode="record"

@@ -5,6 +5,7 @@
 
 class CameraSetBase {
 	public:
+		virtual void setShutter(double shutter, int index){}
 		virtual int getNumCamera() = 0;
 		virtual bool read(cv::Mat& frame, int index) = 0;
 };

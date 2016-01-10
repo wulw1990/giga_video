@@ -68,19 +68,21 @@ int demo(int argc, char** argv) {
 		name.push_back(path + "MVI_6883/video.avi");
 		camera_set = make_shared<CameraSetVideo>(name);
 	}
-
-	cout << "1" << endl;
 	int n_cameras = camera_set->getNumCamera();
-	cout << "cameras: " << n_cameras << endl;
-
 	Timer timer;
-
-
-
-	while (1) {
+	for (int i = 0; i < n_cameras; ++i) {
+		camera_set->setShutter(3.0, i);
+	}
+	for (int t = 0; t < 1000; ++t) {
+		// if (t % 5 == 0) {
+		// camera_set->setShutter(3);
+		// }
 		timer.reset();
 		Mat frame;
 		for (int i = 0; i < n_cameras; ++i) {
+			if (i == 0) {
+				camera_set->setShutter(0.5 + (t / 5) % 10, i);
+			}
 			assert(camera_set->read(frame, i));
 			// cout << frame.size() << endl;
 			resize(frame, frame, Size(frame.cols / scale, frame.rows / scale));
@@ -88,7 +90,7 @@ int demo(int argc, char** argv) {
 			waitKey(1);
 		}
 		// cout << timer.getTimeUs()/1000 << endl;
-		// waitKey(33);
+		waitKey(200);
 	}
 	return 0;
 }

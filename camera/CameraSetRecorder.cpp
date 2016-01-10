@@ -47,6 +47,9 @@ bool CameraSetRecorder::record(std::string path, int n_frames) {
 	vector<string> name(n_cameras);
 	for (int t = 0; t < n_frames; ++t) {
 		timer.reset();
+		if (t % 5 == 0) {
+			m_camera_set->setShutter(0.5 + (t / 5) % 10, 0);
+		}
 		for (int i = 0 ; i < n_cameras; ++i) {
 			assert(m_camera_set->read(frame[i], i));
 		}

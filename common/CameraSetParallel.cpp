@@ -33,6 +33,9 @@ CameraSetParallel::CameraSetParallel(std::shared_ptr<CameraSetBase> camera_set) 
 	m_camera_set = camera_set;
 	setup();
 }
+void CameraSetParallel::setShutter(double shutter, int index){
+	m_camera_set->setShutter(shutter, index);
+}
 void CameraSetParallel::setup() {
 	m_buffer.resize(m_camera_set->getNumCamera());
 	m_thread.resize(m_camera_set->getNumCamera());

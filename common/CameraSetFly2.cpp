@@ -59,6 +59,7 @@ void CameraSetFly2::setup() {
 			PrintError( error );
 			return;
 		}
+		// cout << "guid: " << guid << endl;
 		error = m_camera[i]->Connect(&guid);
 		if (error != PGRERROR_OK) {
 			PrintError( error );
@@ -80,25 +81,6 @@ void CameraSetFly2::setup() {
 			return;
 		}
 		// PrintCameraInfo(&camInfo);
-		double shutter = 10;
-		if (shutter > 0) {
-			cout << "setting shutter... " << shutter << endl;
-			//Declare a Property struct.
-			Property prop;
-			//Define the property to adjust.
-			prop.type = SHUTTER;
-			//Ensure the property is on.
-			prop.onOff = true;
-			//Ensure auto-adjust mode is off.
-			prop.autoManualMode = false;
-			//Ensure the property is set up to use absolute value control.
-			prop.absControl = true;
-			//Set the absolute value of shutter to 20 ms.
-			prop.absValue = shutter;
-			//Set the property.
-			error = m_camera[i]->SetProperty( &prop  );
-			// cout << "error: " << error << endl;
-		}
 	}
 }
 CameraSetFly2::CameraSetFly2() {
@@ -106,7 +88,52 @@ CameraSetFly2::CameraSetFly2() {
 	setup();
 	release();
 	setup();
+	setStaticProperty();
 	cout << "ok. n_cameras = " << numCameras << endl;
+}
+void CameraSetFly2::setStaticProperty() {
+	for (size_t i = 0; i < m_camera.size(); ++i) {
+		Property prop;
+		prop.type = AUTO_EXPOSURE;
+		prop.onOff = true;
+		prop.autoManualMode = false;
+		prop.absControl = true;
+		prop.absValue = 1.30;
+		Error error = m_camera[i]->SetProperty( &prop  );
+	}
+	for (size_t i = 0; i < m_camera.size(); ++i) {
+		Property prop;
+		prop.type = GAIN;
+		prop.onOff = true;
+		prop.autoManualMode = false;
+		prop.absControl = true;
+		prop.absValue = 0.0;
+		Error error = m_camera[i]->SetProperty( &prop  );
+	}
+	for (size_t i = 0; i < m_camera.size(); ++i) {
+		Property prop;
+		prop.type = BRIGHTNESS;
+		prop.onOff = true;
+		prop.autoManualMode = false;
+		prop.absControl = true;
+		prop.absValue = 4.88;
+		Error error = m_camera[i]->SetProperty( &prop  );
+	}
+}
+void CameraSetFly2::setShutter(double shutter, int index) {
+	if (index < 0 || index > (int)numCameras) {
+		return;
+	}
+	cout << "setting shutter... " << shutter << endl;
+	if (shutter > 0) {
+		Property prop;
+		prop.type = SHUTTER;
+		prop.onOff = true;
+		prop.autoManualMode = false;
+		prop.absControl = true;
+		prop.absValue = shutter;
+		Error error = m_camera[index]->SetProperty( &prop  );
+	}
 }
 bool CameraSetFly2::read(cv::Mat& frame, int index) {
 	ErrorType error = getCapture(frame, index);

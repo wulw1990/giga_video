@@ -12,6 +12,7 @@ class CameraSetFly2: public CameraSetBase
 	public:
 		CameraSetFly2();
 		~CameraSetFly2();
+		void setShutter(double shutter, int index);
 		bool read(cv::Mat& frame, int index);
 		int getNumCamera() {
 			return numCameras;
@@ -30,6 +31,8 @@ class CameraSetFly2: public CameraSetBase
 		void PrintError(FlyCapture2::Error error);
 
 		FlyCapture2::ErrorType getCapture(cv::Mat & getImage, int index);
+
+		void setStaticProperty();
 
 };
 #else
