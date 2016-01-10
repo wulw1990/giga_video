@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<opencv_storage>
+
+<exposure>"1.30"</exposure>
+<gain>"0.0"</gain>
+<brightness>"4.88"</brightness>
+
+<shutter_dynamic>
+	"0"
+	"1"
+</shutter_dynamic>
+
+<shutter_min>
+	"0.5"
+	"0.5"
+</shutter_min>
+
+<shutter_max>
+	"10.5"
+	"10.5"
+</shutter_max>
+
+<shutter_step>
+	"10"
+	"10"
+</shutter_step>
+
+
+</opencv_storage>

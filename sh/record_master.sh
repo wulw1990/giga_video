@@ -1,6 +1,7 @@
 mode="record_master"
-path="/home/bbncnuc1/rec/"
-n_frames=100
-n_slaves=2
-port=5000
-./build/camera/camera $mode $path $n_frames $n_slaves $port
+path="../record_master/"
+n_frames=50
+n_slaves=0
+port=5002
+setting_file="./sh/record_master_setting.xml"
+./build/camera/camera $mode $path $n_frames $n_slaves $port $setting_file

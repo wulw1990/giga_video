@@ -3,6 +3,7 @@
 #ifdef ENABLE_FLY_CAPTRUE
 
 #include <iostream>
+#include <fstream>
 #include <sstream>
 
 using namespace FlyCapture2;
@@ -83,12 +84,16 @@ void CameraSetFly2::setup() {
 		// PrintCameraInfo(&camInfo);
 	}
 }
-CameraSetFly2::CameraSetFly2() {
+CameraSetFly2::CameraSetFly2(string setting_file): m_setting(setting_file) {
 	cout << "init camera set...  " << endl;
 	setup();
 	release();
 	setup();
 	setStaticProperty();
+	m_frame_id.resize(numCameras);
+	for (size_t i = 0; i < m_frame_id.size(); ++i) {
+		m_frame_id[i] = 0;
+	}
 	cout << "ok. n_cameras = " << numCameras << endl;
 }
 void CameraSetFly2::setStaticProperty() {
@@ -98,7 +103,7 @@ void CameraSetFly2::setStaticProperty() {
 		prop.onOff = true;
 		prop.autoManualMode = false;
 		prop.absControl = true;
-		prop.absValue = 1.30;
+		prop.absValue = m_setting.exposure;
 		Error error = m_camera[i]->SetProperty( &prop  );
 	}
 	for (size_t i = 0; i < m_camera.size(); ++i) {
@@ -107,7 +112,7 @@ void CameraSetFly2::setStaticProperty() {
 		prop.onOff = true;
 		prop.autoManualMode = false;
 		prop.absControl = true;
-		prop.absValue = 0.0;
+		prop.absValue = m_setting.gain;
 		Error error = m_camera[i]->SetProperty( &prop  );
 	}
 	for (size_t i = 0; i < m_camera.size(); ++i) {
@@ -116,16 +121,22 @@ void CameraSetFly2::setStaticProperty() {
 		prop.onOff = true;
 		prop.autoManualMode = false;
 		prop.absControl = true;
-		prop.absValue = 4.88;
+		prop.absValue = m_setting.brightness;
 		Error error = m_camera[i]->SetProperty( &prop  );
 	}
 }
-void CameraSetFly2::setShutter(double shutter, int index) {
+bool CameraSetFly2::read(cv::Mat& frame, int index) {
 	if (index < 0 || index > (int)numCameras) {
-		return;
+		return false;
 	}
-	cout << "setting shutter... " << shutter << endl;
-	if (shutter > 0) {
+	// cout << "m_frame_id " << index << " : " << m_frame_id[index] << endl;
+	m_frame_id[index]++;
+	if (index < (int)m_setting.shutter_dynamic.size() ) {
+		double shutter = m_setting.shutter_min[index];
+		if (m_setting.shutter_dynamic[index]) {
+			shutter = (m_setting.shutter_max[index] - m_setting.shutter_min[index]) /
+		                m_setting.shutter_step[index] * m_frame_id[index];
+		}
 		Property prop;
 		prop.type = SHUTTER;
 		prop.onOff = true;
@@ -134,8 +145,9 @@ void CameraSetFly2::setShutter(double shutter, int index) {
 		prop.absValue = shutter;
 		Error error = m_camera[index]->SetProperty( &prop  );
 	}
-}
-bool CameraSetFly2::read(cv::Mat& frame, int index) {
+	if (m_frame_id[index] >= m_setting.shutter_step[index]) {
+		m_frame_id[index] = 0;
+	}
 	ErrorType error = getCapture(frame, index);
 	return (error == PGRERROR_OK);
 }
@@ -167,5 +179,60 @@ void CameraSetFly2::release() {
 }
 CameraSetFly2::~CameraSetFly2() {
 	release();
+}
+CameraSetFly2::Setting::Setting(string setting_file) {
+	FileStorage fs(setting_file, FileStorage::READ);
+	if (!fs.isOpened()) {
+		cout << "Could not open the configuration file: \"" << setting_file << "\"" << endl;
+		exit(-1);
+	}
+	// const int W = 20;
+	cout << "-------------------Setting : ---------------------" << endl;
+	exposure = atof(readStringItem(fs, "exposure").c_str());
+	gain = atof(readStringItem(fs, "gain").c_str());
+	brightness = atof(readStringItem(fs, "brightness").c_str());
+
+	shutter_dynamic = stringList2IntList(readStringList(fs, "shutter_dynamic"));
+	shutter_min = stringList2DoubleList(readStringList(fs, "shutter_min"));
+	shutter_max = stringList2DoubleList(readStringList(fs, "shutter_max"));
+	shutter_step = stringList2IntList(readStringList(fs, "shutter_step"));
+
+	assert(shutter_dynamic.size() == shutter_min.size());
+	assert(shutter_dynamic.size() == shutter_max.size());
+	assert(shutter_dynamic.size() == shutter_step.size());
+
+	fs.release();
+	cout << "--------------------------------------------------------" << endl;
+}
+string CameraSetFly2::Setting::readStringItem(FileStorage& fs, string node_name) {
+	string str;
+	fs[node_name ] >> str;
+	cout << node_name << " : " << str << endl;
+	return str;
+}
+vector<string> CameraSetFly2::Setting::readStringList(FileStorage& fs, string node_name) {
+	vector<string> list;
+	FileNode node = fs[node_name];
+	FileNodeIterator it = node.begin(), it_end = node.end();
+	for ( ; it != it_end; ++it )
+		list.push_back((string)*it);
+	cout << node_name << " : " << list.size() << endl;
+	for (size_t i = 0; i < list.size(); ++i)
+		cout <<  " \t " << list[i] << endl;
+	return list;
+}
+vector<int> CameraSetFly2::Setting::stringList2IntList(std::vector<std::string> str) {
+	vector<int> int_list(str.size());
+	for (size_t i = 0; i < str.size(); ++i) {
+		int_list[i] = atoi(str[i].c_str());
+	}
+	return int_list;
+}
+vector<double> CameraSetFly2::Setting::stringList2DoubleList(std::vector<std::string> str) {
+	vector<double> double_list(str.size());
+	for (size_t i = 0; i < str.size(); ++i) {
+		double_list[i] = atof(str[i].c_str());
+	}
+	return double_list;
 }
 #endif

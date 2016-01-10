@@ -183,16 +183,17 @@ int test_geo_align(int argc, char** argv) {
 	return 0;
 }
 int construct_camera_set(int argc, char** argv) {
-	assert(argc >= 4);
+	assert(argc > 4);
 	string path(argv[1]);
 	string video_mode(argv[2]);
 	string align_mode(argv[3]);
+	string setting_file(argv[4]);
 
 	shared_ptr<CameraSetBase> camera_set;
 	shared_ptr<GigaAlignerBase> giga_aligner;
 
 	if (video_mode == "fly2") {
-		camera_set = make_shared<CameraSetFly2>();
+		camera_set = make_shared<CameraSetFly2>(setting_file);
 	} else if (video_mode == "virtual") {
 		vector<string> video_name;
 		video_name.push_back(path + "video/data/0.avi");

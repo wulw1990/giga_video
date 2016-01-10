@@ -20,6 +20,3 @@ target_link_libraries( ${NAME} ${OpenCV_LIBS} ${FlyCapture_LIBS})
 
 include_directories(${CMAKE_SOURCE_DIR}/common)
 target_link_libraries( ${NAME} common )
-
-include_directories(${CMAKE_SOURCE_DIR}/player_src)
-target_link_libraries( ${NAME} player )

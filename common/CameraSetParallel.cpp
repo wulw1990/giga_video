@@ -25,16 +25,9 @@ static void internal_read(std::shared_ptr<CameraSetBase> camera_set, cv::Mat& fr
 		}
 	}
 }
-CameraSetParallel::CameraSetParallel() {
-	m_camera_set = make_shared<CameraSetFly2>();
-	setup();
-}
 CameraSetParallel::CameraSetParallel(std::shared_ptr<CameraSetBase> camera_set) {
 	m_camera_set = camera_set;
 	setup();
-}
-void CameraSetParallel::setShutter(double shutter, int index){
-	m_camera_set->setShutter(shutter, index);
 }
 void CameraSetParallel::setup() {
 	m_buffer.resize(m_camera_set->getNumCamera());
@@ -49,7 +42,6 @@ void CameraSetParallel::setup() {
 	}
 }
 bool CameraSetParallel::read(cv::Mat& frame, int index) {
-	// return m_camera_set->read(frame, index);
 	if (index < 0 || index >= m_camera_set->getNumCamera()) {
 		return false;
 	}

@@ -12,7 +12,6 @@ using namespace cv;
 #include "DirDealer.h"
 #include "Transmitter.hpp"
 
-//#include "SocketServer.hpp"
 #include "CameraSetFly2.hpp"
 #include "CameraSetVideo.hpp"
 #include "CameraSetImage.hpp"
@@ -20,7 +19,6 @@ using namespace cv;
 #include "CameraSetRecorder.hpp"
 
 int demo(int argc, char** argv);
-int record(int argc, char** argv);
 int demo_virtual(int argc, char** argv);
 int record_master(int argc, char** argv);
 int record_slave(int argc, char** argv);
@@ -34,7 +32,6 @@ int main(int argc, char **argv) {
 	transform(mode.begin(), mode.end(), mode.begin(), ::tolower);
 
 	if (mode == "demo") return demo(argc, argv);
-	else if (mode == "record") return record(argc, argv);
 	else if (mode == "demo_virtual") return demo_virtual(argc, argv);
 	else if (mode == "record_master") return record_master(argc, argv);
 	else if (mode == "record_slave") return record_slave(argc, argv);
@@ -44,20 +41,14 @@ int main(int argc, char **argv) {
 	}
 	return 0;
 }
-// Mat mergeFrame(vector<Mat>& frame){
-//             	for(size_t i=0; i<frame.size(); ++i){
-//             		// resize(frame[i], frame[i], Size(frame[i].cols/scale, frame[i].rows/scale));
-//             	}
-// 	return frame[0];
-// }
 int demo(int argc, char** argv) {
-	assert(argc >= 2);
+	assert(argc >= 3);
 	int scale = atoi(argv[1]);
+	string setting_file(argv[2]);
 
 	shared_ptr<CameraSetBase> camera_set;
 	if (1) {
-		// camera_set = make_shared<CameraSetParallel>();
-		camera_set = make_shared<CameraSetFly2>();
+		camera_set = make_shared<CameraSetFly2>(setting_file);
 		camera_set = make_shared<CameraSetParallel>(camera_set);
 	} else {
 		string path = "/media/wuliwei/data/NB_BBNC/giga_video/zijing16/video/";
@@ -70,38 +61,17 @@ int demo(int argc, char** argv) {
 	}
 	int n_cameras = camera_set->getNumCamera();
 	Timer timer;
-	for (int i = 0; i < n_cameras; ++i) {
-		camera_set->setShutter(3.0, i);
-	}
 	for (int t = 0; t < 1000; ++t) {
-		// if (t % 5 == 0) {
-		// camera_set->setShutter(3);
-		// }
 		timer.reset();
 		Mat frame;
-		// for (int i = 0; i < n_cameras; ++i) {
-		// 	if (i == 0) {
-		// 		camera_set->setShutter(0.5 + (t / 5) % 10, i);
-		// 	}
+		for (int i = 0; i < n_cameras; ++i) {
 			assert(camera_set->read(frame, i));
-			// cout << frame.size() << endl;
 			resize(frame, frame, Size(frame.cols / scale, frame.rows / scale));
 			imshow("frame" + to_string(i), frame);
 			waitKey(1);
 		}
-		// cout << timer.getTimeUs()/1000 << endl;
 		waitKey(200);
 	}
-	return 0;
-}
-int record(int argc, char** argv) {
-	assert(argc >= 3);
-	string path(argv[1]);
-	int n_frames = atoi(argv[2]);
-
-	CameraSetRecorder recorder( make_shared<CameraSetParallel>() );
-	recorder.record(path, n_frames);
-
 	return 0;
 }
 int demo_virtual(int argc, char** argv) {
@@ -150,11 +120,12 @@ int demo_virtual(int argc, char** argv) {
 }
 int record_master(int argc, char** argv) {
 	cout << "record_master" << endl;
-	assert(argc >= 5);
+	assert(argc >= 6);
 	string path(argv[1]);
 	int n_frames = atoi(argv[2]);
 	int n_slaves = atoi(argv[3]);
 	int port = atoi(argv[4]);
+	string setting_file(argv[5]);
 
 	Transmitter transmitter;
 	int server_id = transmitter.initSocketServer(port);
@@ -183,7 +154,7 @@ int record_master(int argc, char** argv) {
 		name.push_back(path + "MVI_6883/video.avi");
 		camera_set = make_shared<CameraSetVideo>(name);
 	} else {
-		camera_set = make_shared<CameraSetFly2>();
+		camera_set = make_shared<CameraSetFly2>(setting_file);
 	}
 	camera_set = make_shared<CameraSetParallel>(camera_set);
 	CameraSetRecorder recorder( camera_set );
@@ -204,11 +175,12 @@ int record_master(int argc, char** argv) {
 }
 int record_slave(int argc, char** argv) {
 	cout << "record_slave" << endl;
-	assert(argc >= 5);
+	assert(argc >= 6);
 	string path(argv[1]);
 	int n_frames = atoi(argv[2]);
 	string ip(argv[3]);
 	int port = atoi(argv[4]);
+	string setting_file(argv[5]);
 
 	Transmitter transmitter;
 	int socket_id = transmitter.initSocketClient(ip, port);
@@ -224,7 +196,7 @@ int record_slave(int argc, char** argv) {
 		name.push_back(path + "MVI_6883/video.avi");
 		camera_set = make_shared<CameraSetVideo>(name);
 	} else {
-		camera_set = make_shared<CameraSetFly2>();
+		camera_set = make_shared<CameraSetFly2>(setting_file);
 	}
 	camera_set = make_shared<CameraSetParallel>(camera_set);
 	CameraSetRecorder recorder( camera_set );

@@ -10,9 +10,7 @@
 class CameraSetParallel: public CameraSetBase
 {
 public:
-	CameraSetParallel();
 	CameraSetParallel(std::shared_ptr<CameraSetBase> camera_set);
-	void setShutter(double shutter, int index);
 	bool read(cv::Mat& frame, int index);
 	int getNumCamera();
 private:
