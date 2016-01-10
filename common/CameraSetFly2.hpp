@@ -10,7 +10,7 @@
 class CameraSetFly2: public CameraSetBase
 {
 	public:
-		CameraSetFly2(double shutter = -1.0);
+		CameraSetFly2();
 		~CameraSetFly2();
 		bool read(cv::Mat& frame, int index);
 		int getNumCamera() {
@@ -21,7 +21,7 @@ class CameraSetFly2: public CameraSetBase
 		unsigned int numCameras;
 		std::vector<std::shared_ptr<FlyCapture2::Camera> > m_camera;
 
-		void setup(double shutter);
+		void setup();
 		void release();
 
 		unsigned int getSerialNum(unsigned int index);
@@ -37,6 +37,7 @@ class CameraSetFly2: public CameraSetBase
 class CameraSetFly2: public CameraSetBase
 {
 public:
+	CameraSetFly2(){}
 	bool read(cv::Mat& frame, int index){
 		std::cerr << "no fly capture" << std::endl;
 		return false;

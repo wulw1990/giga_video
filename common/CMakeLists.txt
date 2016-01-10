@@ -8,9 +8,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-result")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unknown-pragmas")
 
-#set(FlyCapture_HEADERS "/usr/include/flycapture")
-#set(FlyCapture_LIBS "flycapture")
-
 SET(NAME "common")
 
 file( GLOB LIB_SOURCES *.cpp )

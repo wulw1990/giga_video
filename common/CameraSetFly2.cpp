@@ -1,6 +1,6 @@
 #include "CameraSetFly2.hpp"
 
-#ifdef FLY_CAPTRUE
+#ifdef ENABLE_FLY_CAPTRUE
 
 #include <iostream>
 #include <sstream>
@@ -35,7 +35,7 @@ void CameraSetFly2::PrintCameraInfo( CameraInfo* pCamInfo ) {
 void CameraSetFly2::PrintError( Error error ) {
 	error.PrintErrorTrace();
 }
-void CameraSetFly2::setup(double shutter) {
+void CameraSetFly2::setup() {
 	Error error;
 	BusManager busMgr;
 
@@ -70,7 +70,17 @@ void CameraSetFly2::setup(double shutter) {
 			PrintError( error );
 			return;
 		}
+		error = m_camera[i]->StartCapture();
+		if ( error == PGRERROR_ISOCH_BANDWIDTH_EXCEEDED ) {
+			std::cout << "Bandwidth exceeded" << std::endl;
+			return;
+		}
+		else if ( error != PGRERROR_OK ) {
+			std::cout << "Failed to start image capture" << std::endl;
+			return;
+		}
 		// PrintCameraInfo(&camInfo);
+		double shutter = 10;
 		if (shutter > 0) {
 			cout << "setting shutter... " << shutter << endl;
 			//Declare a Property struct.
@@ -89,22 +99,13 @@ void CameraSetFly2::setup(double shutter) {
 			error = m_camera[i]->SetProperty( &prop  );
 			// cout << "error: " << error << endl;
 		}
-		error = m_camera[i]->StartCapture();
-		if ( error == PGRERROR_ISOCH_BANDWIDTH_EXCEEDED ) {
-			std::cout << "Bandwidth exceeded" << std::endl;
-			return;
-		}
-		else if ( error != PGRERROR_OK ) {
-			std::cout << "Failed to start image capture" << std::endl;
-			return;
-		}
 	}
 }
-CameraSetFly2::CameraSetFly2(double shutter) {
+CameraSetFly2::CameraSetFly2() {
 	cout << "init camera set...  " << endl;
-	setup(shutter);
+	setup();
 	release();
-	setup(shutter);
+	setup();
 	cout << "ok. n_cameras = " << numCameras << endl;
 }
 bool CameraSetFly2::read(cv::Mat& frame, int index) {
