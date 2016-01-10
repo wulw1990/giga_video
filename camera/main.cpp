@@ -127,21 +127,7 @@ int record_master(int argc, char** argv) {
 	int port = atoi(argv[4]);
 	string setting_file(argv[5]);
 
-	Transmitter transmitter;
-	int server_id = transmitter.initSocketServer(port);
-	cout << "============waiting for slave request============" << endl;
-	vector<int> slave_id;
-	while ((int)slave_id.size() < n_slaves) {
-		cout << endl;
-		cout << "----------waiting for a slave------------" << endl;
-		int id;
-		if ( ! transmitter.getClientId(server_id, id) ) {
-			continue;
-		} else {
-			cout << "Hello, my slave No." << slave_id.size() << endl;
-			slave_id.push_back(id);
-		}
-	}
+
 
 	//init camera, and recorder
 	shared_ptr<CameraSetBase> camera_set;
@@ -158,6 +144,24 @@ int record_master(int argc, char** argv) {
 	}
 	camera_set = make_shared<CameraSetParallel>(camera_set);
 	CameraSetRecorder recorder( camera_set );
+
+
+	Transmitter transmitter;
+	int server_id = transmitter.initSocketServer(port);
+	cout << "============waiting for slave request============" << endl;
+	vector<int> slave_id;
+	while ((int)slave_id.size() < n_slaves) {
+		cout << endl;
+		cout << "----------waiting for a slave------------" << endl;
+		int id;
+		if ( ! transmitter.getClientId(server_id, id) ) {
+			continue;
+		} else {
+			cout << "Hello, my slave No." << slave_id.size() << endl;
+			slave_id.push_back(id);
+		}
+	}
+
 
 	//sync
 	for (size_t i = 0; i < slave_id.size(); ++i) {
@@ -182,8 +186,7 @@ int record_slave(int argc, char** argv) {
 	int port = atoi(argv[4]);
 	string setting_file(argv[5]);
 
-	Transmitter transmitter;
-	int socket_id = transmitter.initSocketClient(ip, port);
+
 
 	//init camera, and recorder
 	shared_ptr<CameraSetBase> camera_set;
@@ -200,6 +203,10 @@ int record_slave(int argc, char** argv) {
 	}
 	camera_set = make_shared<CameraSetParallel>(camera_set);
 	CameraSetRecorder recorder( camera_set );
+
+
+	Transmitter transmitter;
+	int socket_id = transmitter.initSocketClient(ip, port);
 
 	//sync
 	vector<unsigned char> recv_buf;
