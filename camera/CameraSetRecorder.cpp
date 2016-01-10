@@ -45,15 +45,20 @@ bool CameraSetRecorder::record(std::string path, int n_frames) {
 	Timer timer;
 	vector<Mat> frame(n_cameras);
 	vector<string> name(n_cameras);
+
+	for (int i = 0; i < n_cameras; ++i) {
+		camera_set->setShutter(3.0, i);
+	}
+
 	for (int t = 0; t < n_frames; ++t) {
 		timer.reset();
-		if (t % 5 == 0) {
-			m_camera_set->setShutter(0.5 + (t / 5) % 10, 0);
-		}
 		for (int i = 0 ; i < n_cameras; ++i) {
 			assert(m_camera_set->read(frame[i], i));
 		}
 		for (int i = 0 ; i < n_cameras; ++i) {
+			// 	if (i == 0) {
+			// 		camera_set->setShutter(0.5 + (t / 5) % 10, i);
+			// 	}
 			// m_camera_set->read(frame, i);
 			// timer.reset();
 			// cout << "read time: " << timer.getTimeUs() / 1000 << "\t";

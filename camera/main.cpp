@@ -79,10 +79,10 @@ int demo(int argc, char** argv) {
 		// }
 		timer.reset();
 		Mat frame;
-		for (int i = 0; i < n_cameras; ++i) {
-			if (i == 0) {
-				camera_set->setShutter(0.5 + (t / 5) % 10, i);
-			}
+		// for (int i = 0; i < n_cameras; ++i) {
+		// 	if (i == 0) {
+		// 		camera_set->setShutter(0.5 + (t / 5) % 10, i);
+		// 	}
 			assert(camera_set->read(frame, i));
 			// cout << frame.size() << endl;
 			resize(frame, frame, Size(frame.cols / scale, frame.rows / scale));
