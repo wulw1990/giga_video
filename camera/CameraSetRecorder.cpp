@@ -31,7 +31,7 @@ bool CameraSetRecorder::record(std::string path, int n_frames) {
 		dir_dealer.mkdir_p(path_vec[i]);
 	}
 
-	int fps = 8;
+	int fps = 10;
 	int MS = 1000 / fps;
 
 	Timer timer;
@@ -45,19 +45,26 @@ bool CameraSetRecorder::record(std::string path, int n_frames) {
 		imgs[i].resize(n_frames);
 	}
     
+    int ms;
 	for (int t = 0; t < n_frames; ++t) {
 		timer.reset();
 		for (int i = 0 ; i < n_cameras; ++i) {
 			assert(m_camera_set->read(frame[i], i));
 		}
+        ms = timer.getTimeUs() / 1000;
+        cout << endl << "read frame:" << ms << "ms" << endl;
 		for (int i = 0 ; i < n_cameras; ++i) {
 			name[i] = path_vec[i] + to_string(t) + ".jpg";
 			m_thread[i] = std::thread(internal_save, std::ref(name[i]), std::ref(frame[i]), std::ref(imgs[i][t]));
 		}
+        ms = timer.getTimeUs() / 1000;
+        cout << "add frame to vectors:" << ms << "ms" << endl;
 		for (int i = 0 ; i < n_cameras; ++i) {
 			m_thread[i].join();
 		}
-		int ms = timer.getTimeUs() / 1000;
+        ms = timer.getTimeUs() / 1000;
+        cout << "join thread:" << ms << "ms" << endl;
+		ms = timer.getTimeUs() / 1000;
 		cout << "time: " << t << "\tms: " <<  ms << "\tdelay: " << MS - ms << endl;
 		if (ms < MS ) {
 			waitKey(MS - ms);
