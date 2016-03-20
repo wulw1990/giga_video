@@ -174,7 +174,11 @@ int record_master(int argc, char** argv) {
 	}
 
 	//record
+	Timer timer;
+	timer.reset();
 	recorder.record(path, n_frames);
+	int ms = timer.getTimeUs() / 1000;
+	cout << "Total time: " << ms << endl;
 	return 0;
 }
 int record_slave(int argc, char** argv) {

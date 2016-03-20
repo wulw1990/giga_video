@@ -6,16 +6,17 @@ using namespace cv;
 
 #include "Timer.hpp"
 
-const int RATE = 5;
-const int MS = 1000/RATE;
+const int RATE = 30;
+const int MS = 1000 / RATE;
 
 // static void internal_read(std::shared_ptr<CameraSetBase> camera_set, cv::Mat& frame, int index) {
-static void internal_read(std::shared_ptr<CameraSetBase> camera_set, cv::Mat& frame, std::mutex& locker, int index) {
+static void internal_read(std::shared_ptr<CameraSetBase> camera_set, cv::Mat& frame, std::mutex& locker, int index, bool& stop) {
 	Timer timer;
-	while (1) {
+	while (!stop) {
 		timer.reset();
 		Mat tmp;
 		camera_set->read(tmp, index);
+		assert(!tmp.empty());
 		locker.lock();
 		tmp.copyTo(frame);
 		locker.unlock();
@@ -27,18 +28,26 @@ static void internal_read(std::shared_ptr<CameraSetBase> camera_set, cv::Mat& fr
 }
 CameraSetParallel::CameraSetParallel(std::shared_ptr<CameraSetBase> camera_set) {
 	m_camera_set = camera_set;
+	stop = false;
 	setup();
 }
+CameraSetParallel::~CameraSetParallel() {
+	stop = true;
+	for (size_t i = 0 ; i < m_thread.size(); ++i) {
+		m_thread[i].join();
+	}
+}
 void CameraSetParallel::setup() {
-	m_buffer.resize(m_camera_set->getNumCamera());
-	m_thread.resize(m_camera_set->getNumCamera());
-	// m_locker.resize(m_camera_set->getNumCamera());
-	m_locker = vector<mutex>(m_camera_set->getNumCamera());
-	for (int i = 0; i < m_camera_set->getNumCamera(); ++i) {
+	int n_cameras = m_camera_set->getNumCamera();
+	m_buffer.resize(n_cameras);
+	m_thread.resize(n_cameras);
+	m_locker = vector<mutex>(n_cameras);
+
+	for (int i = 0; i < n_cameras; ++i) {
 		Mat frame;
 		m_camera_set->read(m_buffer[i], i);//init buffer
 		assert(!m_buffer[i].empty());
-		m_thread[i] = std::thread(internal_read, m_camera_set, std::ref(m_buffer[i]), std::ref(m_locker[i]), i);
+		m_thread[i] = std::thread(internal_read, m_camera_set, std::ref(m_buffer[i]), std::ref(m_locker[i]), i, std::ref(stop));
 	}
 }
 bool CameraSetParallel::read(cv::Mat& frame, int index) {

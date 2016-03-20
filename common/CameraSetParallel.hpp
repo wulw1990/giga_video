@@ -11,6 +11,7 @@ class CameraSetParallel: public CameraSetBase
 {
 public:
 	CameraSetParallel(std::shared_ptr<CameraSetBase> camera_set);
+	~CameraSetParallel();
 	bool read(cv::Mat& frame, int index);
 	int getNumCamera();
 private:
@@ -18,6 +19,8 @@ private:
 	std::vector<cv::Mat> m_buffer;
 	std::vector<std::thread> m_thread;
 	std::vector<std::mutex> m_locker;
+
+	bool stop;
 
 	void setup();
 };
