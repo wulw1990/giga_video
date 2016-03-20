@@ -6,7 +6,7 @@ using namespace cv;
 
 #include "Timer.hpp"
 
-const int RATE = 30;
+const int RATE = 15;
 const int MS = 1000 / RATE;
 
 // static void internal_read(std::shared_ptr<CameraSetBase> camera_set, cv::Mat& frame, int index) {

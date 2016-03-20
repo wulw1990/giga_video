@@ -20,7 +20,7 @@ bool CameraSetRecorder::record(std::string path, int n_frames) {
 		exit(-1);
 	}
 
-	int fps = 30;
+	int fps = 10;
 	int MS = 1000 / fps;
 
 	cout << "Start to read images to RAM ..." << endl;
@@ -36,7 +36,7 @@ bool CameraSetRecorder::record(std::string path, int n_frames) {
 			assert(m_camera_set->read(imgs[i][t], i));
 		}
 		ms = timer.getTimeUs() / 1000;
-		cout << "t: " << t << " ms: " << ms << endl;
+		cout << "t: " << t << " ms: " << ms << " delay: " << ms - MS << endl;
 		if (ms < MS ) {
 			std::this_thread::sleep_for(std::chrono::milliseconds(MS - ms));
 		}
