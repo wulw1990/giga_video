@@ -1,3 +1,12 @@
+## 编译项目
+```
+sudo apt-get install cmake
+sudo apt-get install libopencv-dev
+sudo add-apt-repository --yes ppa:xqms/opencv-nonfree
+sudo apt-get update 
+sudo apt-get install libopencv-nonfree-dev
+make
+```
 ## architecture
 
 ![architecture](readme/architecture_hardware.jpg)
