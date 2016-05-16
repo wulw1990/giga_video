@@ -62,6 +62,7 @@ class CameraSetFly2: public CameraSetBase
 {
 	public:
 		CameraSetFly2() {}
+		CameraSetFly2(std::string setting_file) {}
 		bool read(cv::Mat& frame, int index) {
 			std::cerr << "no fly capture" << std::endl;
 			return false;

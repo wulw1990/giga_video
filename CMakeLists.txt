@@ -8,7 +8,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-write-strings")
 
-if(1)
+if(0)
 	add_definitions(-DENABLE_FLY_CAPTRUE)
 	set(FlyCapture_HEADERS "/usr/include/flycapture")
 	set(FlyCapture_LIBS "flycapture")
