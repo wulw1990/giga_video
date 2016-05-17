@@ -1,12 +1,29 @@
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
-PROJECT(LIVE_FACE)
+PROJECT(giga_video)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-write-strings")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-write-strings")
+
+SET(PATH_INC ${giga_video_SOURCE_DIR}/include)
+SET(PATH_SRC ${giga_video_SOURCE_DIR}/src)
+
+AUX_SOURCE_DIRECTORY(${PATH_SRC} INTERNALAPI_SRC_LIST)
+INCLUDE_DIRECTORIES(${PATH_INC})
+
+SET(MODULE_SRCS)
+
+MACRO(ADD_MODULE module_list name)
+	INCLUDE_DIRECTORIES(${PATH_INC}/${name})
+	FILE(GLOB_RECURSE MODULE_SRC ${PATH_SRC}/${name}/*.cpp)
+	LIST(APPEND ${module_list} ${MODULE_SRC})
+ENDMACRO()
+
+ADD_MODULE(MODULE_SRCS common)
+ADD_MODULE(MODULE_SRCS player)
 
 if(0)
 	add_definitions(-DENABLE_FLY_CAPTRUE)
@@ -14,15 +31,8 @@ if(0)
 	set(FlyCapture_LIBS "flycapture")
 endif()
 
-ADD_SUBDIRECTORY(common)
-ADD_SUBDIRECTORY(construct)
-ADD_SUBDIRECTORY(camera)
+add_executable( giga_video ${INTERNALAPI_SRC_LIST} ${MODULE_SRCS} )
 
-ADD_SUBDIRECTORY(player_src)
-ADD_SUBDIRECTORY(player_standalone)
-ADD_SUBDIRECTORY(player_xiaoyun)
-ADD_SUBDIRECTORY(player_server)
-ADD_SUBDIRECTORY(player_client)
-
-ADD_SUBDIRECTORY(master)
-ADD_SUBDIRECTORY(slave)
+find_package( OpenCV REQUIRED )
+include_directories(${OpenCV_HEADERS} ${FlyCapture_HEADERS})
+target_link_libraries( giga_video ${OpenCV_LIBS} ${FlyCapture_LIBS})
