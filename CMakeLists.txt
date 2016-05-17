@@ -1,6 +1,13 @@
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 PROJECT(giga_video)
 
+option (FLY_CAPTRUE "Use provided math implementation" OFF)
+if(FLY_CAPTRUE)
+	add_definitions(-DENABLE_FLY_CAPTRUE)
+	set(FlyCapture_HEADERS "/usr/include/flycapture")
+	set(FlyCapture_LIBS "flycapture")
+endif(FLY_CAPTRUE)
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
@@ -23,13 +30,8 @@ MACRO(ADD_MODULE module_list name)
 ENDMACRO()
 
 ADD_MODULE(MODULE_SRCS common)
-ADD_MODULE(MODULE_SRCS player)
-
-if(0)
-	add_definitions(-DENABLE_FLY_CAPTRUE)
-	set(FlyCapture_HEADERS "/usr/include/flycapture")
-	set(FlyCapture_LIBS "flycapture")
-endif()
+ADD_MODULE(MODULE_SRCS server)
+ADD_MODULE(MODULE_SRCS client)
 
 add_executable( giga_video ${INTERNALAPI_SRC_LIST} ${MODULE_SRCS} )
 

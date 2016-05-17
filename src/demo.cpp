@@ -4,7 +4,7 @@
 using namespace std;
 
 #include "giga_video.h"
-#include "player/Player.hpp"
+#include "server/Player.hpp"
 
 static int giga_image(int argc, char **argv);
 
