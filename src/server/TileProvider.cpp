@@ -55,47 +55,31 @@ int TileProvider::getPixelColsOfLayer(int layer_id) {
   assert(layer_id >= 0 && layer_id < getNumLayers());
   return m_pixel_cols[layer_id];
 }
-cv::Mat TileProvider::getTile(int x, int y, int z) {
-//   Timer timer;
-//   timer.reset();
-#if 0
-	static map<string, Scalar> mm;
-	Scalar color;
-	string p = to_string(x) + "_" + to_string(y) + "_" +to_string(z);
-	if(mm.find(p)==mm.end()){
-		color = Scalar(rand()%255, rand()%255, rand()%255);
-		mm[p] = color;
-	}else{
-		color = mm[p];
-	}
-	Mat tile = Mat(getTileLen(), getTileLen(), CV_8UC3);
-	tile.setTo(color);
-#else
-  string name = m_meta->getTileName(z, y, x);
-
-  std::ifstream file(m_path + name);
-  std::vector<char> data;
-  file >> std::noskipws;
-  std::copy(std::istream_iterator<char>(file), std::istream_iterator<char>(),
-            std::back_inserter(data));
-
-  Mat tile = imdecode(Mat(data), 1);
-#endif
-  // cout << p << ": " << timer.getTimeUs()/1000 << " ms" << endl;
-  return tile;
-}
-
 void TileProvider::getTile(const std::vector<int> &x, const std::vector<int> &y,
                            const std::vector<int> &z,
                            std::vector<cv::Mat> &tile) {
   tile.resize(x.size());
-
   Timer timer;
 
 #if 0
   for (size_t i = 0; i < x.size(); ++i) {
     string full_name = m_path + m_meta->getTileName(z[i], y[i], x[i]);
     tile[i] = imread(full_name);
+  }
+#endif
+
+#if 0
+  static map<string, Scalar> mm;
+  for (size_t i = 0; i < x.size(); ++i) {
+    Scalar color;
+    string p = to_string(x[i]) + "_" + to_string(y[i]) + "_" + to_string(z[i]);
+    if (mm.find(p) == mm.end()) {
+      color = Scalar(rand() % 255, rand() % 255, rand() % 255);
+      mm[p] = color;
+    } else {
+      color = mm[p];
+    }
+    tile[i] = Mat(getTileLen(), getTileLen(), CV_8UC3, color);
   }
 #endif
 
@@ -120,6 +104,7 @@ void TileProvider::getTile(const std::vector<int> &x, const std::vector<int> &y,
   }
 #endif
 
+#if 1
   vector<thread> threads(x.size());
   for (size_t i = 0; i < x.size(); ++i) {
     string full_name = m_path + m_meta->getTileName(z[i], y[i], x[i]);
@@ -131,5 +116,6 @@ void TileProvider::getTile(const std::vector<int> &x, const std::vector<int> &y,
   for (size_t i = 0; i < x.size(); ++i) {
     threads[i].join();
   }
+#endif
 //   cout << "getTile: " << timer.getTimeUs() / 1000 << " ms" << endl;
 }

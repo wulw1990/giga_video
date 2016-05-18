@@ -19,7 +19,6 @@ public:
   int getPixelRowsOfLayer(int layer_id);
   int getPixelColsOfLayer(int layer_id);
 
-  cv::Mat getTile(int x, int y, int z);
   void getTile(const std::vector<int> &x, const std::vector<int> &y,
                const std::vector<int> &z, std::vector<cv::Mat> &tile);
 
