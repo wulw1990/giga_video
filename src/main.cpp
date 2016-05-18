@@ -17,6 +17,8 @@ int main(int argc, char **argv) {
   cout << "mode : " << mode << endl;
   if (mode == "demo")
     return main_internal_demo(argc, argv);
+  if (mode == "construct")
+    return main_internal_construct(argc, argv);
   else {
     cerr << "main mode error: " << mode << endl;
     return -1;
