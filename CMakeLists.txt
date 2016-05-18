@@ -14,6 +14,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-write-strings")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-variable")
 
 SET(PATH_INC ${giga_video_SOURCE_DIR}/include)
 SET(PATH_SRC ${giga_video_SOURCE_DIR}/src)
