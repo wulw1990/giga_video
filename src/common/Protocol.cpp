@@ -5,8 +5,9 @@
 #include <iostream>
 using namespace std;
 
-Protocol::Protocol(): CMD_LEN(10), LEN_LEN(10) {
-}
+int Protocol::CMD_LEN = 10;
+int Protocol::LEN_LEN = 10;
+
 void Protocol::encode(
     std::vector<unsigned char>& buf,
     std::string cmd, const std::vector<unsigned char>& data ) {

@@ -4,53 +4,36 @@
 #include <vector>
 #include <string>
 
-class Protocol
-{
+class Protocol {
+public:
+  static void encode(std::vector<unsigned char> &buf, std::string cmd,
+                     const std::vector<unsigned char> &data);
 
-	public:
-		Protocol();
+  static void encodeHead(std::vector<unsigned char> &head, std::string cmd,
+                         int data_len);
 
-		void encode(
-		    std::vector<unsigned char>& buf,
-		    std::string cmd, const std::vector<unsigned char>& data );
+  static void decodeHead(const std::vector<unsigned char> &buf,
+                         std::string &cmd, int &data_len);
 
-		void encodeHead(
-		    std::vector<unsigned char>& head,
-		    std::string cmd, int data_len );
+  static void encodeXYZ(std::vector<unsigned char> &buf, int x, int y, int z);
 
-		void decodeHead(
-		    const std::vector<unsigned char>& buf,
-		    std::string& cmd, int& data_len );
+  static void decodeDataXYZ(const std::vector<unsigned char> &buf, int &x,
+                            int &y, int &z);
 
-		void encodeXYZ(
-		    std::vector<unsigned char>& buf,
-		    int x, int y, int z);
+  static void encodeFloatVector(const std::vector<float> &vec,
+                                std::vector<unsigned char> &buf);
 
-		void decodeDataXYZ(
-		    const std::vector<unsigned char>& buf,
-		    int& x, int& y, int& z);
+  static void decodeFloatVector(const std::vector<unsigned char> &buf,
+                                std::vector<float> &fvec);
 
-		void encodeFloatVector(
-			const std::vector<float>& vec,
-			std::vector<unsigned char>& buf
-			);
+  static int getHeadLen() { return CMD_LEN + LEN_LEN; }
 
-		void decodeFloatVector(
-			const std::vector<unsigned char>& buf,
-			std::vector<float>& fvec
-		);
+private:
+  static int CMD_LEN;
+  static int LEN_LEN;
 
-		int getHeadLen() {
-			return CMD_LEN + LEN_LEN;
-		}
-
-
-	private:
-		const int CMD_LEN;
-		const int LEN_LEN;
-
-		void int2Vector(int value, std::vector<unsigned char>& vec);
-		void vector2Int(int& value, const std::vector<unsigned char>& vec);
+  static void int2Vector(int value, std::vector<unsigned char> &vec);
+  static void vector2Int(int &value, const std::vector<unsigned char> &vec);
 };
 
 #endif
