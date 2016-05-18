@@ -58,6 +58,7 @@ cv::Mat WaiterServer::getFrameInternal() {
   m_window_controller->getXYZ(x, y, z);
   //   cout << "x: " << x << "\ty: " << y << "\tz: " << z << endl;
   Mat frame, mask;
+
   Timer timer;
   timer.reset();
   m_frame_provider->getFrameWithMask(frame, mask, m_w, m_h, x, y, z);
