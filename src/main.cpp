@@ -19,6 +19,8 @@ int main(int argc, char **argv) {
     return main_internal_demo(argc, argv);
   if (mode == "construct")
     return main_internal_construct(argc, argv);
+  if (mode == "test")
+    return main_internal_test(argc, argv);
   else {
     cerr << "main mode error: " << mode << endl;
     return -1;

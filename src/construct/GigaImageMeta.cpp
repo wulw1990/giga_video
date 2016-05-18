@@ -7,10 +7,12 @@ using namespace std;
 #include "DirDealer.h"
 
 void GigaImageMeta::generateMetaFile(std::string path, std::string meta) {
+  // TODO: magic number
   int layers = 5;
   int head_layers = 3;
   const string TILE_NAME_SUFFIX = ".jpg";
-  const int tile_len = 512;
+  m_tile_len = 512;
+
   DirDealer dir_dealer;
 
   m_tile_name.clear();
@@ -73,26 +75,53 @@ void GigaImageMeta::generateMetaFile(std::string path, std::string meta) {
     }
     m_tile_name.push_back(layer_tile_name);
   } // for layer_id
-  
+
   ofstream fout(meta);
-  if(!fout.is_open()){
-      cerr << "error: file " << meta << endl;
-      exit(-1);
+  if (!fout.is_open()) {
+    cerr << "error: file " << meta << endl;
+    exit(-1);
   }
-  fout << tile_len << endl;
+  fout << m_tile_len << endl;
   fout << layers << endl;
-  for(int layer_id=0; layer_id<layers; ++layer_id){
-      int rows = getRows(layer_id);
-      int cols = getCols(layer_id);
-      fout << layer_id << "\t" << rows << "\t" << cols << endl;
-      for(int r=0; r<rows; ++r){
-          for(int c=0; c<cols; ++c){
-              fout << m_tile_name[layer_id][r][c] << endl;
-          }
+  for (int layer_id = 0; layer_id < layers; ++layer_id) {
+    int rows = getRows(layer_id);
+    int cols = getCols(layer_id);
+    fout << layer_id << "\t" << rows << "\t" << cols << endl;
+    for (int r = 0; r < rows; ++r) {
+      for (int c = 0; c < cols; ++c) {
+        fout << m_tile_name[layer_id][r][c] << endl;
       }
+    }
   }
 }
-void GigaImageMeta::load(std::string meta) {}
+void GigaImageMeta::load(std::string meta) {
+  ifstream fin(meta);
+  if (!fin.is_open()) {
+    cerr << "error: file " << meta << endl;
+    exit(-1);
+  }
+  m_tile_name.clear();
+
+  fin >> m_tile_len;
+  int layers;
+  fin >> layers;
+
+  for (int layer_id = 0; layer_id < layers; ++layer_id) {
+    int layer_id_, rows, cols;
+    fin >> layer_id_ >> rows >> cols;
+    vector<vector<string>> layer_tile_name;
+    for (int r = 0; r < rows; ++r) {
+      vector<string> row_tile_name;
+      for (int c = 0; c < cols; ++c) {
+        string name;
+        fin >> name;
+        row_tile_name.push_back(name);
+      }
+      layer_tile_name.push_back(row_tile_name);
+    }
+    m_tile_name.push_back(layer_tile_name);
+  } // for layer_id
+}
 int GigaImageMeta::getLayers() {
   // getLayers
   return m_tile_name.size();
@@ -110,4 +139,20 @@ int GigaImageMeta::getCols(int layer_id) {
   if (layer_id < 0 || layer_id >= layers)
     return -1;
   return m_tile_name[layer_id][0].size();
+}
+int GigaImageMeta::getTileLen() {
+  // getTileLen
+  return m_tile_len;
+}
+std::string GigaImageMeta::getTileName(int layer_id, int r, int c) {
+  int layers = m_tile_name.size();
+  if (layer_id < 0 || layer_id >= layers)
+    return "";
+  int rows = getRows(layer_id);
+  int cols = getCols(layer_id);
+  if (r < 0 || r >= rows)
+    return "";
+  if (c < 0 || c >= cols)
+    return "";
+  return m_tile_name[layer_id][r][c];
 }

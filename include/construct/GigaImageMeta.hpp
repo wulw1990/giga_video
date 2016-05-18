@@ -11,9 +11,12 @@ public:
   int getLayers();
   int getRows(int layer_id);
   int getCols(int layer_id);
+  int getTileLen();
+  std::string getTileName(int layer_id, int r, int c);
 
 private:
   // tile name: layer row col
+  int m_tile_len;
   std::vector<std::vector<std::vector<std::string>>> m_tile_name;
 };
 
