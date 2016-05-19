@@ -15,6 +15,7 @@ using namespace cv;
 
 static int giga_image_meta(int argc, char **argv);
 static int read_image_tile(int argc, char **argv);
+static int read_web_video(int argc, char **argv);
 
 int main_internal_test(int argc, char **argv) {
   if (argc < 2) {
@@ -30,6 +31,8 @@ int main_internal_test(int argc, char **argv) {
     return giga_image_meta(argc, argv);
   if (mode == "read_image_tile")
     return read_image_tile(argc, argv);
+  if (mode == "read_web_video")
+    return read_web_video(argc, argv);
   else {
     cerr << "main_internal_test mode error: " << mode << endl;
     return -1;
@@ -110,5 +113,29 @@ static int read_image_tile(int argc, char **argv) {
   cout << "decode time average: " << timer.getTimeUs() / 1000 / list.size()
        << endl;
 
+  return 0;
+}
+static int read_web_video(int argc, char **argv) {
+  if (argc < 2) {
+    cerr << "main_internal_test read_image_tile args error." << endl;
+    exit(-1);
+  }
+  
+  string video_name(argv[1]);
+  cout << "video_name: " << video_name << endl;
+  
+  VideoCapture capture(video_name);
+  if(!capture.isOpened()){
+    cout << "camera can not open." << endl;
+    exit(-1);
+  }
+  
+  Mat frame;
+  for(int i=0; capture.read(frame); ++i){
+    capture >> frame;
+    imshow("frame", frame);
+    waitKey(30);
+  }
+  
   return 0;
 }
