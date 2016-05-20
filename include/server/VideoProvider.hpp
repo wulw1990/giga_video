@@ -11,7 +11,7 @@ class CameraSetBase;
 
 class VideoProvider{
 	public:
-		VideoProvider(std::string path);
+		VideoProvider(std::string path, bool online = false);
 		int getNumCamera();
 		bool getRectOnScene(cv::Rect& rect, int index);
 		bool getFrame(cv::Mat& frame, int index);

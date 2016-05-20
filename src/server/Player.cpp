@@ -12,8 +12,8 @@ const int h = 900;
 const int FPS = 5;
 const int MS = 1000 / FPS;
 
-Player::Player(std::string path, bool enable_video, string output_video) {
-  m_info.m_waiter = make_shared<WaiterServer>(path, w, h, 0);
+Player::Player(std::string path, int video_mode, string output_video) {
+  m_info.m_waiter = make_shared<WaiterServer>(path, w, h, video_mode);
   m_output_video = output_video;
 }
 void Player::play() {

@@ -40,7 +40,7 @@ static int giga_image(int argc, char **argv) {
     cerr << "main_internal_demo giga_image args error." << endl;
     exit(-1);
   }
-  Player player(argv[1], false);
+  Player player(argv[1], 1);
   player.play();
   return 0;
   return 0;

@@ -9,13 +9,19 @@ using namespace cv;
 
 const Scalar default_color(127, 127, 127);
 
-FrameProvider::FrameProvider(std::string path, bool enable_video) {
+FrameProvider::FrameProvider(std::string path, int video_mode) {
   m_tile_provider = make_shared<TileProvider>(path, path + "info_scene.txt");
 
-  m_enable_video = enable_video;
-  if (m_enable_video) {
+  m_video_mode = video_mode;
+  if (m_video_mode==1) {
     m_video_data = make_shared<VideoProvider>(path + "video/");
+  }else if(m_video_mode==2){
+    m_video_data = make_shared<VideoProvider>(path + "video/", true);
+  }else{
+    cout << "unsupported video_mode:" << video_mode << endl;
+    exit(-1);
   }
+  cout << "video_mode: " << m_video_mode << endl;
 }
 void FrameProvider::getFrameWithMask(cv::Mat &frame, cv::Mat &mask, int w,
                                      int h, double x, double y, double z) {
@@ -84,77 +90,75 @@ void FrameProvider::getFrameWithMask(cv::Mat &frame, cv::Mat &mask, int w,
       copyMatToMat(tile, tile_rect, frame, rect);
     }
   }
-  // if (m_enable_video && z == m_tile_provider->getNumLayers() - 1) {
-  // if (m_enable_video) {
-  // 	int n_videos = m_video_data->getNumCamera();
-  // 	// cout << "n_videos:  " << n_videos << endl;
 
-  // 	for (int i = 0; i < n_videos; ++i) {
-  // 		Rect rect_video_on_scene;
-  // 		assert(m_video_data->getRectOnScene(rect_video_on_scene, i));
+#if 1
+  if (m_video_mode && z == m_tile_provider->getNumLayers() - 1) {
+    if (m_video_mode) {
+      int n_videos = m_video_data->getNumCamera();
+      // cout << "n_videos:  " << n_videos << endl;
 
-  // 		int max_layer_id = m_tile_provider->getNumLayers() - 1;
-  // 		double zoom = pow(2.0, (double)max_layer_id - z);
-  // 		rect_video_on_scene.x /= zoom;
-  // 		rect_video_on_scene.y /= zoom;
-  // 		rect_video_on_scene.width /= zoom;
-  // 		rect_video_on_scene.height /= zoom;
+      for (int i = 0; i < n_videos; ++i) {
+        Rect rect_video_on_scene;
+        assert(m_video_data->getRectOnScene(rect_video_on_scene, i));
 
-  // 		Rect rect_overlap = rect_video_on_scene & Rect(x, y, w, h);
+        int max_layer_id = m_tile_provider->getNumLayers() - 1;
+        double zoom = pow(2.0, (double)max_layer_id - z);
+        rect_video_on_scene.x /= zoom;
+        rect_video_on_scene.y /= zoom;
+        rect_video_on_scene.width /= zoom;
+        rect_video_on_scene.height /= zoom;
 
-  // 		if (rect_overlap.width > 0 && rect_overlap.height > 0) {
-  // 			Mat video_frame;
-  // 			assert(m_video_data->getFrame(video_frame, i));
+        Rect rect_overlap = rect_video_on_scene & Rect(x, y, w, h);
 
-  // 			resize(video_frame, video_frame,
-  // Size(video_frame.cols/zoom,
-  // video_frame.rows/zoom));
+        if (rect_overlap.width > 0 && rect_overlap.height > 0) {
+          Mat video_frame;
+          assert(m_video_data->getFrame(video_frame, i));
 
-  // 			Rect rect_on_video = rect_overlap;
-  // 			rect_on_video.x -= rect_video_on_scene.x;
-  // 			rect_on_video.y -= rect_video_on_scene.y;
+          resize(video_frame, video_frame,
+                 Size(video_frame.cols / zoom, video_frame.rows / zoom));
 
-  // 			Rect rect_on_win = rect_overlap;
-  // 			rect_on_win.x -= x;
-  // 			rect_on_win.y -= y;
+          Rect rect_on_video = rect_overlap;
+          rect_on_video.x -= rect_video_on_scene.x;
+          rect_on_video.y -= rect_video_on_scene.y;
 
-  // 			Mat src = video_frame(rect_on_video);
-  // 			Mat dst = frame(rect_on_win);
-  // 			Mat dst2 = mask(rect_on_win);
-  // 			for (int r = 0; r < src.rows; ++r) {
-  // 				for (int c = 0; c < src.cols; ++c) {
-  // 					if (src.at<Vec3b>(r, c) != Vec3b(0, 0,
-  // 0))
-  // {
-  // 						dst.at<Vec3b>(r, c) =
-  // src.at<Vec3b>(r,
-  // c);
-  // 						dst2.at<unsigned char>(r, c) =
-  // 255;
-  // 					}
-  // 				}
-  // 			}
-  // 		}
-  // 	}
-  // } else if (m_enable_video) {
-  // 	int n_videos = m_video_data->getNumCamera();
-  // 	for (int i = 0; i < n_videos; ++i) {
-  // 		Rect rect_video_on_scene;
-  // 		assert(m_video_data->getRectOnScene(rect_video_on_scene, i));
-  // 		double scale = pow(2, m_tile_provider->getNumLayers() - 1 - z);
-  // 		rect_video_on_scene.x /= scale;
-  // 		rect_video_on_scene.y /= scale;
-  // 		rect_video_on_scene.width /= scale;
-  // 		rect_video_on_scene.height /= scale;
-  // 		Rect rect_overlap = rect_video_on_scene & Rect(x, y, w, h);
-  // 		if (rect_overlap.width > 0 && rect_overlap.height > 0) {
-  // 			rect_overlap.x -= x;
-  // 			rect_overlap.y -= y;
-  // 			rectangle( frame, rect_overlap, Scalar(255, 0, 0), 2);
-  // 			rectangle( mask, rect_overlap, Scalar(255), 2);
-  // 		}
-  // 	}
-  // }
+          Rect rect_on_win = rect_overlap;
+          rect_on_win.x -= x;
+          rect_on_win.y -= y;
+
+          Mat src = video_frame(rect_on_video);
+          Mat dst = frame(rect_on_win);
+          Mat dst2 = mask(rect_on_win);
+          for (int r = 0; r < src.rows; ++r) {
+            for (int c = 0; c < src.cols; ++c) {
+              if (src.at<Vec3b>(r, c) != Vec3b(0, 0, 0)) {
+                dst.at<Vec3b>(r, c) = src.at<Vec3b>(r, c);
+                dst2.at<unsigned char>(r, c) = 255;
+              }
+            }
+          }
+        }
+      }
+    } else if (m_video_mode) {
+      int n_videos = m_video_data->getNumCamera();
+      for (int i = 0; i < n_videos; ++i) {
+        Rect rect_video_on_scene;
+        assert(m_video_data->getRectOnScene(rect_video_on_scene, i));
+        double scale = pow(2, m_tile_provider->getNumLayers() - 1 - z);
+        rect_video_on_scene.x /= scale;
+        rect_video_on_scene.y /= scale;
+        rect_video_on_scene.width /= scale;
+        rect_video_on_scene.height /= scale;
+        Rect rect_overlap = rect_video_on_scene & Rect(x, y, w, h);
+        if (rect_overlap.width > 0 && rect_overlap.height > 0) {
+          rect_overlap.x -= x;
+          rect_overlap.y -= y;
+          rectangle(frame, rect_overlap, Scalar(255, 0, 0), 2);
+          rectangle(mask, rect_overlap, Scalar(255), 2);
+        }
+      }
+    }
+  }
+#endif
 }
 cv::Mat FrameProvider::getFrame(int w, int h, double x, double y, double z) {
   Mat frame, mask;

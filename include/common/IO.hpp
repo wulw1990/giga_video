@@ -3,25 +3,28 @@
 
 #include <iostream>
 #include <fstream>
+#include <string>
+#include <vector>
 #include <opencv2/opencv.hpp>
 
-class IO
-{
+class IO {
 public:
-	static bool openOStream(std::ofstream& fout, std::string name, std::string error);
-	static bool openIStream(std::ifstream& fin, std::string name, std::string error);
-	
-	static bool saveMat(std::ofstream& fout, const cv::Mat& mat);
-	static bool loadMat(std::ifstream& fin, cv::Mat& mat);
+  static bool openOStream(std::ofstream &fout, std::string name,
+                          std::string error);
+  static bool openIStream(std::ifstream &fin, std::string name,
+                          std::string error);
 
-	static bool saveTransMat(std::ofstream& fout, const cv::Mat& mat);
-	static bool loadTransMat(std::ifstream& fin, cv::Mat& mat);
+  static bool saveMat(std::ofstream &fout, const cv::Mat &mat);
+  static bool loadMat(std::ifstream &fin, cv::Mat &mat);
 
-	static bool saveRect(std::ofstream& fout, const cv::Rect& rect);
-	static bool loadRect(std::ifstream& fin, cv::Rect& rect);
+  static bool saveTransMat(std::ofstream &fout, const cv::Mat &mat);
+  static bool loadTransMat(std::ifstream &fin, cv::Mat &mat);
 
+  static bool saveRect(std::ofstream &fout, const cv::Rect &rect);
+  static bool loadRect(std::ifstream &fin, cv::Rect &rect);
 
-
+  static bool saveStringList(std::ofstream &fout, const std::vector<std::string>& list);
+  static bool loadStringList(std::ifstream &fin, std::vector<std::string>& list);
 };
 
 #endif
