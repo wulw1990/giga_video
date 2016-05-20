@@ -89,3 +89,22 @@ if(0)
 运行脚本./sh/record_slave.sh 
 
 ./sh/record_master.sh中制定了slave的数量，当所有slave连接到master后，各个机器分别开始录制。
+
+
+## 数据存储格式
+```
+giga_video/
+ - info_scene.txt
+ - 0/
+ - 1/
+ - ...
+ - video/
+    - list.txt
+ 	- <NAME1>/
+	 	- info.txt
+		- video.avi
+ 	- <NAME2>/
+	 	- info.txt
+		- video.avi
+	- ...
+```
