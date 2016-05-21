@@ -23,8 +23,8 @@ class DirDealer
 		void mkdirRecursive(string path, string list_file);
 		void mkdirRecursive(string path, vector<string>& list);
 
-		void mkdir_p(string dir);
-		void rm_rf(string dir);
+		static void mkdir_p(string dir);
+		static void rm_rf(string dir);
 
 		static bool existFileOrDir(string name);
 		static bool isDir(string dir);

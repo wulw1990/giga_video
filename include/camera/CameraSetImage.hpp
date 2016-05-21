@@ -16,7 +16,7 @@ class CameraSetImage: public CameraSetBase
 		}
 	private:
 		std::vector<std::string> m_video_name;
-		std::vector<int> m_frame_num;
+		std::vector<std::vector<std::string>> m_frame_name;
 		std::vector<int> m_frame_id;
 };
 

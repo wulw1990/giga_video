@@ -10,6 +10,7 @@ using namespace cv;
 #include "giga_video.h"
 #include "server/Player.hpp"
 #include "camera/CameraSetVideo.hpp"
+#include "camera/CameraSetImage.hpp"
 #include "Timer.hpp"
 
 static int giga_image(int argc, char **argv);
@@ -50,14 +51,14 @@ static int camera_set(int argc, char **argv) {
 #if 1
   string path("/home/wuliwei/ramdisk/zijing16/video/");
   vector<string> video_name;
-  string name = "video_4.avi";
+  string name = "video_0/";
   video_name.push_back(path + "MVI_6878/" + name);
   video_name.push_back(path + "MVI_6880/" + name);
   video_name.push_back(path + "MVI_6881/" + name);
   video_name.push_back(path + "MVI_6883/" + name);
   video_name.push_back(path + "MVI_6885/" + name);
   video_name.push_back(path + "MVI_7294/" + name);
-  camera_set = make_shared<CameraSetVideo>(video_name);
+  camera_set = make_shared<CameraSetImage>(video_name);
 #else
 
 #endif

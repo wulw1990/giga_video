@@ -1,6 +1,8 @@
 #include <iostream>
 #include <cassert>
 #include <algorithm>
+#include <sstream>
+#include <iomanip>
 using namespace std;
 
 #include <opencv2/opencv.hpp>
@@ -9,6 +11,8 @@ using namespace cv;
 #include "giga_video.h"
 #include "GigaImageMeta.hpp"
 #include "IO.hpp"
+#include "DirDealer.h"
+
 
 static int giga_image_meta(int argc, char **argv);
 static int video_pyramid(int argc, char **argv);
@@ -45,6 +49,19 @@ static int giga_image_meta(int argc, char **argv) {
   cout << "giga_image_meta" << endl;
   return 0;
 }
+static void saveVideoFrames(vector<Mat> &frame, string path) {
+  DirDealer::mkdir_p(path);
+  for(int i=0; i<frame.size(); ++i){
+    string full_name;
+    {
+      stringstream ss;
+      ss << setfill('0') << setw(6) << i;
+      full_name = path + ss.str() + ".jpg";
+      // cout << "full_name: " << full_name << endl;
+    }
+    imwrite(full_name, frame[i]);
+  }
+}
 static void video_pyramid_one(string path) {
   cout << path << endl;
   Mat trans;
@@ -76,15 +93,10 @@ static void video_pyramid_one(string path) {
 
   for (int i = 4; i >= 0; --i) {
     const int FPS = 15;
-    string name_video = path + "video_" + to_string(i) + ".avi";
+    string name_video = path + "video_" + to_string(i) + "/";
     string name_info = path + "info_" + to_string(i) + ".txt";
 
-    VideoWriter writer(name_video, CV_FOURCC('M', 'J', 'P', 'G'), FPS,
-                       frame[0].size());
-    assert(writer.isOpened());
-    for (size_t j = 0; j < frame.size(); ++j) {
-      writer << frame[j];
-    }
+    saveVideoFrames(frame, name_video);
 
     ofstream fout;
     assert(IO::openOStream(fout, name_info, "Write Info"));
