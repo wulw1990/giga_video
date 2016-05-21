@@ -10,18 +10,18 @@ class DirDealer
 	public:
 		static string int2String(int i);
 		static int String2int(string str);
-		string getSuffixRemoved(string name);
-		void seperatePathName(string full_name, string& path, string& name);
+		static string getSuffixRemoved(string name);
+		static void seperatePathName(string full_name, string& path, string& name);
 
-		vector<string> getFileList(string path);
-		vector<string> getFileListRecursive(string path);
+		static vector<string> getFileList(string path);
+		static vector<string> getFileListRecursive(string path);
 
-		void saveList(vector<string>& list, string name);
-		void readList(vector<string>& list, string name);
-		void printList(vector<string>& list);
+		static void saveList(vector<string>& list, string name);
+		static void readList(vector<string>& list, string name);
+		static void printList(vector<string>& list);
 
-		void mkdirRecursive(string path, string list_file);
-		void mkdirRecursive(string path, vector<string>& list);
+		static void mkdirRecursive(string path, string list_file);
+		static void mkdirRecursive(string path, vector<string>& list);
 
 		static void mkdir_p(string dir);
 		static void rm_rf(string dir);
@@ -29,8 +29,8 @@ class DirDealer
 		static bool existFileOrDir(string name);
 		static bool isDir(string dir);
 	private:
-		vector<string> getFileListRec(string path, string dir);
-		vector<string> getListFromString(string str);
+		static vector<string> getFileListRec(string path, string dir);
+		static vector<string> getListFromString(string str);
 };
 
 #endif

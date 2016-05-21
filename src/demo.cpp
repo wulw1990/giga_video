@@ -11,10 +11,12 @@ using namespace cv;
 #include "server/Player.hpp"
 #include "camera/CameraSetVideo.hpp"
 #include "camera/CameraSetImage.hpp"
+#include "camera/PyramidCameraImage.hpp"
 #include "Timer.hpp"
 
 static int giga_image(int argc, char **argv);
 static int camera_set(int argc, char **argv);
+static int pyramid_camera(int argc, char **argv);
 
 int main_internal_demo(int argc, char **argv) {
   if (argc < 2) {
@@ -30,6 +32,8 @@ int main_internal_demo(int argc, char **argv) {
     return giga_image(argc, argv);
   if (mode == "camera_set")
     return camera_set(argc, argv);
+  if (mode == "pyramid_camera")
+    return pyramid_camera(argc, argv);
   else {
     cerr << "main_internal_demo mode error: " << mode << endl;
     return -1;
@@ -86,5 +90,27 @@ static int camera_set(int argc, char **argv) {
     cout << "wait=" << wait << endl;
     waitKey(wait);
   }
+  return 0;
+}
+static int pyramid_camera(int argc, char **argv) {
+  // if (argc < 2) {
+  //   cerr << "main_internal_demo pyramid_camera args error." << endl;
+  //   exit(-1);
+  // }
+  PyramidCameraImage camera("/home/wuliwei/ramdisk/zijing16/video/MVI_6878/");
+  const int MS = 66;
+  while (1) {
+    int layer_id = rand()%5;
+    Timer timer;
+    timer.reset();
+    Mat frame;
+    camera.read(frame, layer_id);
+    imshow("frame", frame);
+    int time = timer.getTimeUs() / 1000;
+    cout << "Time: " << time << endl;
+    int wait = max(1, MS - time);
+    waitKey(wait);
+  }
+
   return 0;
 }
