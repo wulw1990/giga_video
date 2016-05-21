@@ -20,23 +20,30 @@ WaiterServer::WaiterServer(std::string path, int w, int h, int video_mode) {
   m_window_controller =
       make_shared<WindowController>(n_layers, top_layer_size, winsize);
 
-  m_frame = getFrameInternal();
+  updateFrameBackground();
+  updateFrameForeground();
   m_has_frame = true;
   m_has_thumbnail = false;
+  m_need_update_foreground = false;
 }
 void WaiterServer::move(float dx, float dy) {
   m_window_controller->move(dx, dy);
-  m_frame = getFrameInternal();
+  updateFrameBackground();
+  updateFrameForeground();
   m_has_frame = true;
 }
 void WaiterServer::zoom(float dz) {
   m_window_controller->zoom(dz);
-  m_frame = getFrameInternal();
+  updateFrameBackground();
+  updateFrameForeground();
   m_has_frame = true;
 }
-
 bool WaiterServer::hasFrame() {
   // hasFrame
+  if (m_need_update_foreground) {
+    updateFrameForeground();
+    m_has_frame = true;
+  }
   return m_has_frame;
 }
 void WaiterServer::getFrame(cv::Mat &frame) {
@@ -53,15 +60,28 @@ void WaiterServer::getThumbnail(std::vector<cv::Mat> &thumbnail) {
   thumbnail = m_thumbnail;
   m_has_thumbnail = false;
 }
-cv::Mat WaiterServer::getFrameInternal() {
+void WaiterServer::updateFrameBackground() {
   double x, y, z;
   m_window_controller->getXYZ(x, y, z);
   //   cout << "x: " << x << "\ty: " << y << "\tz: " << z << endl;
-  Mat frame, mask;
-
   Timer timer;
   timer.reset();
-  m_frame_provider->getFrameWithMask(frame, mask, m_w, m_h, x, y, z);
+  m_frame = m_frame_provider->getFrameBackground(m_w, m_h, x, y, z);
   cout << "Frame Time: " << timer.getTimeUs() / 1000 << " ms" << endl;
-  return frame;
+}
+void WaiterServer::updateFrameForeground() {
+  double x, y, z;
+  m_window_controller->getXYZ(x, y, z);
+  m_need_update_foreground =
+      m_frame_provider->hasFrameForeground(m_w, m_h, x, y, z);
+  cout << "m_need_update_foreground: " << m_need_update_foreground << endl;
+  if (m_need_update_foreground) {
+    cv::Mat foregournd_frame;
+    cv::Mat foregournd_mask;
+    m_frame_provider->getFrameForeground(m_w, m_h, x, y, z, foregournd_frame,
+                                         foregournd_mask);
+    // imshow("foregournd_frame", foregournd_frame);
+    // imshow("foregournd_mask", foregournd_mask);
+    foregournd_frame.copyTo(m_frame, foregournd_mask);
+  }
 }

@@ -9,7 +9,7 @@ const string win_title = "giga player";
 const int w = 1700;
 const int h = 900;
 
-const int FPS = 5;
+const int FPS = 15;
 const int MS = 1000 / FPS;
 
 Player::Player(std::string path, int video_mode, string output_video) {
@@ -28,27 +28,27 @@ void Player::play() {
     assert(video_writer.isOpened());
   }
 
-  Timer video_writertimer;
-  video_writertimer.reset();
+  Timer timer;
   Mat frame;
   while (1) {
+    timer.reset();
     if (m_info.m_waiter->hasFrame()) {
       Timer frame_timer;
       frame_timer.reset();
       m_info.m_waiter->getFrame(frame);
-    //   cout << "Frame Time: " << frame_timer.getTimeUs() / 1000 << " ms" << endl;
+      //   cout << "Frame Time: " << frame_timer.getTimeUs() / 1000 << " ms" <<
+      //   endl;
       imshow(win_title, frame);
       setMouseCallback(win_title, onMouse, &m_info);
     }
 
-    char key = waitKey(1);
+    video_writer << frame;
+    int time = timer.getTimeUs() / 1000;
+    cout << "time: " << time << endl;
+    int wait = max(1, 66 - time);
+    char key = waitKey(wait);
     if (key == 'q')
       break;
-
-    if (video_writertimer.getTimeUs() / 1000 > 33) {
-      video_writertimer.reset();
-      video_writer << frame;
-    }
   }
 }
 void Player::onMouse(int event, int x, int y, int, void *data) {

@@ -4,6 +4,8 @@
 #include "WaiterBase.hpp"
 
 #include <memory>
+#include <thread>
+#include <mutex>
 
 class FrameProvider;
 class WindowController;
@@ -33,7 +35,12 @@ private:
   cv::Mat m_frame;
   std::vector<cv::Mat> m_thumbnail;
   
-  cv::Mat getFrameInternal();
+  void updateFrameBackground();
+  void updateFrameForeground();
+  bool m_need_update_foreground;
+  
+  std::mutex m_frame_locker;
+  std::thread m_frame_foreground_thread;  
 };
 
 #endif
