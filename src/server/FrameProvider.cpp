@@ -131,7 +131,7 @@ bool FrameProvider::hasFrameForeground(int w, int h, int x, int y, int z) {
 
   for (int i = 0; i < n_videos; ++i) {
     Rect rect_video;
-    assert(m_video_data->getRectOnScene(rect_video, i));
+    assert(m_video_data->getRectOnScene(rect_video, 4, i));
     Rect rect_overlap = rect_video & rect_window;
     cout << "rect_overlap: " << rect_overlap << endl;
     if (rect_overlap.width > 0) {
@@ -167,14 +167,14 @@ void FrameProvider::getFrameForeground(int w, int h, int x, int y, int z,
   Rect rect_window(x, y, w, h);
   for (int i = 0; i < n_videos; ++i) {
     Rect rect_video;
-    assert(m_video_data->getRectOnScene(rect_video, i));
+    assert(m_video_data->getRectOnScene(rect_video, 4, i));
     Rect rect_overlap = rect_video & rect_window;
 
     if (rect_overlap.width <= 0) {
       continue;
     }
     Mat video_frame;
-    assert(m_video_data->getFrame(video_frame, i));
+    assert(m_video_data->getFrame(video_frame, 4, i));
 
     Rect rect_on_video = rect_overlap;
     rect_on_video.x -= rect_video.x;
@@ -196,154 +196,6 @@ void FrameProvider::getFrameForeground(int w, int h, int x, int y, int z,
       } // for
     }   // for
   }     // for video
-}
-
-void FrameProvider::getFrameWithMask(cv::Mat &frame, cv::Mat &mask, int w,
-                                     int h, double x, double y, double z) {
-  int layer_id = static_cast<int>(z + 1);
-  layer_id = max(layer_id, 0);
-  layer_id = min(layer_id, m_tile_provider->getNumLayers() - 1);
-
-  int pixel_x =
-      static_cast<int>(x * m_tile_provider->getPixelColsOfLayer(layer_id));
-  int pixel_y =
-      static_cast<int>(y * m_tile_provider->getPixelRowsOfLayer(layer_id));
-
-  double zoom = pow(2.0, (double)layer_id - z);
-  int sw = zoom * w;
-  int sh = zoom * h;
-
-  pixel_x -= sw / 2;
-  pixel_y -= sh / 2;
-
-  getFrameWithMask(frame, mask, sw, sh, pixel_x, pixel_y, layer_id);
-  resize(frame, frame, Size(w, h));
-  resize(mask, mask, Size(w, h));
-}
-void FrameProvider::getFrameWithMask(cv::Mat &frame, cv::Mat &mask, int w,
-                                     int h, int x, int y, int z) {
-  // cout << "z: " << z << endl;
-  Timer timer;
-  const int LEN = m_tile_provider->getTileLen();
-  Rect rect(x, y, w, h);
-  frame = Mat(h, w, CV_8UC3, default_color);
-  mask = Mat(h, w, CV_8UC1, Scalar(0));
-
-  int X1 = x / LEN;
-  int Y1 = y / LEN;
-  int X2 = (x + w - 1) / LEN;
-  int Y2 = (y + h - 1) / LEN;
-
-  vector<Mat> vtile;
-  {
-    const int ROWS = m_tile_provider->getRowsOfLayer(z);
-    const int COLS = m_tile_provider->getColsOfLayer(z);
-    vector<int> vx, vy, vz;
-    for (int x = X1; x <= X2; ++x) {
-      for (int y = Y1; y <= Y2; ++y) {
-        if (x >= 0 && x < COLS && y >= 0 && y < ROWS) {
-          vx.push_back(x);
-          vy.push_back(y);
-          vz.push_back(z);
-        }
-      }
-    }
-    m_tile_provider->getTile(vx, vy, vz, vtile);
-  }
-
-  for (int i = 0, x = X1; x <= X2; ++x) {
-    for (int y = Y1; y <= Y2; ++y) {
-      Mat tile;
-      const int ROWS = m_tile_provider->getRowsOfLayer(z);
-      const int COLS = m_tile_provider->getColsOfLayer(z);
-      if (x >= 0 && x < COLS && y >= 0 && y < ROWS) {
-        tile = vtile[i++];
-      } else {
-        tile = Mat(LEN, LEN, CV_8UC3, default_color);
-      }
-      Rect tile_rect(x * LEN, y * LEN, LEN, LEN);
-      copyMatToMat(tile, tile_rect, frame, rect);
-    }
-  }
-
-#if 1
-  if (m_video_mode && z == m_tile_provider->getNumLayers() - 1) {
-    if (m_video_mode) {
-      int n_videos = m_video_data->getNumCamera();
-      // cout << "n_videos:  " << n_videos << endl;
-
-      for (int i = 0; i < n_videos; ++i) {
-        Rect rect_video_on_scene;
-        assert(m_video_data->getRectOnScene(rect_video_on_scene, i));
-
-        int max_layer_id = m_tile_provider->getNumLayers() - 1;
-        double zoom = pow(2.0, (double)max_layer_id - z);
-        rect_video_on_scene.x /= zoom;
-        rect_video_on_scene.y /= zoom;
-        rect_video_on_scene.width /= zoom;
-        rect_video_on_scene.height /= zoom;
-
-        Rect rect_overlap = rect_video_on_scene & Rect(x, y, w, h);
-
-        if (rect_overlap.width > 0 && rect_overlap.height > 0) {
-          Mat video_frame;
-          assert(m_video_data->getFrame(video_frame, i));
-
-          resize(video_frame, video_frame,
-                 Size(video_frame.cols / zoom, video_frame.rows / zoom));
-
-          Rect rect_on_video = rect_overlap;
-          rect_on_video.x -= rect_video_on_scene.x;
-          rect_on_video.y -= rect_video_on_scene.y;
-
-          Rect rect_on_win = rect_overlap;
-          rect_on_win.x -= x;
-          rect_on_win.y -= y;
-
-          Mat src = video_frame(rect_on_video);
-          Mat dst = frame(rect_on_win);
-          Mat dst2 = mask(rect_on_win);
-          for (int r = 0; r < src.rows; ++r) {
-            for (int c = 0; c < src.cols; ++c) {
-              if (src.at<Vec3b>(r, c) != Vec3b(0, 0, 0)) {
-                dst.at<Vec3b>(r, c) = src.at<Vec3b>(r, c);
-                dst2.at<unsigned char>(r, c) = 255;
-              }
-            }
-          }
-        }
-      }
-    } else if (m_video_mode) {
-      int n_videos = m_video_data->getNumCamera();
-      for (int i = 0; i < n_videos; ++i) {
-        Rect rect_video_on_scene;
-        assert(m_video_data->getRectOnScene(rect_video_on_scene, i));
-        double scale = pow(2, m_tile_provider->getNumLayers() - 1 - z);
-        rect_video_on_scene.x /= scale;
-        rect_video_on_scene.y /= scale;
-        rect_video_on_scene.width /= scale;
-        rect_video_on_scene.height /= scale;
-        Rect rect_overlap = rect_video_on_scene & Rect(x, y, w, h);
-        if (rect_overlap.width > 0 && rect_overlap.height > 0) {
-          rect_overlap.x -= x;
-          rect_overlap.y -= y;
-          rectangle(frame, rect_overlap, Scalar(255, 0, 0), 2);
-          rectangle(mask, rect_overlap, Scalar(255), 2);
-        }
-      }
-    }
-  }
-#endif
-}
-cv::Mat FrameProvider::getFrame(int w, int h, double x, double y, double z) {
-  Mat frame, mask;
-  getFrameWithMask(frame, mask, w, h, x, y, z);
-  return frame;
-}
-cv::Mat FrameProvider::getFrame(int w, int h, int x, int y, int z) {
-  Mat frame, mask;
-  getFrameWithMask(frame, mask, w, h, x, y, z);
-  return frame;
 }
 void FrameProvider::copyMatToMat(Mat &src_mat, Rect &src_rect, Mat &dst_mat,
                                  Rect &dst_rect) {

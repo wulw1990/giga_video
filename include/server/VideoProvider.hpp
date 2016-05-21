@@ -13,15 +13,18 @@ class VideoProvider{
 	public:
 		VideoProvider(std::string path, bool online = false);
 		int getNumCamera();
-		bool getRectOnScene(cv::Rect& rect, int index);
-		bool getFrame(cv::Mat& frame, int index);
+		bool getRectOnScene(cv::Rect& rect, int layer_id, int camera_id);
+		bool getFrame(cv::Mat& frame, int layer_id, int camera_id);
 
 	private:
 		std::string m_path;
-		std::shared_ptr<CameraSetBase> m_camera_set;
+		std::vector<std::shared_ptr<CameraSetBase> > m_camera_set;
 
-		std::vector<cv::Mat> m_trans;
-		std::vector<cv::Rect> m_rect;
+		std::vector<std::vector<cv::Mat>> m_trans;
+		std::vector<std::vector<cv::Rect>> m_rect;
+		
+		bool isValidLayer(int layer_id);
+		bool isValidCamera(int camera_id);
 };
 
 #endif

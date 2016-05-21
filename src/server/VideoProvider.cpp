@@ -8,9 +8,11 @@ using namespace cv;
 #include "DirDealer.h"
 #include "CameraSetBase.hpp"
 #include "CameraSetFly2.hpp"
-#include "CameraSetVideo.hpp"
+#include "CameraSetImage.hpp"
 #include "CameraSetParallel.hpp"
 #include "IO.hpp"
+
+const int NUM_LAYERS = 5;
 
 static std::vector<cv::Point2f> getCornerOnFrame(cv::Size size) {
   int rows = size.height;
@@ -40,46 +42,63 @@ VideoProvider::VideoProvider(string path, bool online) {
   }
 
   if (online) {
-    m_camera_set = make_shared<CameraSetParallel>(make_shared<CameraSetFly2>());
-    m_camera_set = make_shared<CameraSetFly2>();
+    // m_camera_set =
+    // make_shared<CameraSetParallel>(make_shared<CameraSetFly2>());
+    // m_camera_set = make_shared<CameraSetFly2>();
   } else {
-    vector<string> video_name;
-    for (size_t i = 0; i < list.size(); ++i) {
-      video_name.push_back(path + list[i] + "/video.avi");
+    for (int layer_id = 0; layer_id < NUM_LAYERS; ++layer_id) {
+      vector<string> video_name;
+      for (size_t i = 0; i < list.size(); ++i) {
+        video_name.push_back(path + list[i] + "/video_" + to_string(layer_id) +
+                             "/");
+      }
+      m_camera_set.push_back(make_shared<CameraSetImage>(video_name));
     }
-    m_camera_set = make_shared<CameraSetVideo>(video_name);
   }
-
-  int n_cameras = m_camera_set->getNumCamera();
-  m_trans.resize(n_cameras);
-  m_rect.resize(n_cameras);
-
-  for (int i = 0; i < n_cameras; ++i) {
-    ifstream fin;
-    assert(
-        IO::openIStream(fin, path + list[i] + "/info.txt", "VideoData load"));
-    assert(IO::loadTransMat(fin, m_trans[i]));
-    assert(IO::loadRect(fin, m_rect[i]));
+  m_trans.resize(NUM_LAYERS);
+  m_rect.resize(NUM_LAYERS);
+  for (int layer_id = 0; layer_id < NUM_LAYERS; ++layer_id) {
+    int n_cameras = m_camera_set[layer_id]->getNumCamera();
+    m_trans[layer_id].resize(n_cameras);
+    m_rect[layer_id].resize(n_cameras);
+    for (int camera_id = 0; camera_id < n_cameras; ++camera_id) {
+      ifstream fin;
+      assert(IO::openIStream(fin, path + list[camera_id] + "/info_" +
+                                      to_string(layer_id) + ".txt",
+                             "VideoData load"));
+      assert(IO::loadTransMat(fin, m_trans[layer_id][camera_id]));
+      assert(IO::loadRect(fin, m_rect[layer_id][camera_id]));
+    }
   }
 }
-int VideoProvider::getNumCamera() { return m_camera_set->getNumCamera(); }
-bool VideoProvider::getRectOnScene(cv::Rect &rect, int index) {
-  if (index < 0 || index >= m_camera_set->getNumCamera()) {
+int VideoProvider::getNumCamera() {
+  //
+  return m_camera_set[0]->getNumCamera();
+}
+bool VideoProvider::getRectOnScene(cv::Rect &rect, int layer_id,
+                                   int camera_id) {
+  if (!isValidLayer(layer_id))
     return false;
-  }
-  rect = m_rect[index];
+  if (!isValidCamera(camera_id))
+    return false;
+  rect = m_rect[layer_id][camera_id];
   return true;
 }
-bool VideoProvider::getFrame(cv::Mat &frame, int index) {
-  if (!m_camera_set->read(frame, index)) {
+bool VideoProvider::getFrame(cv::Mat &frame, int layer_id, int camera_id) {
+  if (!isValidLayer(layer_id))
+    return false;
+  if (!isValidCamera(camera_id))
+    return false;
+  if (!m_camera_set[layer_id]->read(frame, camera_id)) {
     return false;
   }
   Mat show;
   resize(frame, show, Size(frame.cols / 8, frame.rows / 8));
   // imshow("video", show);
   // cout << H << endl;
-  Mat dst(m_rect[index].height, m_rect[index].width, CV_8UC3);
-  warpPerspective(frame, dst, m_trans[index], dst.size());
+  Mat dst(m_rect[layer_id][camera_id].height, m_rect[layer_id][camera_id].width,
+          CV_8UC3);
+  warpPerspective(frame, dst, m_trans[layer_id][camera_id], dst.size());
 
   resize(dst, show, Size(frame.cols / 8, frame.rows / 8));
   // imshow("video-warp", show);
@@ -87,7 +106,7 @@ bool VideoProvider::getFrame(cv::Mat &frame, int index) {
   // TODO: remove black edge
   std::vector<cv::Point2f> corner_frame = getCornerOnFrame(frame.size());
   std::vector<cv::Point2f> corner_scene =
-      getCornerOnScene(frame.size(), m_trans[index]);
+      getCornerOnScene(frame.size(), m_trans[layer_id][camera_id]);
   line(dst, corner_scene[0], corner_scene[1], Scalar(0, 0, 0), 20);
   line(dst, corner_scene[1], corner_scene[2], Scalar(0, 0, 0), 20);
   line(dst, corner_scene[2], corner_scene[3], Scalar(0, 0, 0), 20);
@@ -95,5 +114,17 @@ bool VideoProvider::getFrame(cv::Mat &frame, int index) {
 
   // cout << dst.size() << endl;
   frame = dst;
+  return true;
+}
+bool VideoProvider::isValidLayer(int layer_id) {
+  if (layer_id < 0 || layer_id >= NUM_LAYERS) {
+    return false;
+  }
+  return true;
+}
+bool VideoProvider::isValidCamera(int camera_id) {
+  if (camera_id < 0 || camera_id >= m_camera_set[0]->getNumCamera()) {
+    return false;
+  }
   return true;
 }
