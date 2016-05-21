@@ -20,17 +20,9 @@ PyramidCameraImage::PyramidCameraImage(std::string path) {
   m_frame_name.resize(m_layer_name.size());
 
   for (size_t i = 0; i < m_layer_name.size(); ++i) {
-    vector<string> list = DirDealer::getFileList(path + m_layer_name[i]);
-    vector<string> list_valid;
-    for (size_t j = 0; j < list.size(); ++j) {
-      string name = list[j];
-      string suffix = name.substr(name.length() - 4, 4);
-      if (suffix == SUFFIX) {
-        list_valid.push_back(name);
-      }
-    }
-    sort(list_valid.begin(), list_valid.end());
-    m_frame_name[i] = list_valid;
+    vector<string> list = DirDealer::getNameListValidImage(path + m_layer_name[i]);
+    sort(list.begin(), list.end());
+    m_frame_name[i] = list;
     m_frame_id = 0;
   }
 
