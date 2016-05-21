@@ -12,11 +12,13 @@ using namespace cv;
 #include "camera/CameraSetVideo.hpp"
 #include "camera/CameraSetImage.hpp"
 #include "camera/PyramidCameraImage.hpp"
+#include "camera/PyCameraSetImage.hpp"
 #include "Timer.hpp"
 
 static int giga_image(int argc, char **argv);
 static int camera_set(int argc, char **argv);
 static int pyramid_camera(int argc, char **argv);
+static int py_camera_set(int argc, char **argv);
 
 int main_internal_demo(int argc, char **argv) {
   if (argc < 2) {
@@ -34,6 +36,8 @@ int main_internal_demo(int argc, char **argv) {
     return camera_set(argc, argv);
   if (mode == "pyramid_camera")
     return pyramid_camera(argc, argv);
+  if (mode == "py_camera_set")
+    return py_camera_set(argc, argv);
   else {
     cerr << "main_internal_demo mode error: " << mode << endl;
     return -1;
@@ -100,11 +104,35 @@ static int pyramid_camera(int argc, char **argv) {
   PyramidCameraImage camera("/home/wuliwei/ramdisk/zijing16/video/MVI_6878/");
   const int MS = 66;
   while (1) {
-    int layer_id = rand()%5;
+    int layer_id = rand() % 5;
     Timer timer;
     timer.reset();
     Mat frame;
     camera.read(frame, layer_id);
+    imshow("frame", frame);
+    int time = timer.getTimeUs() / 1000;
+    cout << "Time: " << time << endl;
+    int wait = max(1, MS - time);
+    waitKey(wait);
+  }
+
+  return 0;
+}
+static int py_camera_set(int argc, char **argv) {
+  // if (argc < 2) {
+  //   cerr << "main_internal_demo pyramid_camera args error." << endl;
+  //   exit(-1);
+  // }
+  PyCameraSetImage camera_set("/home/wuliwei/ramdisk/zijing16/video/");
+  const int MS = 66;
+  int camera_id = 5;
+  while (1) {
+    int layer_id = rand() % 5;
+
+    Timer timer;
+    timer.reset();
+    Mat frame;
+    camera_set.read(frame, camera_id, layer_id);
     imshow("frame", frame);
     int time = timer.getTimeUs() / 1000;
     cout << "Time: " << time << endl;

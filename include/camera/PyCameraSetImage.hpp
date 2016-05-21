@@ -17,6 +17,7 @@ private:
   std::vector<std::string> m_camera_name;
   std::vector<std::string> m_layer_name;
   std::vector<std::vector<std::string>> m_camera_frame_name;
+  std::vector<int> m_frame_id;
 };
 
 #endif

@@ -10,6 +10,11 @@
 # ./build/giga_video $mode $mode_internal
 
 
+# mode="demo"
+# mode_internal="pyramid_camera"
+# ./build/giga_video $mode $mode_internal
+
+
 mode="demo"
-mode_internal="pyramid_camera"
+mode_internal="py_camera_set"
 ./build/giga_video $mode $mode_internal
