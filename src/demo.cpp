@@ -50,10 +50,13 @@ static int camera_set(int argc, char **argv) {
 #if 1
   string path("/home/wuliwei/ramdisk/zijing16/video/");
   vector<string> video_name;
-  video_name.push_back(path + "MVI_6878/video.avi");
-  video_name.push_back(path + "MVI_6880/video.avi");
-  video_name.push_back(path + "MVI_6881/video.avi");
-  video_name.push_back(path + "MVI_6883/video.avi");
+  string name = "video_4.avi";
+  video_name.push_back(path + "MVI_6878/" + name);
+  video_name.push_back(path + "MVI_6880/" + name);
+  video_name.push_back(path + "MVI_6881/" + name);
+  video_name.push_back(path + "MVI_6883/" + name);
+  video_name.push_back(path + "MVI_6885/" + name);
+  video_name.push_back(path + "MVI_7294/" + name);
   camera_set = make_shared<CameraSetVideo>(video_name);
 #else
 
