@@ -9,6 +9,13 @@ using namespace cv;
 
 const Scalar default_color(127, 127, 127);
 
+int FrameProvider::getNearestLayer(double z) {
+  int source_layer_id = static_cast<int>(z + 1);
+  source_layer_id = max(source_layer_id, 0);
+  source_layer_id = min(source_layer_id, m_tile_provider->getNumLayers() - 1);
+  return source_layer_id;
+}
+
 FrameProvider::FrameProvider(std::string path, int video_mode) {
   m_tile_provider = make_shared<TileProvider>(path, path + "info_scene.txt");
 
@@ -50,10 +57,7 @@ void FrameProvider::calculateSourceWindow(int w, int h, double x, double y,
 cv::Mat FrameProvider::getFrameBackground(int w, int h, double x, double y,
                                           double z) {
   // calculate dst w, h, x, y, z
-  int source_layer_id = static_cast<int>(z + 1);
-  source_layer_id = max(source_layer_id, 0);
-  source_layer_id = min(source_layer_id, m_tile_provider->getNumLayers() - 1);
-
+  int source_layer_id = getNearestLayer(z);
   int sx, sy, sw, sh;
   calculateSourceWindow(w, h, x, y, z, source_layer_id, &sw, &sh, &sx, &sy);
 
@@ -113,19 +117,11 @@ bool FrameProvider::hasFrameForeground(int w, int h, double x, double y,
   if (m_video_mode == 0) {
     return false;
   }
-  // if (z < m_tile_provider->getNumLayers() - 3) {
-  //   return false;
-  // }
-
-  // get source_layer_id
-  // int source_layer_id = m_tile_provider->getNumLayers() - 1;
-  int source_layer_id = static_cast<int>(z + 1);
-  source_layer_id = max(source_layer_id, 0);
-  source_layer_id = min(source_layer_id, m_tile_provider->getNumLayers() - 1);
-
-  // calculate source w, h, x, y, z
+  // calculate dst w, h, x, y, z
+  int source_layer_id = getNearestLayer(z);
   int sx, sy, sw, sh;
   calculateSourceWindow(w, h, x, y, z, source_layer_id, &sw, &sh, &sx, &sy);
+
   return hasFrameForeground(sw, sh, sx, sy, source_layer_id);
 }
 bool FrameProvider::hasFrameForeground(int w, int h, int x, int y, int z) {
@@ -138,7 +134,7 @@ bool FrameProvider::hasFrameForeground(int w, int h, int x, int y, int z) {
     Rect rect_video;
     assert(m_video_data->getRectOnScene(rect_video, z, i));
     Rect rect_overlap = rect_video & rect_window;
-    cout << "rect_overlap: " << rect_overlap << endl;
+    // cout << "rect_overlap: " << rect_overlap << endl;
     if (rect_overlap.width > 0) {
       return true;
     }
@@ -148,14 +144,8 @@ bool FrameProvider::hasFrameForeground(int w, int h, int x, int y, int z) {
 void FrameProvider::getFrameForeground(int w, int h, double x, double y,
                                        double z, cv::Mat &frame,
                                        cv::Mat &mask) {
-  //
-  // get source_layer_id
-  // int source_layer_id = m_tile_provider->getNumLayers() - 1;
-  int source_layer_id = static_cast<int>(z + 1);
-  source_layer_id = max(source_layer_id, 0);
-  source_layer_id = min(source_layer_id, m_tile_provider->getNumLayers() - 1);
-
-  // calculate source w, h, x, y, z
+  // calculate dst w, h, x, y, z
+  int source_layer_id = getNearestLayer(z);
   int sx, sy, sw, sh;
   calculateSourceWindow(w, h, x, y, z, source_layer_id, &sw, &sh, &sx, &sy);
 
@@ -166,15 +156,7 @@ void FrameProvider::getFrameForeground(int w, int h, double x, double y,
 }
 void FrameProvider::getFrameForeground(int w, int h, int x, int y, int z,
                                        cv::Mat &frame, cv::Mat &mask) {
-  //
-  // assert(z == m_tile_provider->getNumLayers() - 1);
-  cout << "z: " << z << endl;
   int n_videos = m_video_data->getNumCamera();
-  // cout << "n_videos:  " << n_videos << endl;
-
-  // frame = cv::Mat(100, 100, CV_8UC3, Scalar(0, 0, 0));
-  // mask = cv::Mat(100, 100, CV_8UC1, Scalar(0));
-  // return;
 
   frame = cv::Mat(h, w, CV_8UC3, Scalar(0, 0, 0));
   mask = cv::Mat(h, w, CV_8UC1, Scalar(0));

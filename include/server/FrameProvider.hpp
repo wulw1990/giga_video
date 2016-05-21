@@ -16,10 +16,6 @@ class FrameProvider {
 public:
   FrameProvider(std::string path, int video_mode);
 
-  void calculateSourceWindow(int w, int h, double x, double y, double z,
-                             int source_layer_id, int *sw, int *sh, int *sx,
-                             int *sy);
-
   cv::Mat getFrameBackground(int w, int h, double x, double y, double z);
   cv::Mat getFrameBackground(int w, int h, int x, int y, int z);
 
@@ -51,6 +47,12 @@ private:
 
   void copyMatToMat(cv::Mat &src_mat, cv::Rect &src_rect, cv::Mat &dst_mat,
                     cv::Rect &dst_rect);
+
+  void calculateSourceWindow(int w, int h, double x, double y, double z,
+                             int source_layer_id, int *sw, int *sh, int *sx,
+                             int *sy);
+
+  int getNearestLayer(double z);
 };
 
 #endif

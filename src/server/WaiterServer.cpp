@@ -20,11 +20,11 @@ WaiterServer::WaiterServer(std::string path, int w, int h, int video_mode) {
   m_window_controller =
       make_shared<WindowController>(n_layers, top_layer_size, winsize);
 
-  updateFrameBackground();
-  updateFrameForeground();
-  m_has_frame = true;
+  m_has_frame = false;
   m_has_thumbnail = false;
   m_need_update_foreground = false;
+  updateFrameBackground();
+  updateFrameForeground();
 }
 void WaiterServer::move(float dx, float dy) {
   m_window_controller->move(dx, dy);
@@ -67,14 +67,15 @@ void WaiterServer::updateFrameBackground() {
   Timer timer;
   timer.reset();
   m_frame = m_frame_provider->getFrameBackground(m_w, m_h, x, y, z);
-  cout << "Frame Time: " << timer.getTimeUs() / 1000 << " ms" << endl;
+  // cout << "Frame Time: " << timer.getTimeUs() / 1000 << " ms" << endl;
+  m_has_frame = true;
 }
 void WaiterServer::updateFrameForeground() {
   double x, y, z;
   m_window_controller->getXYZ(x, y, z);
   m_need_update_foreground =
       m_frame_provider->hasFrameForeground(m_w, m_h, x, y, z);
-  cout << "m_need_update_foreground: " << m_need_update_foreground << endl;
+  // cout << "m_need_update_foreground: " << m_need_update_foreground << endl;
   if (m_need_update_foreground) {
     cv::Mat foregournd_frame;
     cv::Mat foregournd_mask;
@@ -84,4 +85,5 @@ void WaiterServer::updateFrameForeground() {
     // imshow("foregournd_mask", foregournd_mask);
     foregournd_frame.copyTo(m_frame, foregournd_mask);
   }
+  m_has_frame = true;
 }

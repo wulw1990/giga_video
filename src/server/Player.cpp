@@ -44,7 +44,7 @@ void Player::play() {
 
     video_writer << frame;
     int time = timer.getTimeUs() / 1000;
-    cout << "time: " << time << endl;
+    cout << "Player time: " << time << endl;
     int wait = max(1, 66 - time);
     char key = waitKey(wait);
     if (key == 'q')
