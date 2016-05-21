@@ -113,12 +113,17 @@ bool FrameProvider::hasFrameForeground(int w, int h, double x, double y,
   if (m_video_mode == 0) {
     return false;
   }
-  if (z < m_tile_provider->getNumLayers() - 3) {
-    return false;
-  }
+  // if (z < m_tile_provider->getNumLayers() - 3) {
+  //   return false;
+  // }
+
+  // get source_layer_id
+  // int source_layer_id = m_tile_provider->getNumLayers() - 1;
+  int source_layer_id = static_cast<int>(z + 1);
+  source_layer_id = max(source_layer_id, 0);
+  source_layer_id = min(source_layer_id, m_tile_provider->getNumLayers() - 1);
 
   // calculate source w, h, x, y, z
-  int source_layer_id = m_tile_provider->getNumLayers() - 1;
   int sx, sy, sw, sh;
   calculateSourceWindow(w, h, x, y, z, source_layer_id, &sw, &sh, &sx, &sy);
   return hasFrameForeground(sw, sh, sx, sy, source_layer_id);
@@ -131,7 +136,7 @@ bool FrameProvider::hasFrameForeground(int w, int h, int x, int y, int z) {
 
   for (int i = 0; i < n_videos; ++i) {
     Rect rect_video;
-    assert(m_video_data->getRectOnScene(rect_video, 4, i));
+    assert(m_video_data->getRectOnScene(rect_video, z, i));
     Rect rect_overlap = rect_video & rect_window;
     cout << "rect_overlap: " << rect_overlap << endl;
     if (rect_overlap.width > 0) {
@@ -144,8 +149,13 @@ void FrameProvider::getFrameForeground(int w, int h, double x, double y,
                                        double z, cv::Mat &frame,
                                        cv::Mat &mask) {
   //
+  // get source_layer_id
+  // int source_layer_id = m_tile_provider->getNumLayers() - 1;
+  int source_layer_id = static_cast<int>(z + 1);
+  source_layer_id = max(source_layer_id, 0);
+  source_layer_id = min(source_layer_id, m_tile_provider->getNumLayers() - 1);
+
   // calculate source w, h, x, y, z
-  int source_layer_id = m_tile_provider->getNumLayers() - 1;
   int sx, sy, sw, sh;
   calculateSourceWindow(w, h, x, y, z, source_layer_id, &sw, &sh, &sx, &sy);
 
@@ -157,9 +167,14 @@ void FrameProvider::getFrameForeground(int w, int h, double x, double y,
 void FrameProvider::getFrameForeground(int w, int h, int x, int y, int z,
                                        cv::Mat &frame, cv::Mat &mask) {
   //
-  assert(z == m_tile_provider->getNumLayers() - 1);
+  // assert(z == m_tile_provider->getNumLayers() - 1);
+  cout << "z: " << z << endl;
   int n_videos = m_video_data->getNumCamera();
   // cout << "n_videos:  " << n_videos << endl;
+
+  // frame = cv::Mat(100, 100, CV_8UC3, Scalar(0, 0, 0));
+  // mask = cv::Mat(100, 100, CV_8UC1, Scalar(0));
+  // return;
 
   frame = cv::Mat(h, w, CV_8UC3, Scalar(0, 0, 0));
   mask = cv::Mat(h, w, CV_8UC1, Scalar(0));
@@ -167,14 +182,14 @@ void FrameProvider::getFrameForeground(int w, int h, int x, int y, int z,
   Rect rect_window(x, y, w, h);
   for (int i = 0; i < n_videos; ++i) {
     Rect rect_video;
-    assert(m_video_data->getRectOnScene(rect_video, 4, i));
+    assert(m_video_data->getRectOnScene(rect_video, z, i));
     Rect rect_overlap = rect_video & rect_window;
 
     if (rect_overlap.width <= 0) {
       continue;
     }
     Mat video_frame;
-    assert(m_video_data->getFrame(video_frame, 4, i));
+    assert(m_video_data->getFrame(video_frame, z, i));
 
     Rect rect_on_video = rect_overlap;
     rect_on_video.x -= rect_video.x;
@@ -187,6 +202,9 @@ void FrameProvider::getFrameForeground(int w, int h, int x, int y, int z,
     Mat src = video_frame(rect_on_video);
     Mat dst = frame(rect_on_win);
     Mat dst2 = mask(rect_on_win);
+    // TODO
+    // src.copyTo(dst);
+    // dst2.setTo(Scalar(255));
     for (int r = 0; r < src.rows; ++r) {
       for (int c = 0; c < src.cols; ++c) {
         if (src.at<Vec3b>(r, c) != Vec3b(0, 0, 0)) {
