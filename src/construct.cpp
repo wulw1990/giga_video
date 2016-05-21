@@ -11,7 +11,7 @@ using namespace cv;
 #include "giga_video.h"
 #include "GigaImageMeta.hpp"
 #include "IO.hpp"
-#include "DirDealer.h"
+#include "DirDealer.hpp"
 
 
 static int giga_image_meta(int argc, char **argv);

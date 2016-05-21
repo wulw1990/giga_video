@@ -4,7 +4,7 @@
 #include <fstream>
 using namespace std;
 
-#include "DirDealer.h"
+#include "DirDealer.hpp"
 
 void GigaImageMeta::generateMetaFile(std::string path, std::string meta) {
   // TODO: magic number

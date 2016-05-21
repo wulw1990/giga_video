@@ -1,4 +1,4 @@
-#include "DirDealer.h"
+#include "DirDealer.hpp"
 
 #include <fstream>
 #include <sstream>

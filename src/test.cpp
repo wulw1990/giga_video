@@ -10,7 +10,7 @@ using namespace cv;
 
 #include "giga_video.h"
 #include "construct/GigaImageMeta.hpp"
-#include "DirDealer.h"
+#include "DirDealer.hpp"
 #include "Timer.hpp"
 
 static int giga_image_meta(int argc, char **argv);

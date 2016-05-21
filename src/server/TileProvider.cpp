@@ -10,7 +10,7 @@
 using namespace std;
 using namespace cv;
 
-#include "DirDealer.h"
+#include "DirDealer.hpp"
 #include "GigaImageMeta.hpp"
 #include "Timer.hpp"
 

@@ -5,7 +5,7 @@
 using namespace std;
 using namespace cv;
 
-#include "DirDealer.h"
+#include "DirDealer.hpp"
 #include "CameraSetBase.hpp"
 #include "CameraSetFly2.hpp"
 #include "CameraSetImage.hpp"

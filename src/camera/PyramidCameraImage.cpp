@@ -1,6 +1,6 @@
 #include "PyramidCameraImage.hpp"
 
-#include "DirDealer.h"
+#include "DirDealer.hpp"
 #include "IO.hpp"
 
 using namespace cv;
