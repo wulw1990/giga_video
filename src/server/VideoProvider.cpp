@@ -74,6 +74,52 @@ bool VideoProvider::getRectOnScene(cv::Rect &rect, int layer_id,
   rect = m_rect[layer_id][camera_id];
   return true;
 }
+bool VideoProvider::getFrame(cv::Mat &frame, cv::Mat &mask, int layer_id,
+                             int camera_id) {
+  if (!isValidLayer(layer_id))
+    return false;
+  if (!isValidCamera(camera_id))
+    return false;
+
+  Mat raw_frame;
+  if (!m_camera_set->read(raw_frame, camera_id, layer_id)) {
+    return false;
+  }
+  Mat raw_mask(raw_frame.size(), CV_8UC1, Scalar(255));
+  // Mat show;
+  // resize(frame, show, Size(frame.cols / 8, frame.rows / 8));
+  // imshow("video", show);
+  // cout << H << endl;
+
+  Size frame_size;
+  {
+    frame_size.width = m_rect[layer_id][camera_id].width;
+    frame_size.height = m_rect[layer_id][camera_id].height;
+  }
+  warpPerspective(raw_frame, frame, m_trans[layer_id][camera_id], frame_size);
+  warpPerspective(raw_mask, mask, m_trans[layer_id][camera_id], frame_size);
+  threshold(mask, mask, 250, 255, THRESH_BINARY);
+
+  // imshow("frame", frame);
+  // imshow("mask", mask);
+
+  // resize(dst, show, Size(frame.cols / 8, frame.rows / 8));
+  // imshow("video-warp", show);
+
+  // TODO: remove black edge
+  // std::vector<cv::Point2f> corner_frame = getCornerOnFrame(frame.size());
+  // std::vector<cv::Point2f> corner_scene =
+  //     getCornerOnScene(frame.size(), m_trans[layer_id][camera_id]);
+  // line(dst, corner_scene[0], corner_scene[1], Scalar(0, 0, 0), 20);
+  // line(dst, corner_scene[1], corner_scene[2], Scalar(0, 0, 0), 20);
+  // line(dst, corner_scene[2], corner_scene[3], Scalar(0, 0, 0), 20);
+  // line(dst, corner_scene[3], corner_scene[0], Scalar(0, 0, 0), 20);
+
+  // cout << dst.size() << endl;
+  // frame = dst;
+  return true;
+}
+
 bool VideoProvider::getFrame(cv::Mat &frame, int layer_id, int camera_id) {
   if (!isValidLayer(layer_id))
     return false;

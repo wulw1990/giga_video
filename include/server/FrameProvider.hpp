@@ -24,7 +24,7 @@ public:
   void getFrameForeground(int w, int h, double x, double y, double z,
                           cv::Mat &frame, cv::Mat &mask);
   void getFrameForeground(int w, int h, int x, int y, int z, cv::Mat &frame,
-                          cv::Mat &mask);
+                          cv::Mat &mask, std::vector<cv::Rect>& rect);
 
   cv::Mat getFrame(int w, int h, int x, int y, int z) { return cv::Mat(); }
 

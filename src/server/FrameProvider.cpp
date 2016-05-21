@@ -149,18 +149,37 @@ void FrameProvider::getFrameForeground(int w, int h, double x, double y,
   int sx, sy, sw, sh;
   calculateSourceWindow(w, h, x, y, z, source_layer_id, &sw, &sh, &sx, &sy);
 
-  getFrameForeground(sw, sh, sx, sy, source_layer_id, frame, mask);
+  vector<Rect> rect;
+  getFrameForeground(sw, sh, sx, sy, source_layer_id, frame, mask, rect);
+
+  double scale = (double)w / frame.cols;
+  for (size_t i = 0; i < rect.size(); ++i) {
+    rect[i].x *= scale;
+    rect[i].y *= scale;
+    rect[i].width *= scale;
+    rect[i].height *= scale;
+  }
+
   Size size(w, h);
   resize(frame, frame, size);
   resize(mask, mask, size);
+
+  if (z < 0.5) {
+    for (size_t i = 0; i < rect.size(); ++i) {
+      rectangle(frame, rect[i], Scalar(255, 0, 0), 2);
+      rectangle(mask, rect[i], Scalar(255), 2);
+    }
+  }
 }
 void FrameProvider::getFrameForeground(int w, int h, int x, int y, int z,
-                                       cv::Mat &frame, cv::Mat &mask) {
+                                       cv::Mat &frame, cv::Mat &mask,
+                                       std::vector<cv::Rect> &rect) {
   int n_videos = m_video_data->getNumCamera();
 
   frame = cv::Mat(h, w, CV_8UC3, Scalar(0, 0, 0));
   mask = cv::Mat(h, w, CV_8UC1, Scalar(0));
 
+  rect.clear();
   Rect rect_window(x, y, w, h);
   for (int i = 0; i < n_videos; ++i) {
     Rect rect_video;
@@ -170,8 +189,8 @@ void FrameProvider::getFrameForeground(int w, int h, int x, int y, int z,
     if (rect_overlap.width <= 0) {
       continue;
     }
-    Mat video_frame;
-    assert(m_video_data->getFrame(video_frame, z, i));
+    Mat video_frame, video_mask;
+    assert(m_video_data->getFrame(video_frame, video_mask, z, i));
 
     Rect rect_on_video = rect_overlap;
     rect_on_video.x -= rect_video.x;
@@ -181,21 +200,16 @@ void FrameProvider::getFrameForeground(int w, int h, int x, int y, int z,
     rect_on_win.x -= x;
     rect_on_win.y -= y;
 
-    Mat src = video_frame(rect_on_video);
-    Mat dst = frame(rect_on_win);
-    Mat dst2 = mask(rect_on_win);
-    // TODO
-    // src.copyTo(dst);
-    // dst2.setTo(Scalar(255));
-    for (int r = 0; r < src.rows; ++r) {
-      for (int c = 0; c < src.cols; ++c) {
-        if (src.at<Vec3b>(r, c) != Vec3b(0, 0, 0)) {
-          dst.at<Vec3b>(r, c) = src.at<Vec3b>(r, c);
-          dst2.at<unsigned char>(r, c) = 255;
-        }
-      } // for
-    }   // for
-  }     // for video
+    Mat video_frame_roi = video_frame(rect_on_video);
+    Mat video_mask_roi = video_mask(rect_on_video);
+    Mat frame_roi = frame(rect_on_win);
+    Mat mask_roi = mask(rect_on_win);
+
+    video_frame_roi.copyTo(frame_roi, video_mask_roi);
+    video_mask_roi.copyTo(mask_roi, video_mask_roi);
+
+    rect.push_back(rect_on_win); // add rect_on_win
+  }                              // for video
 }
 void FrameProvider::copyMatToMat(Mat &src_mat, Rect &src_rect, Mat &dst_mat,
                                  Rect &dst_rect) {
