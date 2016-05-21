@@ -11,7 +11,7 @@ class PyramidCameraImage : public PyramidCameraBase {
 public:
   PyramidCameraImage(std::string path);
   bool read(cv::Mat &frame, int layer_id);
-  int getNumLayers();
+  int getNumLayer();
 
 private:
   std::string m_path;

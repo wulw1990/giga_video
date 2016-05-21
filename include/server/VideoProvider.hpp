@@ -7,7 +7,7 @@
 #include <memory>
 #include <opencv2/opencv.hpp>
 
-class CameraSetBase;
+class PyCameraSetBase;
 
 class VideoProvider{
 	public:
@@ -18,7 +18,7 @@ class VideoProvider{
 
 	private:
 		std::string m_path;
-		std::vector<std::shared_ptr<CameraSetBase> > m_camera_set;
+		std::shared_ptr<PyCameraSetBase> m_camera_set;
 
 		std::vector<std::vector<cv::Mat>> m_trans;
 		std::vector<std::vector<cv::Rect>> m_rect;

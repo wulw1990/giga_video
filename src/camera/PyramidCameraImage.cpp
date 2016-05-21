@@ -33,7 +33,7 @@ PyramidCameraImage::PyramidCameraImage(std::string path) {
 
 bool PyramidCameraImage::read(cv::Mat &frame, int layer_id) {
   //
-  if (layer_id < 0 && layer_id >= getNumLayers())
+  if (layer_id < 0 && layer_id >= getNumLayer())
     return false;
   frame = imread(m_path + m_layer_name[layer_id] + "/" +
                  m_frame_name[layer_id][m_frame_id]);
@@ -43,7 +43,7 @@ bool PyramidCameraImage::read(cv::Mat &frame, int layer_id) {
   }
   return true;
 }
-int PyramidCameraImage::getNumLayers() {
+int PyramidCameraImage::getNumLayer() {
   //
   return (int)m_layer_name.size();
 }

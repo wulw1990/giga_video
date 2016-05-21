@@ -50,21 +50,21 @@ PyCameraSetImage::PyCameraSetImage(std::string path) {
   m_frame_id = vector<int>(m_layer_name.size(), 0);
 }
 
-int PyCameraSetImage::getNumCameras() {
+int PyCameraSetImage::getNumCamera() {
   //
   return (int)m_camera_name.size();
 }
-int PyCameraSetImage::getNumLayers() {
+int PyCameraSetImage::getNumLayer() {
   //
   return (int)m_layer_name.size();
 }
 bool PyCameraSetImage::read(cv::Mat &frame, int camera_id, int layer_id) {
   //
-  if (camera_id < 0 || camera_id >= getNumCameras()) {
+  if (camera_id < 0 || camera_id >= getNumCamera()) {
     cerr << "invalid camera_id" << endl;
     return false;
   }
-  if (layer_id < 0 || layer_id >= getNumLayers()) {
+  if (layer_id < 0 || layer_id >= getNumLayer()) {
     cerr << "invalid layer_id" << endl;
     return false;
   }

@@ -6,7 +6,7 @@
 class PyramidCameraBase {
 public:
     virtual bool read(cv::Mat& frame, int layer_id) = 0;
-    virtual int getNumLayers() = 0;
+    virtual int getNumLayer() = 0;
     
 };
 

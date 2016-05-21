@@ -6,10 +6,7 @@ using namespace std;
 using namespace cv;
 
 #include "DirDealer.hpp"
-#include "CameraSetBase.hpp"
-#include "CameraSetFly2.hpp"
-#include "CameraSetImage.hpp"
-#include "CameraSetParallel.hpp"
+#include "PyCameraSetImage.hpp"
 #include "IO.hpp"
 
 const int NUM_LAYERS = 5;
@@ -46,19 +43,12 @@ VideoProvider::VideoProvider(string path, bool online) {
     // make_shared<CameraSetParallel>(make_shared<CameraSetFly2>());
     // m_camera_set = make_shared<CameraSetFly2>();
   } else {
-    for (int layer_id = 0; layer_id < NUM_LAYERS; ++layer_id) {
-      vector<string> video_name;
-      for (size_t i = 0; i < list.size(); ++i) {
-        video_name.push_back(path + list[i] + "/video_" + to_string(layer_id) +
-                             "/");
-      }
-      m_camera_set.push_back(make_shared<CameraSetImage>(video_name));
-    }
+    m_camera_set = make_shared<PyCameraSetImage>(path);
   }
   m_trans.resize(NUM_LAYERS);
   m_rect.resize(NUM_LAYERS);
   for (int layer_id = 0; layer_id < NUM_LAYERS; ++layer_id) {
-    int n_cameras = m_camera_set[layer_id]->getNumCamera();
+    int n_cameras = m_camera_set->getNumCamera();
     m_trans[layer_id].resize(n_cameras);
     m_rect[layer_id].resize(n_cameras);
     for (int camera_id = 0; camera_id < n_cameras; ++camera_id) {
@@ -73,7 +63,7 @@ VideoProvider::VideoProvider(string path, bool online) {
 }
 int VideoProvider::getNumCamera() {
   //
-  return m_camera_set[0]->getNumCamera();
+  return m_camera_set->getNumCamera();
 }
 bool VideoProvider::getRectOnScene(cv::Rect &rect, int layer_id,
                                    int camera_id) {
@@ -89,7 +79,7 @@ bool VideoProvider::getFrame(cv::Mat &frame, int layer_id, int camera_id) {
     return false;
   if (!isValidCamera(camera_id))
     return false;
-  if (!m_camera_set[layer_id]->read(frame, camera_id)) {
+  if (!m_camera_set->read(frame, camera_id, layer_id)) {
     return false;
   }
   Mat show;
@@ -123,7 +113,7 @@ bool VideoProvider::isValidLayer(int layer_id) {
   return true;
 }
 bool VideoProvider::isValidCamera(int camera_id) {
-  if (camera_id < 0 || camera_id >= m_camera_set[0]->getNumCamera()) {
+  if (camera_id < 0 || camera_id >= m_camera_set->getNumCamera()) {
     return false;
   }
   return true;

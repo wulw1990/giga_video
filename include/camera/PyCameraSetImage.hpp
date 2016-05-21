@@ -8,8 +8,8 @@
 class PyCameraSetImage : public PyCameraSetBase {
 public:
   PyCameraSetImage(std::string path);
-  int getNumCameras();
-  int getNumLayers();
+  int getNumCamera();
+  int getNumLayer();
   bool read(cv::Mat &frame, int camera_id, int layer_id);
 
 private:
