@@ -11,24 +11,6 @@ using namespace cv;
 
 const int NUM_LAYERS = 5;
 
-static std::vector<cv::Point2f> getCornerOnFrame(cv::Size size) {
-  int rows = size.height;
-  int cols = size.width;
-  vector<Point2f> corner_frame(4);
-  corner_frame[0] = Point2f(0, 0);
-  corner_frame[1] = Point2f(cols, 0);
-  corner_frame[2] = Point2f(cols, rows);
-  corner_frame[3] = Point2f(0, rows);
-
-  return corner_frame;
-}
-static std::vector<cv::Point2f> getCornerOnScene(cv::Size size, cv::Mat H) {
-  vector<Point2f> corner_frame = getCornerOnFrame(size);
-
-  vector<Point2f> corner_on_scene;
-  perspectiveTransform(corner_frame, corner_on_scene, H);
-  return corner_on_scene;
-}
 VideoProvider::VideoProvider(string path, bool online) {
   m_path = path;
   vector<string> list;
@@ -65,8 +47,7 @@ int VideoProvider::getNumCamera() {
   //
   return m_camera_set->getNumCamera();
 }
-bool VideoProvider::getRectOnScene(cv::Rect &rect, int layer_id,
-                                   int camera_id) {
+bool VideoProvider::getRect(cv::Rect &rect, int layer_id, int camera_id) {
   if (!isValidLayer(layer_id))
     return false;
   if (!isValidCamera(camera_id))
@@ -86,11 +67,6 @@ bool VideoProvider::getFrame(cv::Mat &frame, cv::Mat &mask, int layer_id,
     return false;
   }
   Mat raw_mask(raw_frame.size(), CV_8UC1, Scalar(255));
-  // Mat show;
-  // resize(frame, show, Size(frame.cols / 8, frame.rows / 8));
-  // imshow("video", show);
-  // cout << H << endl;
-
   Size frame_size;
   {
     frame_size.width = m_rect[layer_id][camera_id].width;
@@ -99,57 +75,8 @@ bool VideoProvider::getFrame(cv::Mat &frame, cv::Mat &mask, int layer_id,
   warpPerspective(raw_frame, frame, m_trans[layer_id][camera_id], frame_size);
   warpPerspective(raw_mask, mask, m_trans[layer_id][camera_id], frame_size);
   threshold(mask, mask, 250, 255, THRESH_BINARY);
-
-  // imshow("frame", frame);
   // imshow("mask", mask);
 
-  // resize(dst, show, Size(frame.cols / 8, frame.rows / 8));
-  // imshow("video-warp", show);
-
-  // TODO: remove black edge
-  // std::vector<cv::Point2f> corner_frame = getCornerOnFrame(frame.size());
-  // std::vector<cv::Point2f> corner_scene =
-  //     getCornerOnScene(frame.size(), m_trans[layer_id][camera_id]);
-  // line(dst, corner_scene[0], corner_scene[1], Scalar(0, 0, 0), 20);
-  // line(dst, corner_scene[1], corner_scene[2], Scalar(0, 0, 0), 20);
-  // line(dst, corner_scene[2], corner_scene[3], Scalar(0, 0, 0), 20);
-  // line(dst, corner_scene[3], corner_scene[0], Scalar(0, 0, 0), 20);
-
-  // cout << dst.size() << endl;
-  // frame = dst;
-  return true;
-}
-
-bool VideoProvider::getFrame(cv::Mat &frame, int layer_id, int camera_id) {
-  if (!isValidLayer(layer_id))
-    return false;
-  if (!isValidCamera(camera_id))
-    return false;
-  if (!m_camera_set->read(frame, camera_id, layer_id)) {
-    return false;
-  }
-  Mat show;
-  resize(frame, show, Size(frame.cols / 8, frame.rows / 8));
-  // imshow("video", show);
-  // cout << H << endl;
-  Mat dst(m_rect[layer_id][camera_id].height, m_rect[layer_id][camera_id].width,
-          CV_8UC3);
-  warpPerspective(frame, dst, m_trans[layer_id][camera_id], dst.size());
-
-  resize(dst, show, Size(frame.cols / 8, frame.rows / 8));
-  // imshow("video-warp", show);
-
-  // TODO: remove black edge
-  std::vector<cv::Point2f> corner_frame = getCornerOnFrame(frame.size());
-  std::vector<cv::Point2f> corner_scene =
-      getCornerOnScene(frame.size(), m_trans[layer_id][camera_id]);
-  line(dst, corner_scene[0], corner_scene[1], Scalar(0, 0, 0), 20);
-  line(dst, corner_scene[1], corner_scene[2], Scalar(0, 0, 0), 20);
-  line(dst, corner_scene[2], corner_scene[3], Scalar(0, 0, 0), 20);
-  line(dst, corner_scene[3], corner_scene[0], Scalar(0, 0, 0), 20);
-
-  // cout << dst.size() << endl;
-  frame = dst;
   return true;
 }
 bool VideoProvider::isValidLayer(int layer_id) {

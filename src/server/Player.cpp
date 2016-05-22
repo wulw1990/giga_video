@@ -17,9 +17,9 @@ Player::Player(std::string path, int video_mode, string output_video) {
   m_output_video = output_video;
 }
 void Player::play() {
-  //   cvNamedWindow(win_title.c_str(), CV_WINDOW_NORMAL);
-  //   cvSetWindowProperty(win_title.c_str(), CV_WND_PROP_FULLSCREEN,
-  //   CV_WINDOW_FULLSCREEN);
+  // cvNamedWindow(win_title.c_str(), CV_WINDOW_NORMAL);
+  // cvSetWindowProperty(win_title.c_str(), CV_WND_PROP_FULLSCREEN,
+  //                     CV_WINDOW_FULLSCREEN);
 
   VideoWriter video_writer;
   if (m_output_video != "") {

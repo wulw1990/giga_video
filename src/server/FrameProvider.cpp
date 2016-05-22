@@ -132,7 +132,7 @@ bool FrameProvider::hasFrameForeground(int w, int h, int x, int y, int z) {
 
   for (int i = 0; i < n_videos; ++i) {
     Rect rect_video;
-    assert(m_video_data->getRectOnScene(rect_video, z, i));
+    assert(m_video_data->getRect(rect_video, z, i));
     Rect rect_overlap = rect_video & rect_window;
     // cout << "rect_overlap: " << rect_overlap << endl;
     if (rect_overlap.width > 0) {
@@ -163,7 +163,10 @@ void FrameProvider::getFrameForeground(int w, int h, double x, double y,
   Size size(w, h);
   resize(frame, frame, size);
   resize(mask, mask, size);
+  threshold(mask, mask, 250, 255, THRESH_BINARY);
+  erode(mask, mask, Mat());
 
+  // if video too small, show a rectangle around it
   if (z < 0.5) {
     for (size_t i = 0; i < rect.size(); ++i) {
       rectangle(frame, rect[i], Scalar(255, 0, 0), 2);
@@ -183,7 +186,7 @@ void FrameProvider::getFrameForeground(int w, int h, int x, int y, int z,
   Rect rect_window(x, y, w, h);
   for (int i = 0; i < n_videos; ++i) {
     Rect rect_video;
-    assert(m_video_data->getRectOnScene(rect_video, z, i));
+    assert(m_video_data->getRect(rect_video, z, i));
     Rect rect_overlap = rect_video & rect_window;
 
     if (rect_overlap.width <= 0) {
@@ -207,6 +210,9 @@ void FrameProvider::getFrameForeground(int w, int h, int x, int y, int z,
 
     video_frame_roi.copyTo(frame_roi, video_mask_roi);
     video_mask_roi.copyTo(mask_roi, video_mask_roi);
+
+    // imshow("frame_roi", frame_roi);
+    // imshow("mask_roi", mask_roi);
 
     rect.push_back(rect_on_win); // add rect_on_win
   }                              // for video
