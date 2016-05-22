@@ -21,10 +21,11 @@ WaiterServer::WaiterServer(std::string path, int w, int h, int video_mode) {
       make_shared<WindowController>(n_layers, top_layer_size, winsize);
 
   m_has_frame = false;
-  m_has_thumbnail = false;
   m_need_update_foreground = false;
   updateFrameBackground();
   updateFrameForeground();
+
+  m_has_thumbnail = true;
 }
 void WaiterServer::move(float dx, float dy) {
   m_window_controller->move(dx, dy);
@@ -57,9 +58,19 @@ bool WaiterServer::hasThumbnail() {
 }
 void WaiterServer::getThumbnail(std::vector<cv::Mat> &thumbnail) {
   // getThumbnail
-  thumbnail = m_thumbnail;
-  m_has_thumbnail = false;
+  // thumbnail = m_thumbnail;
+  m_frame_provider->getThumbnail(thumbnail);
 }
+
+void WaiterServer::setThumbnailIndex(int index) {
+  //
+  vector<double> x, y, z;
+  assert(m_frame_provider->getVideoPosition(x, y, z));
+  for(size_t i=0; i<x.size(); ++i){
+    cout << i << " : " << x[i] << " " << y[i] << " " << z[i] << endl;
+  }
+}
+
 void WaiterServer::updateFrameBackground() {
   double x, y, z;
   m_window_controller->getXYZ(x, y, z);

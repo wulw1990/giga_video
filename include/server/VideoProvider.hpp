@@ -13,8 +13,8 @@ class VideoProvider {
 public:
   VideoProvider(std::string path, bool online = false);
   int getNumCamera();
-  bool getRect(cv::Rect &rect, int layer_id, int camera_id);
-  bool getFrame(cv::Mat &frame, cv::Mat &mask, int layer_id, int camera_id);
+  bool getRect(cv::Rect &rect, int camera_id, int layer_id);
+  bool getFrame(cv::Mat &frame, cv::Mat &mask, int camera_id, int layer_id);
   bool getThumbnail(cv::Mat& thumbnail, int camera_id);
 
 private:

@@ -8,7 +8,7 @@ using namespace cv;
 #include "Timer.hpp"
 
 const int w = 1700;
-const int h = 900;
+const int h = 700;
 
 const int SHOW_FPS = 15;
 const int SHOW_MS = 1000 / SHOW_FPS;
@@ -19,18 +19,18 @@ static void work_record(string video_name, cv::Mat &show, bool &record_end,
   const int MS = 1000 / FPS;
   VideoWriter writer;
   if (video_name != "") {
-    writer.open(video_name, CV_FOURCC('M', 'J', 'P', 'G'), FPS, Size(w, h));
+    writer.open(video_name, CV_FOURCC('M', 'J', 'P', 'G'), FPS, show.size());
     assert(writer.isOpened());
   }
   Timer timer;
   while (!record_end) {
     timer.reset();
-    
+
     locker.lock();
     Mat tmp = show.clone();
     locker.unlock();
     writer << tmp;
-    
+
     int time = (int)(timer.getTimeUs() / 1000);
     // cout << "time : " << time << endl;
 
@@ -45,12 +45,61 @@ Player::Player(std::string path, int video_mode, string output_video) {
   m_info.mouse_x = -100;
   m_info.mouse_y = -100;
   m_info.mouse_color = Scalar(255, 255, 255);
+  m_info.thumnail_index = -1;
+
+  // getThumbnail
+  if (m_info.m_waiter->hasThumbnail()) {
+    vector<Mat> thumnail;
+    m_info.m_waiter->getThumbnail(thumnail);
+    int rows = thumnail[0].rows;
+    int cols = thumnail[0].cols;
+    for (size_t i = 0; i < thumnail.size(); ++i) {
+      resize(thumnail[i], thumnail[i], Size(cols, rows));
+      Rect rect(0, 0, cols, rows);
+      rectangle(thumnail[i], rect, Scalar(255, 0, 0), 5);
+    }
+    m_info.thumnail_show = Mat(rows, cols * thumnail.size(), CV_8UC3);
+    for (size_t i = 0; i < thumnail.size(); ++i) {
+      Rect rect(cols * i, 0, cols, rows);
+      thumnail[i].copyTo(m_info.thumnail_show(rect));
+      m_info.thumnail_rect.push_back(rect);
+    }
+    float scale = (float)w / m_info.thumnail_show.cols;
+    int thumnail_show_cols = w;
+    int thumnail_show_rows = scale * m_info.thumnail_show.rows;
+    resize(m_info.thumnail_show, m_info.thumnail_show,
+           Size(thumnail_show_cols, thumnail_show_rows));
+    for (size_t i = 0; i < thumnail.size(); ++i) {
+      m_info.thumnail_rect[i].x = scale * m_info.thumnail_rect[i].x;
+      m_info.thumnail_rect[i].y = scale * m_info.thumnail_rect[i].y;
+      m_info.thumnail_rect[i].width = scale * m_info.thumnail_rect[i].width;
+      m_info.thumnail_rect[i].height = scale * m_info.thumnail_rect[i].height;
+      cout << m_info.thumnail_rect[i] << endl;
+    }
+  }
+
+  // init show
+  if (m_info.m_waiter->hasFrame()) {
+    m_info.m_waiter->getFrame(m_info.frame);
+  }
+  m_info.show_locker.lock();
+  m_info.show = m_info.frame.clone();
+  m_info.show.push_back(m_info.thumnail_show);
+  m_info.show_locker.unlock();
+  // update thumnail rect
+  for (size_t i = 0; i < m_info.thumnail_rect.size(); ++i) {
+    m_info.thumnail_rect[i].y += h;
+    rectangle(m_info.show, m_info.thumnail_rect[i], Scalar(0, 0, 255), 2);
+  }
+  drawMouse(m_info.show, m_info.mouse_x, m_info.mouse_y, m_info.mouse_color);
+  imshow(m_info.win_title, m_info.show);
+  setMouseCallback(m_info.win_title, onMouse, &m_info);
 
   m_record_end = false;
   m_record_thread = thread(work_record, output_video, ref(m_info.show),
                            ref(m_record_end), ref(m_info.show_locker));
 }
-static void drawMouse(cv::Mat &show, int x, int y, Scalar color) {
+void Player::drawMouse(cv::Mat &show, int x, int y, Scalar color) {
   std::vector<cv::Point> fillContSingle;
   fillContSingle.push_back(cv::Point(x, y));
   fillContSingle.push_back(cv::Point(x + 0, y + 20));
@@ -72,18 +121,24 @@ void Player::play() {
   Timer timer;
   while (1) {
     timer.reset();
+    if(m_info.thumnail_index>=0){
+      cout << m_info.thumnail_index << endl;
+      m_info.m_waiter->setThumbnailIndex(m_info.thumnail_index);
+      m_info.thumnail_index = -1; 
+    }
     if (m_info.m_waiter->hasFrame()) {
       m_info.m_waiter->getFrame(m_info.frame);
     }
     m_info.show_locker.lock();
     m_info.show = m_info.frame.clone();
+    m_info.show.push_back(m_info.thumnail_show);
     m_info.show_locker.unlock();
     drawMouse(m_info.show, m_info.mouse_x, m_info.mouse_y, m_info.mouse_color);
     imshow(m_info.win_title, m_info.show);
     setMouseCallback(m_info.win_title, onMouse, &m_info);
 
     int time = timer.getTimeUs() / 1000;
-    cout << "Player time: " << time << endl;
+    // cout << "Player time: " << time << " index: " << m_info.thumnail_index << endl;
     int wait = max(1, SHOW_MS - time);
     char key = waitKey(wait);
     if (key == 'q')
@@ -92,6 +147,17 @@ void Player::play() {
 
   m_record_end = true;
   m_record_thread.join();
+}
+int Player::getThunbmailIndex(int x, int y,
+                              const std::vector<cv::Rect> &rect_vec) {
+  for (size_t i = 0; i < rect_vec.size(); ++i) {
+    Rect rect = rect_vec[i];
+    if (x >= rect.x && x < rect.x + rect.width && y >= rect.y &&
+        y < rect.y + rect.height) {
+      return i;
+    }
+  }
+  return -1;
 }
 void Player::onMouse(int event, int x, int y, int, void *data) {
   if (event != EVENT_LBUTTONDOWN && event != EVENT_LBUTTONUP &&
@@ -105,13 +171,17 @@ void Player::onMouse(int event, int x, int y, int, void *data) {
     info->pre_x = x;
     info->pre_y = y;
     info->mouse_color = Scalar(0, 0, 255);
+    info->thumnail_index = -1;
     break;
   case EVENT_LBUTTONUP:
     info->m_waiter->move(info->pre_x - x, info->pre_y - y);
     info->mouse_color = Scalar(255, 255, 255);
     break;
   case EVENT_LBUTTONDBLCLK:
-    info->m_waiter->zoom(1);
+    info->thumnail_index = getThunbmailIndex(x, y, info->thumnail_rect);
+    if (info->thumnail_index < 0)
+      info->m_waiter->zoom(1);
+    // cout << "ThunbmailIndex: " << info->thumnail_index << endl;
     break;
   case EVENT_RBUTTONDOWN:
     info->mouse_color = Scalar(255, 0, 0);
@@ -129,6 +199,7 @@ void Player::onMouse(int event, int x, int y, int, void *data) {
   }
   info->show_locker.lock();
   info->show = info->frame.clone();
+  info->show.push_back(info->thumnail_show);
   drawMouse(info->show, info->mouse_x, info->mouse_y, info->mouse_color);
   info->show_locker.unlock();
   imshow(info->win_title, info->show);

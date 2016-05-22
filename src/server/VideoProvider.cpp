@@ -47,16 +47,20 @@ int VideoProvider::getNumCamera() {
   //
   return m_camera_set->getNumCamera();
 }
-bool VideoProvider::getRect(cv::Rect &rect, int layer_id, int camera_id) {
-  if (!isValidLayer(layer_id))
+bool VideoProvider::getRect(cv::Rect &rect, int camera_id, int layer_id) {
+  if (!isValidLayer(layer_id)) {
+    cout << "invalid layer_id: " << layer_id << endl;
     return false;
-  if (!isValidCamera(camera_id))
+  }
+  if (!isValidCamera(camera_id)) {
+    cout << "invalid camera_id: " << camera_id << endl;
     return false;
+  }
   rect = m_rect[layer_id][camera_id];
   return true;
 }
-bool VideoProvider::getFrame(cv::Mat &frame, cv::Mat &mask, int layer_id,
-                             int camera_id) {
+bool VideoProvider::getFrame(cv::Mat &frame, cv::Mat &mask,
+                             int camera_id, int layer_id) {
   if (!isValidLayer(layer_id))
     return false;
   if (!isValidCamera(camera_id))

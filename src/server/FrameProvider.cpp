@@ -102,7 +102,7 @@ bool FrameProvider::hasFrameForeground(int w, int h, int x, int y, int z) {
 
   for (int i = 0; i < n_videos; ++i) {
     Rect rect_video;
-    assert(m_video_provider->getRect(rect_video, z, i));
+    assert(m_video_provider->getRect(rect_video, i, z));
     Rect rect_overlap = rect_video & rect_window;
     // cout << "rect_overlap: " << rect_overlap << endl;
     if (rect_overlap.width > 0) {
@@ -156,14 +156,14 @@ void FrameProvider::getFrameForeground(int w, int h, int x, int y, int z,
   Rect rect_window(x, y, w, h);
   for (int i = 0; i < n_videos; ++i) {
     Rect rect_video;
-    assert(m_video_provider->getRect(rect_video, z, i));
+    assert(m_video_provider->getRect(rect_video, i, z));
     Rect rect_overlap = rect_video & rect_window;
 
     if (rect_overlap.width <= 0) {
       continue;
     }
     Mat video_frame, video_mask;
-    assert(m_video_provider->getFrame(video_frame, video_mask, z, i));
+    assert(m_video_provider->getFrame(video_frame, video_mask, i, z));
 
     Rect rect_on_video = rect_overlap;
     rect_on_video.x -= rect_video.x;
@@ -187,9 +187,38 @@ void FrameProvider::getFrameForeground(int w, int h, int x, int y, int z,
     rect.push_back(rect_on_win); // add rect_on_win
   }                              // for video
 }
-bool FrameProvider::getThumbnail(cv::Mat &thumbnail, int camera_id) {
+bool FrameProvider::getThumbnail(std::vector<cv::Mat> &thumbnail) {
+  thumbnail.resize(m_video_provider->getNumCamera());
+  for (size_t i = 0; i < thumbnail.size(); ++i) {
+    if (!m_video_provider->getThumbnail(thumbnail[i], i))
+      return false;
+  }
+  return true;
+}
+bool FrameProvider::getVideoPosition(std::vector<double> &x,
+                                     std::vector<double> &y,
+                                     std::vector<double> &z) {
   //
-  return m_video_provider->getThumbnail(thumbnail, camera_id);
+  int layer_id = 4;
+  int n_cameras = m_video_provider->getNumCamera();
+  x.resize(n_cameras);
+  y.resize(n_cameras);
+  z.resize(n_cameras);
+  int layer_rows = m_tile_provider->getPixelRowsOfLayer(layer_id);
+  int layer_cols = m_tile_provider->getPixelColsOfLayer(layer_id);
+  for (int camera_id = 0; camera_id < n_cameras; ++camera_id) {
+
+    Rect rect;
+    if (!m_video_provider->getRect(rect, camera_id, layer_id))
+      return false;
+    x[camera_id] = (double)(rect.x + rect.width / 2) / layer_cols;
+    y[camera_id] = (double)(rect.y + rect.height / 2) / layer_rows;
+    z[camera_id] = layer_id;
+    // cout << "camera_id: " << camera_id << endl;
+    // cout << rect << endl;
+    // cout << x[camera_id] << " " << y[camera_id] << " " << z[camera_id] << endl;
+  }
+  return true;
 }
 
 void FrameProvider::copyMatToMat(Mat &src_mat, Rect &src_rect, Mat &dst_mat,

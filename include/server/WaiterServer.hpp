@@ -21,6 +21,8 @@ public:
 
   bool hasThumbnail();
   void getThumbnail(std::vector<cv::Mat> &thumbnail);
+  
+  void setThumbnailIndex(int index);
 
 private:
   std::shared_ptr<FrameProvider> m_frame_provider;
@@ -33,7 +35,12 @@ private:
   bool m_has_thumbnail;
   
   cv::Mat m_frame;
-  std::vector<cv::Mat> m_thumbnail;
+  // std::vector<cv::Mat> m_thumbnail;
+  
+  std::vector<double> m_auto_x;
+  std::vector<double> m_auto_y;
+  std::vector<double> m_auto_z;
+  std::vector<int> m_auto_index;
   
   void updateFrameBackground();
   void updateFrameForeground();

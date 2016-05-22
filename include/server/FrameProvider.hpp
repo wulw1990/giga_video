@@ -24,7 +24,8 @@ public:
   void getFrameForeground(int w, int h, int x, int y, int z, cv::Mat &frame,
                           cv::Mat &mask, std::vector<cv::Rect> &rect);
 
-  bool getThumbnail(cv::Mat &thumbnail, int camera_id);
+  bool getThumbnail(std::vector<cv::Mat> &thumbnail);
+  bool getVideoPosition(std::vector<double>& x, std::vector<double>& y, std::vector<double>& z);
 
   cv::Mat getFrame(int w, int h, int x, int y, int z) { return cv::Mat(); }
 
