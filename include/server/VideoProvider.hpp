@@ -15,11 +15,11 @@ public:
   int getNumCamera();
   bool getRect(cv::Rect &rect, int layer_id, int camera_id);
   bool getFrame(cv::Mat &frame, cv::Mat &mask, int layer_id, int camera_id);
+  bool getThumbnail(cv::Mat& thumbnail, int camera_id);
 
 private:
   std::string m_path;
   std::shared_ptr<PyCameraSetBase> m_camera_set;
-
   std::vector<std::vector<cv::Mat>> m_trans;
   std::vector<std::vector<cv::Rect>> m_rect;
 

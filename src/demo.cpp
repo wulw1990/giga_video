@@ -49,7 +49,8 @@ static int giga_image(int argc, char **argv) {
     cerr << "main_internal_demo giga_image args error." << endl;
     exit(-1);
   }
-  Player player(argv[1], 1);
+  string path(argv[1]);
+  Player player(path, 1, path + "record.avi");
   player.play();
   return 0;
   return 0;

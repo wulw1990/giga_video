@@ -32,6 +32,7 @@ PyCameraSetImage::PyCameraSetImage(std::string path) {
     for (size_t layer_id = 0; layer_id < m_layer_name.size(); ++layer_id) {
       vector<string> list = DirDealer::getNameListValidImage(
           m_path + m_camera_name[camera_id] + "/" + m_layer_name[layer_id]);
+      assert(!list.empty());
       if (m_camera_frame_name[camera_id].empty()) {
         sort(list.begin(), list.end());
         m_camera_frame_name[camera_id] = list;
@@ -72,7 +73,7 @@ bool PyCameraSetImage::read(cv::Mat &frame, int camera_id, int layer_id) {
   string name = m_path + m_camera_name[camera_id] + "/" +
                 m_layer_name[layer_id] + "/" +
                 m_camera_frame_name[camera_id][frame_id];
-//   cout << "name : " << name << endl;
+  //   cout << "name : " << name << endl;
   frame = imread(name);
   m_frame_id[camera_id]++;
   if (m_frame_id[camera_id] == (int)m_camera_frame_name[camera_id].size()) {

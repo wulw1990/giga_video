@@ -9,51 +9,21 @@ using namespace cv;
 
 const Scalar default_color(127, 127, 127);
 
-int FrameProvider::getNearestLayer(double z) {
-  int source_layer_id = static_cast<int>(z + 1);
-  source_layer_id = max(source_layer_id, 0);
-  source_layer_id = min(source_layer_id, m_tile_provider->getNumLayers() - 1);
-  return source_layer_id;
-}
-
 FrameProvider::FrameProvider(std::string path, int video_mode) {
   m_tile_provider = make_shared<TileProvider>(path, path + "info_scene.txt");
 
   m_video_mode = video_mode;
   if (m_video_mode == 1) {
-    m_video_data = make_shared<VideoProvider>(path + "video/");
+    m_video_provider = make_shared<VideoProvider>(path + "video/");
   } else if (m_video_mode == 2) {
-    m_video_data = make_shared<VideoProvider>(path + "video/", true);
+    m_video_provider = make_shared<VideoProvider>(path + "video/", true);
   } else {
     cout << "unsupported video_mode:" << video_mode << endl;
     exit(-1);
   }
   cout << "video_mode: " << m_video_mode << endl;
 }
-void FrameProvider::calculateSourceWindow(int w, int h, double x, double y,
-                                          double z, int source_layer_id,
-                                          int *sw, int *sh, int *sx, int *sy) {
-  int pixel_x = static_cast<int>(
-      x * m_tile_provider->getPixelColsOfLayer(source_layer_id));
-  int pixel_y = static_cast<int>(
-      y * m_tile_provider->getPixelRowsOfLayer(source_layer_id));
 
-  double zoom = pow(2.0, (double)source_layer_id - z);
-  int source_width = zoom * w;
-  int source_height = zoom * h;
-
-  pixel_x -= source_width / 2;
-  pixel_y -= source_height / 2;
-
-  if (sw)
-    *sw = source_width;
-  if (sw)
-    *sh = source_height;
-  if (sw)
-    *sx = pixel_x;
-  if (sw)
-    *sy = pixel_y;
-}
 cv::Mat FrameProvider::getFrameBackground(int w, int h, double x, double y,
                                           double z) {
   // calculate dst w, h, x, y, z
@@ -126,13 +96,13 @@ bool FrameProvider::hasFrameForeground(int w, int h, double x, double y,
 }
 bool FrameProvider::hasFrameForeground(int w, int h, int x, int y, int z) {
   //
-  int n_videos = m_video_data->getNumCamera();
+  int n_videos = m_video_provider->getNumCamera();
   // cout << "n_videos:  " << n_videos << endl;
   Rect rect_window(x, y, w, h);
 
   for (int i = 0; i < n_videos; ++i) {
     Rect rect_video;
-    assert(m_video_data->getRect(rect_video, z, i));
+    assert(m_video_provider->getRect(rect_video, z, i));
     Rect rect_overlap = rect_video & rect_window;
     // cout << "rect_overlap: " << rect_overlap << endl;
     if (rect_overlap.width > 0) {
@@ -177,7 +147,7 @@ void FrameProvider::getFrameForeground(int w, int h, double x, double y,
 void FrameProvider::getFrameForeground(int w, int h, int x, int y, int z,
                                        cv::Mat &frame, cv::Mat &mask,
                                        std::vector<cv::Rect> &rect) {
-  int n_videos = m_video_data->getNumCamera();
+  int n_videos = m_video_provider->getNumCamera();
 
   frame = cv::Mat(h, w, CV_8UC3, Scalar(0, 0, 0));
   mask = cv::Mat(h, w, CV_8UC1, Scalar(0));
@@ -186,14 +156,14 @@ void FrameProvider::getFrameForeground(int w, int h, int x, int y, int z,
   Rect rect_window(x, y, w, h);
   for (int i = 0; i < n_videos; ++i) {
     Rect rect_video;
-    assert(m_video_data->getRect(rect_video, z, i));
+    assert(m_video_provider->getRect(rect_video, z, i));
     Rect rect_overlap = rect_video & rect_window;
 
     if (rect_overlap.width <= 0) {
       continue;
     }
     Mat video_frame, video_mask;
-    assert(m_video_data->getFrame(video_frame, video_mask, z, i));
+    assert(m_video_provider->getFrame(video_frame, video_mask, z, i));
 
     Rect rect_on_video = rect_overlap;
     rect_on_video.x -= rect_video.x;
@@ -217,6 +187,11 @@ void FrameProvider::getFrameForeground(int w, int h, int x, int y, int z,
     rect.push_back(rect_on_win); // add rect_on_win
   }                              // for video
 }
+bool FrameProvider::getThumbnail(cv::Mat &thumbnail, int camera_id) {
+  //
+  return m_video_provider->getThumbnail(thumbnail, camera_id);
+}
+
 void FrameProvider::copyMatToMat(Mat &src_mat, Rect &src_rect, Mat &dst_mat,
                                  Rect &dst_rect) {
   Rect src(0, 0, src_mat.cols, src_mat.rows);
@@ -257,4 +232,35 @@ int FrameProvider::getLayerWidth(int layer_id) {
 }
 int FrameProvider::getLayerHeight(int layer_id) {
   return m_tile_provider->getPixelRowsOfLayer(layer_id);
+}
+
+int FrameProvider::getNearestLayer(double z) {
+  int source_layer_id = static_cast<int>(z + 1);
+  source_layer_id = max(source_layer_id, 0);
+  source_layer_id = min(source_layer_id, m_tile_provider->getNumLayers() - 1);
+  return source_layer_id;
+}
+void FrameProvider::calculateSourceWindow(int w, int h, double x, double y,
+                                          double z, int source_layer_id,
+                                          int *sw, int *sh, int *sx, int *sy) {
+  int pixel_x = static_cast<int>(
+      x * m_tile_provider->getPixelColsOfLayer(source_layer_id));
+  int pixel_y = static_cast<int>(
+      y * m_tile_provider->getPixelRowsOfLayer(source_layer_id));
+
+  double zoom = pow(2.0, (double)source_layer_id - z);
+  int source_width = zoom * w;
+  int source_height = zoom * h;
+
+  pixel_x -= source_width / 2;
+  pixel_y -= source_height / 2;
+
+  if (sw)
+    *sw = source_width;
+  if (sw)
+    *sh = source_height;
+  if (sw)
+    *sx = pixel_x;
+  if (sw)
+    *sy = pixel_y;
 }

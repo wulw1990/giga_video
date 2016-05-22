@@ -79,6 +79,14 @@ bool VideoProvider::getFrame(cv::Mat &frame, cv::Mat &mask, int layer_id,
 
   return true;
 }
+bool VideoProvider::getThumbnail(cv::Mat &thumbnail, int camera_id) {
+  //
+  if (!isValidCamera(camera_id))
+    return false;
+  int layer_id = 2;
+  m_camera_set->read(thumbnail, camera_id, layer_id);
+  return !thumbnail.empty();
+}
 bool VideoProvider::isValidLayer(int layer_id) {
   if (layer_id < 0 || layer_id >= NUM_LAYERS) {
     return false;

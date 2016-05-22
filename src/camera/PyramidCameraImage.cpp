@@ -27,7 +27,7 @@ PyramidCameraImage::PyramidCameraImage(std::string path) {
   }
 
   for (size_t i = 1; i < m_layer_name.size(); ++i) {
-    assert(m_frame_name[0].size() == m_frame_name[1].size());
+    assert(m_frame_name[0].size() == m_frame_name[i].size());
   }
 }
 
