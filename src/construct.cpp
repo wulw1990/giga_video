@@ -21,7 +21,7 @@ using namespace cv;
 static int giga_image_meta(int argc, char **argv);
 static int video_pyramid(int argc, char **argv);
 static int cut_video(int argc, char **argv);
-static int construct_camera_set(int argc, char **argv);
+static int construct_camera_set_video(int argc, char **argv);
 
 int main_internal_construct(int argc, char **argv) {
   if (argc < 2) {
@@ -39,8 +39,8 @@ int main_internal_construct(int argc, char **argv) {
     return video_pyramid(argc, argv);
   if (mode == "cut_video")
     return cut_video(argc, argv);
-  if (mode == "construct_camera_set")
-    return construct_camera_set(argc, argv);
+  if (mode == "construct_camera_set_video")
+    return construct_camera_set_video(argc, argv);
   else {
     cerr << "main_internal_construct mode error: " << mode << endl;
     return -1;
@@ -226,53 +226,46 @@ int cut_video(int argc, char **argv) {
   return 0;
 }
 
-static int construct_camera_set(int argc, char **argv) {
-  if (argc < 2) {
-    cerr << "main_internal_construct construct_camera_set args error." << endl;
+static int construct_camera_set_video(int argc, char **argv) {
+  if (argc < 3) {
+    cerr << "main_internal_construct construct_camera_set_video args error."
+         << endl;
     exit(-1);
   }
 
-  string path(argv[1]);
-  string video_mode = "virtual";
+  string path_scene(argv[1]);
+  string path_video(argv[2]);
   string align_mode = "auto";
-  // string setting_file(argv[4]);
-
   shared_ptr<CameraSetBase> camera_set;
   shared_ptr<GigaAlignerBase> giga_aligner;
+
   if (align_mode == "auto") {
-    giga_aligner = make_shared<GigaAlignerAuto>(path);
+    giga_aligner = make_shared<GigaAlignerAuto>(path_scene);
   } else if (align_mode == "manual") {
-    giga_aligner = make_shared<GigaAlignerManual>(path);
+    giga_aligner = make_shared<GigaAlignerManual>(path_scene);
   }
 
-  if (video_mode == "fly2") {
-    // camera_set = make_shared<CameraSetFly2>(setting_file);
-  } else if (video_mode == "virtual") {
-    string name = "MVI_6894";
-    vector<string> video_name;
-    video_name.push_back(path + "video/" + name + "/video.avi");
-    camera_set = make_shared<CameraSetVideo>(video_name);
+  vector<string> video_name;
+  video_name.push_back(path_video + "/video.avi");
+  camera_set = make_shared<CameraSetVideo>(video_name);
 
-    int n_cameras = camera_set->getNumCamera();
-    vector<Mat> frame(n_cameras);
-    for (int i = 0; i < n_cameras; ++i) {
-      assert(camera_set->read(frame[i], i));
-    }
+  int n_cameras = camera_set->getNumCamera();
+  vector<Mat> frame(n_cameras);
+  for (int i = 0; i < n_cameras; ++i) {
+    assert(camera_set->read(frame[i], i));
+  }
 
-    for (int i = 0; i < 1; ++i) {
-      cout << "align No." << i << " ..." << endl;
-      Mat trans;
-      Rect rect;
-      if (giga_aligner->align(frame[i], trans, rect)) {
-        std::ofstream fout;
-        assert(IO::openOStream(fout, path + "video/" + name + "info.txt",
-                               "VideoData save"));
-        assert(IO::saveTransMat(fout, trans));
-        assert(IO::saveRect(fout, rect));
-      }
+  for (int i = 0; i < 1; ++i) {
+    cout << "align No." << i << " ..." << endl;
+    Mat trans;
+    Rect rect;
+    if (giga_aligner->align(frame[i], trans, rect)) {
+      std::ofstream fout;
+      assert(IO::openOStream(fout, path_video  + "/info.txt",
+                             "VideoData save"));
+      assert(IO::saveTransMat(fout, trans));
+      assert(IO::saveRect(fout, rect));
     }
-  } else {
-    cerr << "error video mode: " << video_mode << endl;
   }
 
   return 0;

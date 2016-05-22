@@ -20,6 +20,7 @@
 
 
 mode="construct"
-mode_internal="construct_camera_set"
-path="/home/wuliwei/ramdisk/zijing16/"
-./build/giga_video $mode $mode_internal $path
+mode_internal="construct_camera_set_video"
+path_scene="/home/wuliwei/ramdisk/zijing16/"
+path_video="/home/wuliwei/ramdisk/zijing16/video/MVI_6895/"
+./build/giga_video $mode $mode_internal $path_scene $path_video

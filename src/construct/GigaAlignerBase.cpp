@@ -42,7 +42,7 @@ bool GigaAlignerBase::align(Mat frame, Mat &H, Rect &rect_on_scene) {
 
   Rect rect_max(0, 0, work_layer_size.width, work_layer_size.height);
 
-  const int win_scale = 2;
+  const int win_scale = 4;
   int win_rows = frame.rows * win_scale;
   int win_cols = frame.cols * win_scale;
   int step_row = win_rows / 2;
@@ -53,8 +53,8 @@ bool GigaAlignerBase::align(Mat frame, Mat &H, Rect &rect_on_scene) {
 
   showImage("frame", frame);
 
-  for (int r = 4; r * step_row < work_layer_size.height; ++r) {
-    for (int c = 74; c * step_col < work_layer_size.width; ++c) {
+  for (int r = 0; r * step_row < work_layer_size.height; ++r) {
+    for (int c = 0; c * step_col < work_layer_size.width; ++c) {
       cout << r << "\t" << c << "\t";
       cout.flush();
 
@@ -63,13 +63,14 @@ bool GigaAlignerBase::align(Mat frame, Mat &H, Rect &rect_on_scene) {
 
       Timer timer;
       timer.reset();
-	  cout << rect << endl;
+      // cout << rect << endl;
       Mat win = m_frame_provider->getFrameBackground(
           rect.width, rect.height, rect.x, rect.y, work_layer_id);
       cout << "read ms : " << timer.getTimeUs() / 1000 << "\t";
       cout.flush();
 
       showImage("win", win);
+      waitKey(1);
       waitKey(0);
 
       timer.reset();
