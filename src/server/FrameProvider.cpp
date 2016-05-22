@@ -13,7 +13,8 @@ FrameProvider::FrameProvider(std::string path, int video_mode) {
   m_tile_provider = make_shared<TileProvider>(path, path + "info_scene.txt");
 
   m_video_mode = video_mode;
-  if (m_video_mode == 1) {
+  if (m_video_mode == 0) {
+  } else if (m_video_mode == 1) {
     m_video_provider = make_shared<VideoProvider>(path + "video/");
   } else if (m_video_mode == 2) {
     m_video_provider = make_shared<VideoProvider>(path + "video/", true);
@@ -36,6 +37,11 @@ cv::Mat FrameProvider::getFrameBackground(int w, int h, double x, double y,
   return frame;
 }
 cv::Mat FrameProvider::getFrameBackground(int w, int h, int x, int y, int z) {
+  // cout << "z: " << z << endl;
+  // cout << "w: " << w << endl;
+  // cout << "h: " << h << endl;
+  // cout << "x: " << x << endl;
+  // cout << "y: " << y << endl;
   // cout << "z: " << z << endl;
   Timer timer;
   const int LEN = m_tile_provider->getTileLen();
@@ -73,9 +79,10 @@ cv::Mat FrameProvider::getFrameBackground(int w, int h, int x, int y, int z) {
       } else {
         tile = Mat(LEN, LEN, CV_8UC3, default_color);
       }
-      Rect tile_rect(x * LEN, y * LEN, LEN, LEN);
+      Rect tile_rect(x * LEN, y * LEN, tile.cols, tile.rows);
       // cout << frame.size() << endl;
       // cout << tile_rect << endl;
+      // cout << rect << endl;
       copyMatToMat(tile, tile_rect, frame, rect);
     }
   }
@@ -224,34 +231,21 @@ bool FrameProvider::getVideoPosition(std::vector<double> &x,
 
 void FrameProvider::copyMatToMat(Mat &src_mat, Rect &src_rect, Mat &dst_mat,
                                  Rect &dst_rect) {
-  Rect src(0, 0, src_mat.cols, src_mat.rows);
-  Rect dst(src_rect.x - dst_rect.x, src_rect.y - dst_rect.y, src_mat.cols,
-           src_mat.rows);
 
-  if (dst.x + dst.width > dst_mat.cols) {
-    int shift = dst.x + dst.width - dst_mat.cols;
-    src.width -= shift;
-    dst.width -= shift;
+  Rect rect_overlap = src_rect & dst_rect;
+  if(rect_overlap.width==0){
+    return;
   }
-  if (dst.y + dst.height > dst_mat.rows) {
-    src.height -= dst.y + dst.height - dst_mat.rows;
-    dst.height = src.height;
-  }
-  if (dst.x < 0) {
-    int shift = -dst.x;
-    src.x += shift;
-    src.width -= shift;
-    dst.x += shift;
-    dst.width -= shift;
-  }
-  if (dst.y < 0) {
-    int shift = -dst.y;
-    src.y += shift;
-    src.height -= shift;
-    dst.y += shift;
-    dst.height -= shift;
-  }
-  src_mat(src).copyTo(dst_mat(dst));
+  // cout << rect_overlap << endl;
+  Rect rect_on_src = rect_overlap;
+  rect_on_src.x -= src_rect.x;
+  rect_on_src.y -= src_rect.y;
+
+  Rect rect_on_dst = rect_overlap;
+  rect_on_dst.x -= dst_rect.x;
+  rect_on_dst.y -= dst_rect.y;
+
+  src_mat(rect_on_src).copyTo(dst_mat(rect_on_dst));
 }
 int FrameProvider::getNumLayers() {
   // getNumLayers

@@ -54,7 +54,6 @@ static int giga_image(int argc, char **argv) {
   Player player(path, 1);
   player.play();
   return 0;
-  return 0;
 }
 static int camera_set(int argc, char **argv) {
   shared_ptr<CameraSetBase> camera_set;

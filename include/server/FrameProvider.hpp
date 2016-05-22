@@ -27,7 +27,7 @@ public:
   bool getThumbnail(std::vector<cv::Mat> &thumbnail);
   bool getVideoPosition(std::vector<double>& x, std::vector<double>& y, std::vector<double>& z);
 
-  cv::Mat getFrame(int w, int h, int x, int y, int z) { return cv::Mat(); }
+  // cv::Mat getFrame(int w, int h, int x, int y, int z) { return cv::Mat(); }
 
   int getNumLayers();
   int getLayerWidth(int layer_id);
