@@ -21,7 +21,7 @@ FrameProvider::FrameProvider(std::string path, int video_mode) {
     cout << "unsupported video_mode:" << video_mode << endl;
     exit(-1);
   }
-  cout << "video_mode: " << m_video_mode << endl;
+  // cout << "video_mode: " << m_video_mode << endl;
 }
 
 cv::Mat FrameProvider::getFrameBackground(int w, int h, double x, double y,
@@ -47,11 +47,11 @@ cv::Mat FrameProvider::getFrameBackground(int w, int h, int x, int y, int z) {
   int Y1 = y / LEN;
   int X2 = (x + w - 1) / LEN;
   int Y2 = (y + h - 1) / LEN;
+  const int ROWS = m_tile_provider->getRowsOfLayer(z);
+  const int COLS = m_tile_provider->getColsOfLayer(z);
 
   vector<Mat> vtile;
   {
-    const int ROWS = m_tile_provider->getRowsOfLayer(z);
-    const int COLS = m_tile_provider->getColsOfLayer(z);
     vector<int> vx, vy, vz;
     for (int x = X1; x <= X2; ++x) {
       for (int y = Y1; y <= Y2; ++y) {
@@ -68,14 +68,14 @@ cv::Mat FrameProvider::getFrameBackground(int w, int h, int x, int y, int z) {
   for (int i = 0, x = X1; x <= X2; ++x) {
     for (int y = Y1; y <= Y2; ++y) {
       Mat tile;
-      const int ROWS = m_tile_provider->getRowsOfLayer(z);
-      const int COLS = m_tile_provider->getColsOfLayer(z);
       if (x >= 0 && x < COLS && y >= 0 && y < ROWS) {
         tile = vtile[i++];
       } else {
         tile = Mat(LEN, LEN, CV_8UC3, default_color);
       }
       Rect tile_rect(x * LEN, y * LEN, LEN, LEN);
+      // cout << frame.size() << endl;
+      // cout << tile_rect << endl;
       copyMatToMat(tile, tile_rect, frame, rect);
     }
   }
@@ -199,7 +199,7 @@ bool FrameProvider::getVideoPosition(std::vector<double> &x,
                                      std::vector<double> &y,
                                      std::vector<double> &z) {
   //
-  int layer_id = 4;
+  int layer_id = 3;
   int n_cameras = m_video_provider->getNumCamera();
   x.resize(n_cameras);
   y.resize(n_cameras);
@@ -216,7 +216,8 @@ bool FrameProvider::getVideoPosition(std::vector<double> &x,
     z[camera_id] = layer_id;
     // cout << "camera_id: " << camera_id << endl;
     // cout << rect << endl;
-    // cout << x[camera_id] << " " << y[camera_id] << " " << z[camera_id] << endl;
+    // cout << x[camera_id] << " " << y[camera_id] << " " << z[camera_id] <<
+    // endl;
   }
   return true;
 }

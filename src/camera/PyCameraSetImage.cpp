@@ -27,8 +27,7 @@ PyCameraSetImage::PyCameraSetImage(std::string path) {
   // get frame name list of each camera
   m_camera_frame_name.resize(m_camera_name.size());
   for (size_t camera_id = 0; camera_id < m_camera_name.size(); ++camera_id) {
-    cout << "camera: " << m_camera_name[camera_id] << endl;
-
+    // cout << "camera: " << m_camera_name[camera_id] << endl;
     for (size_t layer_id = 0; layer_id < m_layer_name.size(); ++layer_id) {
       vector<string> list = DirDealer::getNameListValidImage(
           m_path + m_camera_name[camera_id] + "/" + m_layer_name[layer_id]);

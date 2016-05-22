@@ -41,10 +41,24 @@ void WaiterServer::zoom(float dz) {
 }
 bool WaiterServer::hasFrame() {
   // hasFrame
-  if (m_need_update_foreground) {
+
+  if (!m_auto_x.empty()) {
+    m_window_controller->setXYZ(m_auto_x[m_auto_index], m_auto_y[m_auto_index],
+                                m_auto_z[m_auto_index]);
+    updateFrameBackground();
+    updateFrameForeground();
+    m_auto_index++;
+    if (m_auto_index == (int)m_auto_x.size()) {
+      m_auto_x.clear();
+      m_auto_y.clear();
+      m_auto_z.clear();
+    }
+    // cout << "m_auto_index: " << m_auto_index << endl;
+  } else if (m_need_update_foreground) {
     updateFrameForeground();
     m_has_frame = true;
   }
+
   return m_has_frame;
 }
 void WaiterServer::getFrame(cv::Mat &frame) {
@@ -61,14 +75,74 @@ void WaiterServer::getThumbnail(std::vector<cv::Mat> &thumbnail) {
   // thumbnail = m_thumbnail;
   m_frame_provider->getThumbnail(thumbnail);
 }
+void WaiterServer::getLinearPath(double sx, double sy, double sz, double dx,
+                                 double dy, double dz, int len,
+                                 std::vector<double> &vx,
+                                 std::vector<double> &vy,
+                                 std::vector<double> &vz) {
+  //
+  vx.resize(len);
+  vy.resize(len);
+  vz.resize(len);
 
+  for (int i = 0; i < len; ++i) {
+    vx[i] = sx + (dx - sx) / len * i;
+    vy[i] = sy + (dy - sy) / len * i;
+    vz[i] = sz + (dz - sz) / len * i;
+  }
+}
 void WaiterServer::setThumbnailIndex(int index) {
   //
-  vector<double> x, y, z;
-  assert(m_frame_provider->getVideoPosition(x, y, z));
-  for(size_t i=0; i<x.size(); ++i){
-    cout << i << " : " << x[i] << " " << y[i] << " " << z[i] << endl;
+  vector<double> camera_x, camera_y, camera_z;
+  assert(m_frame_provider->getVideoPosition(camera_x, camera_y, camera_z));
+  // for (size_t camera_id = 0; camera_id < camera_x.size(); ++camera_id) {
+  //   cout << camera_id << " : " << camera_x[camera_id] << " "
+  //        << camera_y[camera_id] << " " << camera_z[camera_id] << endl;
+  // }
+  if (index < 0 || index >= (int)camera_x.size()) {
+    cout << "index error: " << index << endl;
+    return;
   }
+  m_auto_x.clear();
+  m_auto_y.clear();
+  m_auto_z.clear();
+  m_auto_index = 0;
+
+  double sx, sy, sz;
+  m_window_controller->getXYZ(sx, sy, sz);
+
+  double dx, dy, dz;
+  dx = camera_x[index];
+  dy = camera_y[index];
+  dz = camera_z[index];
+
+  const double mz = -0.5;
+  vector<double> tx, ty, tz;
+
+  getLinearPath(sx, sy, sz, sx, sy, mz, 15, tx, ty, tz);
+  m_auto_x.insert(m_auto_x.end(), tx.begin(), tx.end());
+  m_auto_y.insert(m_auto_y.end(), ty.begin(), ty.end());
+  m_auto_z.insert(m_auto_z.end(), tz.begin(), tz.end());
+
+  getLinearPath(sx, sy, mz, dx, dy, mz, 20, tx, ty, tz);
+  m_auto_x.insert(m_auto_x.end(), tx.begin(), tx.end());
+  m_auto_y.insert(m_auto_y.end(), ty.begin(), ty.end());
+  m_auto_z.insert(m_auto_z.end(), tz.begin(), tz.end());
+
+  getLinearPath(dx, dy, mz, dx, dy, dz, 15, tx, ty, tz);
+  m_auto_x.insert(m_auto_x.end(), tx.begin(), tx.end());
+  m_auto_y.insert(m_auto_y.end(), ty.begin(), ty.end());
+  m_auto_z.insert(m_auto_z.end(), tz.begin(), tz.end());
+
+  m_auto_x.push_back(dx);
+  m_auto_y.push_back(dy);
+  m_auto_z.push_back(dz);
+
+  // for(size_t i=0; i<m_auto_x.size(); ++i){
+  //   cout << i << ": " << m_auto_x[i] << " " << m_auto_y[i] << " " <<
+  //   m_auto_z[i] << endl;
+  // }
+  // exit(-1);
 }
 
 void WaiterServer::updateFrameBackground() {

@@ -74,7 +74,7 @@ Player::Player(std::string path, int video_mode, string output_video) {
       m_info.thumnail_rect[i].y = scale * m_info.thumnail_rect[i].y;
       m_info.thumnail_rect[i].width = scale * m_info.thumnail_rect[i].width;
       m_info.thumnail_rect[i].height = scale * m_info.thumnail_rect[i].height;
-      cout << m_info.thumnail_rect[i] << endl;
+      // cout << m_info.thumnail_rect[i] << endl;
     }
   }
 
@@ -122,7 +122,7 @@ void Player::play() {
   while (1) {
     timer.reset();
     if(m_info.thumnail_index>=0){
-      cout << m_info.thumnail_index << endl;
+      // cout << m_info.thumnail_index << endl;
       m_info.m_waiter->setThumbnailIndex(m_info.thumnail_index);
       m_info.thumnail_index = -1; 
     }

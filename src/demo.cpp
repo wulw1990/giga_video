@@ -50,7 +50,8 @@ static int giga_image(int argc, char **argv) {
     exit(-1);
   }
   string path(argv[1]);
-  Player player(path, 1, path + "record.avi");
+  // Player player(path, 1, path + "record.avi");
+  Player player(path, 1);
   player.play();
   return 0;
   return 0;
