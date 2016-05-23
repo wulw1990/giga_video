@@ -17,11 +17,13 @@ using namespace cv;
 #include "GigaAlignerBase.hpp"
 #include "GigaAlignerAuto.hpp"
 #include "GigaAlignerManual.hpp"
+#include "PyramidAligner.hpp"
 
 static int giga_image_meta(int argc, char **argv);
 static int video_pyramid(int argc, char **argv);
 static int cut_video(int argc, char **argv);
 static int construct_camera_set_video(int argc, char **argv);
+static int construct_camera_set_video_manual(int argc, char **argv);
 
 int main_internal_construct(int argc, char **argv) {
   if (argc < 2) {
@@ -41,6 +43,8 @@ int main_internal_construct(int argc, char **argv) {
     return cut_video(argc, argv);
   if (mode == "construct_camera_set_video")
     return construct_camera_set_video(argc, argv);
+  if (mode == "construct_camera_set_video_manual")
+    return construct_camera_set_video_manual(argc, argv);
   else {
     cerr << "main_internal_construct mode error: " << mode << endl;
     return -1;
@@ -261,12 +265,40 @@ static int construct_camera_set_video(int argc, char **argv) {
     Rect rect;
     if (giga_aligner->align(frame[i], trans, rect)) {
       std::ofstream fout;
-      assert(IO::openOStream(fout, path_video  + "/info.txt",
-                             "VideoData save"));
+      assert(IO::openOStream(fout, path_video + "/info.txt", "VideoData save"));
       assert(IO::saveTransMat(fout, trans));
       assert(IO::saveRect(fout, rect));
     }
   }
+
+  return 0;
+}
+static int construct_camera_set_video_manual(int argc, char **argv) {
+  if (argc < 3) {
+    cerr << "main_internal_construct construct_camera_set_video args error."
+         << endl;
+    exit(-1);
+  }
+
+  string path_scene(argv[1]);
+  string path_video(argv[2]);
+
+  Mat frame;
+  {
+    vector<string> video_name;
+    video_name.push_back(path_video + "/video.avi");
+    CameraSetVideo camera_set(video_name);
+    assert(camera_set.read(frame, 0));
+  }
+
+  PyramidAligner aligner(path_scene);
+  Mat trans;
+  Rect rect;
+  aligner.align(frame, trans, rect);
+  std::ofstream fout;
+  assert(IO::openOStream(fout, path_video + "/info.txt", "VideoData save"));
+  assert(IO::saveTransMat(fout, trans));
+  assert(IO::saveRect(fout, rect));
 
   return 0;
 }

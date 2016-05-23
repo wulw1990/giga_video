@@ -16,6 +16,10 @@ public:
 
   cv::Mat getFrameBackground(int w, int h, double x, double y, double z);
   cv::Mat getFrameBackground(int w, int h, int x, int y, int z);
+  cv::Mat getFrameBackground(cv::Rect rect, int layer_id) {
+    return getFrameBackground(rect.width, rect.height, rect.x, rect.y,
+                              layer_id);
+  }
 
   bool hasFrameForeground(int w, int h, double x, double y, double z);
   bool hasFrameForeground(int w, int h, int x, int y, int z);
@@ -25,7 +29,8 @@ public:
                           cv::Mat &mask, std::vector<cv::Rect> &rect);
 
   bool getThumbnail(std::vector<cv::Mat> &thumbnail);
-  bool getVideoPosition(std::vector<double>& x, std::vector<double>& y, std::vector<double>& z);
+  bool getVideoPosition(std::vector<double> &x, std::vector<double> &y,
+                        std::vector<double> &z);
 
   // cv::Mat getFrame(int w, int h, int x, int y, int z) { return cv::Mat(); }
 
