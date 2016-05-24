@@ -22,5 +22,5 @@ path="/home/wuliwei/ramdisk/zijing16/video/"
 # mode="construct"
 # mode_internal="construct_camera_set_video_manual"
 # path_scene="/home/wuliwei/ramdisk/zijing16/"
-# path_video="/home/wuliwei/ramdisk/zijing16/video/MVI_6895/"
+# path_video="/home/wuliwei/ramdisk/zijing16/video/MVI_7308/"
 # ./build/giga_video $mode $mode_internal $path_scene $path_video

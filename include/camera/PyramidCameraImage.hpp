@@ -12,6 +12,8 @@ public:
   PyramidCameraImage(std::string path);
   bool read(cv::Mat &frame, int layer_id);
   int getNumLayer();
+    bool getCameraName(std::string& name, int camera_id);
+
 
 private:
   std::string m_path;

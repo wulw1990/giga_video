@@ -11,6 +11,7 @@ public:
   int getNumCamera();
   int getNumLayer();
   bool read(cv::Mat &frame, int camera_id, int layer_id);
+  bool getCameraName(std::string& name, int camera_id);
 
 private:
   std::string m_path;
