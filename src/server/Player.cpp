@@ -46,9 +46,11 @@ Player::Player(std::string path, int video_mode, string output_video) {
   m_info.mouse_y = -100;
   m_info.mouse_color = Scalar(255, 255, 255);
   m_info.thumnail_index = -1;
+  cout << "Player: m_info init ok" << endl;
 
   // getThumbnail
   if (m_info.m_waiter->hasThumbnail()) {
+    cout << "thumnail begin" << endl;
     vector<Mat> thumnail;
     m_info.m_waiter->getThumbnail(thumnail);
     int rows = thumnail[0].rows;
@@ -77,6 +79,7 @@ Player::Player(std::string path, int video_mode, string output_video) {
       // cout << m_info.thumnail_rect[i] << endl;
     }
   }
+  cout << "Player: thumnail ok" << endl;
 
   // init show
   if (m_info.m_waiter->hasFrame()) {

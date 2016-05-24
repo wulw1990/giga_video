@@ -16,6 +16,7 @@ using namespace cv;
 #include "Timer.hpp"
 
 static int giga_image(int argc, char **argv);
+static int giga_video(int argc, char **argv);
 static int camera_set(int argc, char **argv);
 static int pyramid_camera(int argc, char **argv);
 static int py_camera_set(int argc, char **argv);
@@ -32,6 +33,8 @@ int main_internal_demo(int argc, char **argv) {
   cout << "mode : " << mode << endl;
   if (mode == "giga_image")
     return giga_image(argc, argv);
+  if (mode == "giga_video")
+    return giga_video(argc, argv);
   if (mode == "camera_set")
     return camera_set(argc, argv);
   if (mode == "pyramid_camera")
@@ -45,6 +48,17 @@ int main_internal_demo(int argc, char **argv) {
   return 0;
 }
 static int giga_image(int argc, char **argv) {
+  if (argc < 2) {
+    cerr << "main_internal_demo giga_image args error." << endl;
+    exit(-1);
+  }
+  string path(argv[1]);
+  // Player player(path, 0, path + "record.avi");
+  Player player(path, 0);
+  player.play();
+  return 0;
+}
+static int giga_video(int argc, char **argv) {
   if (argc < 2) {
     cerr << "main_internal_demo giga_image args error." << endl;
     exit(-1);

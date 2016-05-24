@@ -35,7 +35,7 @@ private:
   bool m_has_thumbnail;
 
   cv::Mat m_frame;
-  // std::vector<cv::Mat> m_thumbnail;
+  std::vector<cv::Mat> m_thumbnail;
 
   static void getLinearPath(double sx, double sy, double sz, double dx,
                             double dy, double dz, int len,

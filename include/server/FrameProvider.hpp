@@ -23,9 +23,9 @@ public:
 
   bool hasFrameForeground(int w, int h, double x, double y, double z);
   bool hasFrameForeground(int w, int h, int x, int y, int z);
-  void getFrameForeground(int w, int h, double x, double y, double z,
+  bool getFrameForeground(int w, int h, double x, double y, double z,
                           cv::Mat &frame, cv::Mat &mask);
-  void getFrameForeground(int w, int h, int x, int y, int z, cv::Mat &frame,
+  bool getFrameForeground(int w, int h, int x, int y, int z, cv::Mat &frame,
                           cv::Mat &mask, std::vector<cv::Rect> &rect);
 
   bool getThumbnail(std::vector<cv::Mat> &thumbnail);

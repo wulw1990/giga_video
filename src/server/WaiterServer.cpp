@@ -25,7 +25,10 @@ WaiterServer::WaiterServer(std::string path, int w, int h, int video_mode) {
   updateFrameBackground();
   updateFrameForeground();
 
-  m_has_thumbnail = true;
+  m_has_thumbnail = m_frame_provider->getThumbnail(m_thumbnail);
+  if (m_thumbnail.empty())
+    m_has_thumbnail = false;
+  cout << "WaiterServer init ok" << endl;
 }
 void WaiterServer::move(float dx, float dy) {
   m_window_controller->move(dx, dy);
@@ -72,8 +75,7 @@ bool WaiterServer::hasThumbnail() {
 }
 void WaiterServer::getThumbnail(std::vector<cv::Mat> &thumbnail) {
   // getThumbnail
-  // thumbnail = m_thumbnail;
-  m_frame_provider->getThumbnail(thumbnail);
+  thumbnail = m_thumbnail;
 }
 void WaiterServer::getLinearPath(double sx, double sy, double sz, double dx,
                                  double dy, double dz, int len,

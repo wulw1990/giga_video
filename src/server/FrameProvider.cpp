@@ -118,9 +118,12 @@ bool FrameProvider::hasFrameForeground(int w, int h, int x, int y, int z) {
   }
   return false;
 }
-void FrameProvider::getFrameForeground(int w, int h, double x, double y,
+bool FrameProvider::getFrameForeground(int w, int h, double x, double y,
                                        double z, cv::Mat &frame,
                                        cv::Mat &mask) {
+  if (m_video_mode == 0) {
+    return false;
+  }
   // calculate dst w, h, x, y, z
   int source_layer_id = getNearestLayer(z);
   int sx, sy, sw, sh;
@@ -150,10 +153,14 @@ void FrameProvider::getFrameForeground(int w, int h, double x, double y,
       rectangle(mask, rect[i], Scalar(255), 2);
     }
   }
+  return true;
 }
-void FrameProvider::getFrameForeground(int w, int h, int x, int y, int z,
+bool FrameProvider::getFrameForeground(int w, int h, int x, int y, int z,
                                        cv::Mat &frame, cv::Mat &mask,
                                        std::vector<cv::Rect> &rect) {
+  if (m_video_mode == 0) {
+    return false;
+  }
   int n_videos = m_video_provider->getNumCamera();
 
   frame = cv::Mat(h, w, CV_8UC3, Scalar(0, 0, 0));
@@ -193,8 +200,12 @@ void FrameProvider::getFrameForeground(int w, int h, int x, int y, int z,
 
     rect.push_back(rect_on_win); // add rect_on_win
   }                              // for video
+  return true;
 }
 bool FrameProvider::getThumbnail(std::vector<cv::Mat> &thumbnail) {
+  if (m_video_mode == 0) {
+    return false;
+  }
   thumbnail.resize(m_video_provider->getNumCamera());
   for (size_t i = 0; i < thumbnail.size(); ++i) {
     if (!m_video_provider->getThumbnail(thumbnail[i], i))
@@ -205,6 +216,9 @@ bool FrameProvider::getThumbnail(std::vector<cv::Mat> &thumbnail) {
 bool FrameProvider::getVideoPosition(std::vector<double> &x,
                                      std::vector<double> &y,
                                      std::vector<double> &z) {
+  if (m_video_mode == 0) {
+    return false;
+  }
   //
   int layer_id = 2;
   int n_cameras = m_video_provider->getNumCamera();
@@ -233,7 +247,7 @@ void FrameProvider::copyMatToMat(Mat &src_mat, Rect &src_rect, Mat &dst_mat,
                                  Rect &dst_rect) {
 
   Rect rect_overlap = src_rect & dst_rect;
-  if(rect_overlap.width==0){
+  if (rect_overlap.width == 0) {
     return;
   }
   // cout << rect_overlap << endl;
