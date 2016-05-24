@@ -12,10 +12,12 @@ using namespace cv;
 #include "construct/GigaImageMeta.hpp"
 #include "DirDealer.hpp"
 #include "Timer.hpp"
+#include "PyramidAlignerAuto.hpp"
 
 static int giga_image_meta(int argc, char **argv);
 static int read_image_tile(int argc, char **argv);
 static int read_web_video(int argc, char **argv);
+static int zncc(int argc, char **argv);
 
 int main_internal_test(int argc, char **argv) {
   if (argc < 2) {
@@ -33,6 +35,8 @@ int main_internal_test(int argc, char **argv) {
     return read_image_tile(argc, argv);
   if (mode == "read_web_video")
     return read_web_video(argc, argv);
+  if (mode == "zncc")
+    return zncc(argc, argv);
   else {
     cerr << "main_internal_test mode error: " << mode << endl;
     return -1;
@@ -120,22 +124,49 @@ static int read_web_video(int argc, char **argv) {
     cerr << "main_internal_test read_image_tile args error." << endl;
     exit(-1);
   }
-  
+
   string video_name(argv[1]);
   cout << "video_name: " << video_name << endl;
-  
+
   VideoCapture capture(video_name);
-  if(!capture.isOpened()){
+  if (!capture.isOpened()) {
     cout << "camera can not open." << endl;
     exit(-1);
   }
-  
+
   Mat frame;
-  for(int i=0; capture.read(frame); ++i){
+  for (int i = 0; capture.read(frame); ++i) {
     capture >> frame;
     imshow("frame", frame);
     waitKey(30);
   }
-  
+
+  return 0;
+}
+static int zncc(int argc, char **argv) {
+  if (argc < 4) {
+    cerr << "main_internal_test read_image_tile args error." << endl;
+    exit(-1);
+  }
+
+  string name_frame(argv[1]);
+  string name_refer(argv[2]);
+  int scale = atoi(argv[3]);
+
+  Mat frame = imread(name_frame);
+  Mat refer = imread(name_refer);
+  cout << "frame: " << frame.size() << endl;
+  cout << "refer: " << refer.size() << endl;
+  cout << "scale: " << scale << endl;
+
+  resize(frame, frame, Size(frame.cols / scale, frame.rows / scale));
+  // imshow("frame", frame);
+  // imshow("refer", refer);
+  // waitKey(0);
+
+  Mat trans;
+  Rect rect;
+  PyramidAlignerAuto::alignZncc(frame, refer, trans, rect);
+
   return 0;
 }

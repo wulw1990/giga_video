@@ -124,13 +124,15 @@ void Player::play() {
   Timer timer;
   while (1) {
     timer.reset();
-    if(m_info.thumnail_index>=0){
+    if (m_info.thumnail_index >= 0) {
       // cout << m_info.thumnail_index << endl;
       m_info.m_waiter->setThumbnailIndex(m_info.thumnail_index);
-      m_info.thumnail_index = -1; 
+      m_info.thumnail_index = -1;
     }
     if (m_info.m_waiter->hasFrame()) {
       m_info.m_waiter->getFrame(m_info.frame);
+      // imwrite("../refer.png", m_info.frame);
+      // cout << rand() << endl;
     }
     m_info.show_locker.lock();
     m_info.show = m_info.frame.clone();
@@ -141,7 +143,8 @@ void Player::play() {
     setMouseCallback(m_info.win_title, onMouse, &m_info);
 
     int time = timer.getTimeUs() / 1000;
-    // cout << "Player time: " << time << " index: " << m_info.thumnail_index << endl;
+    // cout << "Player time: " << time << " index: " << m_info.thumnail_index <<
+    // endl;
     int wait = max(1, SHOW_MS - time);
     char key = waitKey(wait);
     if (key == 'q')

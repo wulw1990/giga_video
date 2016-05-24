@@ -11,6 +11,7 @@ class PyramidAlignerAuto {
 public:
   PyramidAlignerAuto(std::string path_scene);
   void align(cv::Mat frame, cv::Mat &trans, cv::Rect &rect);
+  static void alignZncc(cv::Mat frame, cv::Mat refer, cv::Mat &trans, cv::Rect &rect);
 
 private:
   std::shared_ptr<FrameProvider> m_frame_provider;

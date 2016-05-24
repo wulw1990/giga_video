@@ -150,7 +150,7 @@ void WaiterServer::setThumbnailIndex(int index) {
 void WaiterServer::updateFrameBackground() {
   double x, y, z;
   m_window_controller->getXYZ(x, y, z);
-  //   cout << "x: " << x << "\ty: " << y << "\tz: " << z << endl;
+    cout << "x: " << x << "\ty: " << y << "\tz: " << z << endl;
   Timer timer;
   timer.reset();
   m_frame = m_frame_provider->getFrameBackground(m_w, m_h, x, y, z);
