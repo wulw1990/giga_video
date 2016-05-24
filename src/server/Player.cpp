@@ -7,8 +7,8 @@ using namespace cv;
 #include "WaiterServer.hpp"
 #include "Timer.hpp"
 
-const int w = 1700;
-const int h = 700;
+const int w = 1600;
+const int h = 900;
 
 const int SHOW_FPS = 15;
 const int SHOW_MS = 1000 / SHOW_FPS;
