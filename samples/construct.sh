@@ -4,13 +4,6 @@
 # meta="/mnt/hgfs/fast/zijing16/meta.conf"
 # ./build/giga_video $mode $mode_internal $path $meta
 
-
-# mode="construct"
-# mode_internal="video_pyramid"
-# path="/home/wuliwei/ramdisk/zijing16/video/"
-# ./build/giga_video $mode $mode_internal $path
-
-
 # mode="construct"
 # mode_internal="cut_video"
 # name="MVI_7308"
@@ -24,3 +17,9 @@ mode_internal="construct_camera_set_video_auto"
 path_scene="/home/wuliwei/ramdisk/zijing16/"
 path_video="/home/wuliwei/ramdisk/zijing16/video/MVI_6894/"
 ./build/giga_video $mode $mode_internal $path_scene $path_video
+
+
+mode="construct"
+mode_internal="video_pyramid"
+path="/home/wuliwei/ramdisk/zijing16/video/"
+./build/giga_video $mode $mode_internal $path

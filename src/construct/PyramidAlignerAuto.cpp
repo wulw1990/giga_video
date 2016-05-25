@@ -50,24 +50,60 @@ PyramidAlignerAuto::PyramidAlignerAuto(string path_scene) {
 void PyramidAlignerAuto::align(cv::Mat frame, cv::Mat &trans, cv::Rect &rect) {
   //
   trans = Mat(3, 3, CV_32FC1, Scalar(0.0f));
-}
-void PyramidAlignerAuto::alignZncc(cv::Mat frame, cv::Mat refer, cv::Mat &trans,
-                                   cv::Rect &rect) {
 
-  Point p_center;
+  int layer_id = 0;
+  int w = m_frame_provider->getLayerWidth(layer_id);
+  int h = m_frame_provider->getLayerHeight(layer_id);
+  int x = 0;
+  int y = 0;
+  cv::Mat refer = m_frame_provider->getFrameBackground(w, h, x, y, layer_id);
+  layer_id--;
+  resize(refer, refer, Size(refer.cols / 2, refer.rows / 2));
+  cout << refer.size() << endl;
+  imshow("refer", refer);
+  // waitKey(0);
+
+  float scale = pow(2, 3 - layer_id);
+  cout << "scale: " << scale << endl;
+
+  cv::Mat frame_down;
+  resize(frame, frame_down, Size(frame.cols / scale, frame.rows / scale));
+  cout << frame_down.size() << endl;
+  imshow("frame_down", frame_down);
+  waitKey(1);
+
+  alignZncc(frame_down, refer, trans, rect);
+  trans.at<float>(0, 0) *= 2;
+  trans.at<float>(0, 1) *= 2;
+  trans.at<float>(0, 2) *= 2;
+  trans.at<float>(1, 0) *= 2;
+  trans.at<float>(1, 1) *= 2;
+  trans.at<float>(1, 2) *= 2;
+  trans.at<float>(0, 2) *= scale;
+  trans.at<float>(1, 2) *= scale;
+  trans.at<float>(2, 0) /= scale;
+  trans.at<float>(2, 1) /= scale;
+  cout << rect << endl;
+  rect.x *= scale * 2;
+  rect.y *= scale * 2;
+  rect.width *= scale * 2;
+  rect.height *= scale * 2;
+}
+void PyramidAlignerAuto::alignZncc(const cv::Mat frame, const cv::Mat refer,
+                                   cv::Mat &trans, cv::Rect &rect) {
+
+  Point2f p_center;
   vector<Point2f> frame_point;
   vector<Point2f> refer_point;
-  // assert(alignZncc(frame, refer, p_center));
-  p_center = Point(712, 458);
+  assert(alignZncc(frame, refer, p_center, 2.0f));
+  // p_center = Point2f(712, 458);
   frame_point.push_back(Point2f(frame.cols / 2, frame.rows / 2));
   refer_point.push_back(p_center);
 
-#if 1
   int rows_step = frame.rows / 2;
   int cols_step = frame.cols / 2;
   for (int r = 0; r + rows_step <= frame.rows; r += rows_step) {
     for (int c = 0; c + cols_step <= frame.cols; c += cols_step) {
-      cout << "HHH: " << r << " " << c << endl;
       Rect rect_frame(c, r, cols_step, rows_step);
       int x = p_center.x - frame.cols / 2 + c;
       int y = p_center.y - frame.rows / 2 + r;
@@ -78,42 +114,27 @@ void PyramidAlignerAuto::alignZncc(cv::Mat frame, cv::Mat refer, cv::Mat &trans,
       Rect rect_refer(x - pad_x, y - pad_y, width + 2 * pad_x,
                       height + 2 * pad_y);
       rect_refer = rect_refer & Rect(0, 0, refer.cols, refer.rows);
-      Point p;
-      assert(alignZncc(frame(rect_frame), refer(rect_refer), p));
-      cout << rect_refer << endl;
-
+      Point2f p;
+      assert(alignZncc(frame(rect_frame), refer(rect_refer), p, 1.0f));
       frame_point.push_back(Point2f(c + cols_step / 2, r + rows_step / 2));
       refer_point.push_back(Point2f(p.x + rect_refer.x, p.y + rect_refer.y));
-
-      // cout << p << endl;
-      // rectangle(refer, rect_refer, Scalar(255, 0, 0), 2);
-      // Mat roi = refer(rect_refer);
-      // circle(roi, p, 3, Scalar(255, 0, 0), -1);
-      // imshow("refer", refer);
-
-      // rectangle(frame, rect_frame, Scalar(255, 0, 0), 2);
-      // imshow("frame", frame);
-      // imshow("frame(rect_frame)", frame(rect_frame));
-      // imshow("refer(rect_refer)", refer(rect_refer));
-      // waitKey(0);
-
-      // break;
     }
-    // break;
   }
-#endif
+
+#if 1
+  Mat show_frame = frame.clone();
+  Mat show_refer = refer.clone();
   for (size_t i = 0; i < frame_point.size(); ++i) {
-    circle(refer, refer_point[i], 3, Scalar(255, 0, 0), -1);
-    circle(frame, frame_point[i], 3, Scalar(255, 0, 0), -1);
+    circle(show_frame, frame_point[i], 3, Scalar(255, 0, 0), -1);
+    circle(show_refer, refer_point[i], 3, Scalar(255, 0, 0), -1);
   }
-  // imshow("frame", frame);
-  // imshow("refer", refer);
-  // waitKey(0);
+  imshow("show_frame", show_frame);
+  imshow("show_refer", show_refer);
+  waitKey(1);
+#endif
 
   trans = findHomography(frame_point, refer_point);
-  rect = Rect(0, 0, refer.rows, refer.cols);
-
-#if 0
+  // rect = Rect(0, 0, refer.rows, refer.cols);
   vector<Point2f> corner_scene = getCornerOnScene(frame.size(), trans);
   rect = getRectFromCorner(corner_scene);
 
@@ -122,13 +143,10 @@ void PyramidAlignerAuto::alignZncc(cv::Mat frame, cv::Mat refer, cv::Mat &trans,
     refer_point[i].y -= rect.y;
   }
   trans = findHomography(frame_point, refer_point);
-#endif
-
   trans.convertTo(trans, CV_32FC1);
 }
-bool PyramidAlignerAuto::alignZncc(cv::Mat frame_, cv::Mat refer_,
-                                   cv::Point &p) {
-  float down_scale = 1;
+bool PyramidAlignerAuto::alignZncc(const cv::Mat frame_, const cv::Mat refer_,
+                                   cv::Point2f &p, float down_scale) {
   //
   Mat frame, refer;
   {
@@ -167,7 +185,7 @@ bool PyramidAlignerAuto::alignZncc(cv::Mat frame_, cv::Mat refer_,
   int c_begin = frame.cols / 2;
   int c_end = refer.cols - frame.cols / 2;
   for (int r = r_begin; r < r_end; ++r) {
-    cout << "r: " << r << " / " << refer.rows << endl;
+    // cout << "r: " << r << " / " << refer.rows << endl;
     for (int c = c_begin; c < c_end; ++c) {
       Rect rect_frame(c - frame.cols / 2, r - frame.rows / 2, frame.cols,
                       frame.rows);
@@ -217,7 +235,7 @@ bool PyramidAlignerAuto::alignZncc(cv::Mat frame_, cv::Mat refer_,
 #endif
 
   float max_value = -1e6;
-  Point max_point(-1, -1);
+  Point2f max_point(-1, -1);
 
   for (int r = r_begin; r < r_end; ++r) {
     for (int c = c_begin; c < c_end; ++c) {

@@ -323,8 +323,8 @@ static int construct_camera_set_video_auto(int argc, char **argv) {
     CameraSetVideo camera_set(video_name);
     assert(camera_set.read(frame, 0));
   }
-  imwrite("../frame.png", frame);
-  return 0;
+  // imwrite("./frame.png", frame);
+  // return 0;
 
   PyramidAlignerAuto aligner(path_scene);
   Mat trans;
