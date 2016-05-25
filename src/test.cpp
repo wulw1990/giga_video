@@ -167,6 +167,22 @@ static int zncc(int argc, char **argv) {
   Mat trans;
   Rect rect;
   PyramidAlignerAuto::alignZncc(frame, refer, trans, rect);
+  cout << trans << endl;
+  cout << rect << endl;
+
+  Mat dst_frame(refer.size(), CV_8UC3, Scalar(0, 0, 0));
+  Mat src_mask(frame.size(), CV_8UC1, Scalar(255));
+  Mat dst_mask(refer.size(), CV_8UC1, Scalar(0));
+  warpPerspective(frame, dst_frame, trans, dst_frame.size());
+  warpPerspective(src_mask, dst_mask, trans, dst_frame.size());
+  imshow("dst_frame", dst_frame);
+  imshow("dst_mask", dst_mask);
+  
+  dst_frame.copyTo(refer, dst_mask);
+  imshow("refer", refer);
+  
+  
+  waitKey(0);
 
   return 0;
 }

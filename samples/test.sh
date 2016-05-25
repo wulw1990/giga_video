@@ -19,7 +19,7 @@
 
 mode="test"
 mode_internal="zncc"
-name_frame="../frame.png"
-name_refer="../refer.png"
+name_frame="./data/align/frame.jpg"
+name_refer="./data/align/refer.jpg"
 scale=8
 ./build/giga_video $mode $mode_internal $name_frame $name_refer $scale
