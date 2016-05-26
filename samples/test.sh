@@ -21,8 +21,14 @@
 # ./build/giga_video $mode $mode_internal
 
 
+# mode="test"
+# mode_internal="virtual_camera_device"
+# device="/dev/video8"
+# ./build/giga_video $mode $mode_internal $device
+
+
 mode="test"
-mode_internal="virtual_camera_device"
+mode_internal="video_writer_v4l2"
 device="/dev/video8"
 ./build/giga_video $mode $mode_internal $device
 

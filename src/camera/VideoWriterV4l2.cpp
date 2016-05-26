@@ -1,22 +1,9 @@
-#include "VirtualCameraDevice.hpp"
+#include "VideoWriterV4l2.hpp"
 
-#include <opencv2/opencv.hpp>
+#include <iostream>
+
+using namespace std;
 using namespace cv;
-
-/*
- * How to test v4l2loopback:
- * 1. launch this test program (even in background), it will initialize the
- *    loopback device and keep it open so it won't loose the settings.
- * 2. Feed the video device with data according to the settings specified
- *    below: size, pixelformat, etc.
- *    For instance, you can try the default settings with this command:
- *    mencoder video.avi -ovc raw -nosound -vf scale=640:480,format=yuy2 -o
- * /dev/video1
- *    TODO: a command that limits the fps would be better :)
- *
- * Test the video in your favourite viewer, for instance:
- *   luvcview -d /dev/video1 -f yuyv
- */
 
 #include <linux/videodev2.h>
 #include <sys/ioctl.h>
@@ -36,29 +23,16 @@ using namespace cv;
 #define ROUND_UP_64(num) (((num) + 63) & ~63)
 
 #if 0
-#define CHECK_REREAD
-#endif
-
-#define VIDEO_DEVICE "/dev/video0"
-#if 1
-#define FRAME_WIDTH 640
-#define FRAME_HEIGHT 480
-#else
-#define FRAME_WIDTH 512
-#define FRAME_HEIGHT 512
-#endif
-
-#if 0
 #define FRAME_FORMAT V4L2_PIX_FMT_YUYV
 #else
 #define FRAME_FORMAT V4L2_PIX_FMT_YVU420
 #endif
-
 static int debug = 1;
 
-int format_properties(const unsigned int format, const unsigned int width,
-                      const unsigned int height, size_t *linewidth,
-                      size_t *framewidth) {
+static int format_properties(const unsigned int format,
+                             const unsigned int width,
+                             const unsigned int height, size_t *linewidth,
+                             size_t *framewidth) {
   size_t lw, fw;
   switch (format) {
   case V4L2_PIX_FMT_YUV420:
@@ -85,8 +59,7 @@ int format_properties(const unsigned int format, const unsigned int width,
 
   return 1;
 }
-
-void print_format(struct v4l2_format *vid_format) {
+static void print_format(struct v4l2_format *vid_format) {
   printf("----print_format----\n");
   printf("	vid_format->type                =%d\n", vid_format->type);
   printf("	vid_format->fmt.pix.width       =%d\n",
@@ -105,126 +78,86 @@ void print_format(struct v4l2_format *vid_format) {
          vid_format->fmt.pix.colorspace);
 }
 
-static void RGB_to_YUV420(const unsigned char *rgb, unsigned char *yuv420,
-                          int width, int height);
+VideoWriterV4l2::VideoWriterV4l2(std::string device_path,
+                                 cv::Size output_size) {
+  cout << "device_path: " << device_path << endl;
+  cout << "output_size: " << output_size << endl;
 
-int VirtualCameraDevice::test(int argc, char **argv) {
-  size_t framesize;
-  unsigned char *buffer;
-  __u8 *check_buffer;
-  int fdwr = 0;
+  m_output_size = output_size;
+
+  m_fdwr = 0;
+  m_framesize = 0;
   {
     struct v4l2_capability vid_caps;
     struct v4l2_format vid_format;
-    size_t linewidth;
-    const char *video_device = VIDEO_DEVICE;
+    size_t linewidth = 0;
     int ret_code = 0;
-    if (argc > 1) {
-      video_device = argv[1];
-      printf("using output device: %s\n", video_device);
-    }
+    m_fdwr = open(device_path.c_str(), O_RDWR);
+    assert(m_fdwr >= 0);
 
-    fdwr = open(video_device, O_RDWR);
-    assert(fdwr >= 0);
-
-    ret_code = ioctl(fdwr, VIDIOC_QUERYCAP, &vid_caps);
+    ret_code = ioctl(m_fdwr, VIDIOC_QUERYCAP, &vid_caps);
     assert(ret_code != -1);
 
     memset(&vid_format, 0, sizeof(vid_format));
 
-    ret_code = ioctl(fdwr, VIDIOC_G_FMT, &vid_format);
+    ret_code = ioctl(m_fdwr, VIDIOC_G_FMT, &vid_format);
     if (debug)
       print_format(&vid_format);
 
     vid_format.type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
-    vid_format.fmt.pix.width = FRAME_WIDTH;
-    vid_format.fmt.pix.height = FRAME_HEIGHT;
+    vid_format.fmt.pix.width = m_output_size.width;
+    vid_format.fmt.pix.height = m_output_size.height;
     vid_format.fmt.pix.pixelformat = FRAME_FORMAT;
-    vid_format.fmt.pix.sizeimage = framesize;
+    vid_format.fmt.pix.sizeimage = m_framesize;
     vid_format.fmt.pix.field = V4L2_FIELD_NONE;
     vid_format.fmt.pix.bytesperline = linewidth;
     vid_format.fmt.pix.colorspace = V4L2_COLORSPACE_SRGB;
 
     if (debug)
       print_format(&vid_format);
-    ret_code = ioctl(fdwr, VIDIOC_S_FMT, &vid_format);
+    ret_code = ioctl(m_fdwr, VIDIOC_S_FMT, &vid_format);
 
     assert(ret_code != -1);
 
     if (debug)
-      printf("frame: format=%d\tsize=%d\n", FRAME_FORMAT, framesize);
+      cout << "frame: format= " << FRAME_FORMAT << "\tsize=" << m_framesize
+           << endl;
 
-    print_format(&vid_format);
+    if (debug)
+      print_format(&vid_format);
 
     if (!format_properties(vid_format.fmt.pix.pixelformat,
                            vid_format.fmt.pix.width, vid_format.fmt.pix.height,
-                           &linewidth, &framesize)) {
+                           &linewidth, &m_framesize)) {
       printf("unable to guess correct settings for format '%d'\n",
              FRAME_FORMAT);
-    } else {
-      printf("Success to guess correct settings for format '%d'\n",
-             FRAME_FORMAT);
     }
+
+    m_output_size.width = vid_format.fmt.pix.width;
+    m_output_size.height = vid_format.fmt.pix.height;
   }
-  buffer = (__u8 *)malloc(sizeof(__u8) * framesize);
-  check_buffer = (__u8 *)malloc(sizeof(__u8) * framesize);
+  cout << "framesize: " << m_framesize << endl;
 
-  memset(buffer, 0, framesize);
-  memset(check_buffer, 0, framesize);
-  for (size_t i = 0; i < framesize; ++i) {
-    // buffer[i] = i % 2;
-    check_buffer[i] = 0;
+  m_buffer = (__u8 *)malloc(sizeof(__u8) * m_framesize);
+  cout << "framesize: " << m_framesize << endl;
+}
+static void RGB_to_YUV420(const unsigned char *rgb, unsigned char *yuv420,
+                          int width, int height);
+void VideoWriterV4l2::writeFrame(const cv::Mat frame_) {
+  //
+  Mat frame = frame_.clone();
+  cv::resize(frame, frame, m_output_size);
+  cvtColor(frame, frame, CV_BGR2RGB);
+  RGB_to_YUV420(frame.data, m_buffer, m_output_size.width,
+                m_output_size.height);
+  if (write(m_fdwr, m_buffer, m_framesize) != (int)m_framesize) {
+    cout << "write error" << endl;
+    exit(-1);
   }
-
-  printf("buffer ok\n");
-
-  string name_input = "../MVI_7305.avi";
-  VideoCapture capture(name_input);
-  assert(capture.isOpened());
-  Size size_output(FRAME_WIDTH, FRAME_HEIGHT);
-  Mat frame;
-  while (1) {
-    capture.read(frame);
-    if (frame.empty()) {
-      capture.release();
-      capture.open(name_input);
-      assert(capture.isOpened());
-      capture.read(frame);
-      assert(!frame.empty());
-    }
-    cv::resize(frame, frame, size_output);
-    imshow("frame", frame);
-    waitKey(33);
-
-    cvtColor(frame, frame, CV_BGR2RGB);
-    RGB_to_YUV420(frame.data, buffer, FRAME_WIDTH, FRAME_HEIGHT);
-    write(fdwr, buffer, framesize);
-  }
-
-  printf("write ok\n");
-
-#ifdef CHECK_REREAD
-  do {
-    /* check if we get the same data on output */
-    int fdr = open(video_device, O_RDONLY);
-    read(fdr, check_buffer, framesize);
-    for (int i = 0; i < framesize; ++i) {
-      assert(buffer[i] == check_buffer[i]);
-    }
-    close(fdr);
-  } while (0);
-#endif
-
-  printf("ok\n");
-  pause();
-  printf("pause ok\n");
-
-  close(fdwr);
-
-  free(buffer);
-  free(check_buffer);
-
-  return 0;
+}
+void VideoWriterV4l2::release() {
+  //
+  cout << "release" << endl;
 }
 
 static void rgb_to_yuv(unsigned char b, unsigned char g, unsigned char r,

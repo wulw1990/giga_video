@@ -14,6 +14,7 @@ using namespace cv;
 #include "Timer.hpp"
 #include "PyramidAlignerAuto.hpp"
 #include "VirtualCameraDevice.hpp"
+#include "VideoWriterV4l2.hpp"
 
 static int giga_image_meta(int argc, char **argv);
 static int read_image_tile(int argc, char **argv);
@@ -21,6 +22,7 @@ static int read_web_video(int argc, char **argv);
 static int write_web_video(int argc, char **argv);
 static int zncc(int argc, char **argv);
 static int virtual_camera_device(int argc, char **argv);
+static int video_writer_v4l2(int argc, char **argv);
 
 int main_internal_test(int argc, char **argv) {
   if (argc < 2) {
@@ -44,6 +46,8 @@ int main_internal_test(int argc, char **argv) {
     return zncc(argc, argv);
   if (mode == "virtual_camera_device")
     return virtual_camera_device(argc, argv);
+  if (mode == "video_writer_v4l2")
+    return video_writer_v4l2(argc, argv);
   else {
     cerr << "main_internal_test mode error: " << mode << endl;
     return -1;
@@ -229,5 +233,36 @@ static int virtual_camera_device(int argc, char **argv) {
   VirtualCameraDevice device;
   device.test(argc, argv);
 
+  return 0;
+}
+static int video_writer_v4l2(int argc, char **argv) {
+  cout << "video_writer_v4l2" << endl;
+
+  string name_input = "../MVI_7305.avi";
+  string name_output = "/dev/video8";
+  VideoCapture capture(name_input);
+  assert(capture.isOpened());
+
+  Size size_output(1920, 1080);
+  VideoWriterV4l2 writer(name_output, size_output);
+
+
+  Mat frame;
+  while (1) {
+    capture.read(frame);
+    if (frame.empty()) {
+      capture.release();
+      capture.open(name_input);
+      assert(capture.isOpened());
+      capture.read(frame);
+      assert(!frame.empty());
+    }
+    cv::resize(frame, frame, size_output);
+    imshow("frame", frame);
+    waitKey(33);
+
+    writer.writeFrame(frame);
+  }
+  writer.release();
   return 0;
 }
