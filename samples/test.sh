@@ -16,10 +16,20 @@
 # video_name="http://127.0.0.1:8090/test.rm"
 # ./build/giga_video $mode $mode_internal $video_name
 
+# mode="test"
+# mode_internal="write_web_video"
+# ./build/giga_video $mode $mode_internal
+
 
 mode="test"
-mode_internal="zncc"
-name_frame="./data/align/frame.jpg"
-name_refer="./data/align/refer.jpg"
-scale=8
-./build/giga_video $mode $mode_internal $name_frame $name_refer $scale
+mode_internal="virtual_camera_device"
+device="/dev/video8"
+./build/giga_video $mode $mode_internal $device
+
+
+# mode="test"
+# mode_internal="zncc"
+# name_frame="./data/align/frame.jpg"
+# name_refer="./data/align/refer.jpg"
+# scale=8
+# ./build/giga_video $mode $mode_internal $name_frame $name_refer $scale

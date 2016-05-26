@@ -115,3 +115,9 @@ info.txt:
 -3.59669e-06	-9.43491e-06	1	
 71898	6046	4130	2350	
 ```
+
+
+## 实时视频流的配置
+```
+http://blog.csdn.net/xmzwlw/article/details/51458762
+```

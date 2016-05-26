@@ -13,11 +13,14 @@ using namespace cv;
 #include "DirDealer.hpp"
 #include "Timer.hpp"
 #include "PyramidAlignerAuto.hpp"
+#include "VirtualCameraDevice.hpp"
 
 static int giga_image_meta(int argc, char **argv);
 static int read_image_tile(int argc, char **argv);
 static int read_web_video(int argc, char **argv);
+static int write_web_video(int argc, char **argv);
 static int zncc(int argc, char **argv);
+static int virtual_camera_device(int argc, char **argv);
 
 int main_internal_test(int argc, char **argv) {
   if (argc < 2) {
@@ -35,8 +38,12 @@ int main_internal_test(int argc, char **argv) {
     return read_image_tile(argc, argv);
   if (mode == "read_web_video")
     return read_web_video(argc, argv);
+  if (mode == "write_web_video")
+    return write_web_video(argc, argv);
   if (mode == "zncc")
     return zncc(argc, argv);
+  if (mode == "virtual_camera_device")
+    return virtual_camera_device(argc, argv);
   else {
     cerr << "main_internal_test mode error: " << mode << endl;
     return -1;
@@ -183,6 +190,44 @@ static int zncc(int argc, char **argv) {
   dst_frame.copyTo(refer(rect), dst_mask);
   imshow("refer", refer);
   waitKey(0);
+
+  return 0;
+}
+static int write_web_video(int argc, char **argv) {
+  cout << "write_web_video" << endl;
+
+  string name_input = "../MVI_7305.avi";
+
+  VideoCapture capture(name_input);
+  assert(capture.isOpened());
+
+  Size size_output(300, 200);
+  cv::VideoWriter writer("http://localhost:8090/feed2.ffm",
+                         CV_FOURCC('F', 'L', 'V', '1'), 25, size_output, true);
+  assert(writer.isOpened());
+
+  Mat frame;
+  while (1) {
+    capture.read(frame);
+    if (frame.empty()) {
+      capture.release();
+      capture.open(name_input);
+      assert(capture.isOpened());
+      capture.read(frame);
+      assert(!frame.empty());
+    }
+    cv::resize(frame, frame, size_output);
+    imshow("frame", frame);
+    waitKey(33);
+
+    writer << frame;
+  }
+
+  return 0;
+}
+static int virtual_camera_device(int argc, char **argv) {
+  VirtualCameraDevice device;
+  device.test(argc, argv);
 
   return 0;
 }
