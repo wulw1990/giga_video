@@ -8,5 +8,6 @@ int main_internal_master(int argc, char** argv);
 int main_internal_client(int argc, char** argv);
 int main_internal_slave(int argc, char** argv);
 int main_internal_videostab(int argc, char** argv);
+int main_internal_tool(int argc, char** argv);
 
 #endif

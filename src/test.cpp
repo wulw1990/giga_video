@@ -15,6 +15,7 @@ using namespace cv;
 #include "PyramidAlignerAuto.hpp"
 #include "VirtualCameraDevice.hpp"
 #include "VideoWriterV4l2.hpp"
+#include "PipeWriter.hpp"
 
 static int giga_image_meta(int argc, char **argv);
 static int read_image_tile(int argc, char **argv);
@@ -23,6 +24,8 @@ static int write_web_video(int argc, char **argv);
 static int zncc(int argc, char **argv);
 static int virtual_camera_device(int argc, char **argv);
 static int video_writer_v4l2(int argc, char **argv);
+static int frame_to_ffm(int argc, char **argv);
+static int write_jpge_pipe(int argc, char **argv);
 
 int main_internal_test(int argc, char **argv) {
   if (argc < 2) {
@@ -48,6 +51,10 @@ int main_internal_test(int argc, char **argv) {
     return virtual_camera_device(argc, argv);
   if (mode == "video_writer_v4l2")
     return video_writer_v4l2(argc, argv);
+  if (mode == "frame_to_ffm")
+    return frame_to_ffm(argc, argv);
+  if (mode == "write_jpge_pipe")
+    return write_jpge_pipe(argc, argv);
   else {
     cerr << "main_internal_test mode error: " << mode << endl;
     return -1;
@@ -246,7 +253,6 @@ static int video_writer_v4l2(int argc, char **argv) {
   Size size_output(1920, 1080);
   VideoWriterV4l2 writer(name_output, size_output);
 
-
   Mat frame;
   while (1) {
     capture.read(frame);
@@ -264,5 +270,90 @@ static int video_writer_v4l2(int argc, char **argv) {
     writer.writeFrame(frame);
   }
   writer.release();
+  return 0;
+}
+static int frame_to_ffm(int argc, char **argv) {
+  cout << "frame_to_ffm" << endl;
+  if (argc < 4) {
+    cerr << "main_internal_test frame_to_ffm args error." << endl;
+    exit(-1);
+  }
+
+  string input_video(argv[1]);
+  string path_tmp(argv[2]);
+  string ffm(argv[3]);
+
+  DirDealer::mkdir_p(path_tmp);
+
+  VideoCapture capture(input_video);
+  assert(capture.isOpened());
+
+  Size size_output(1920 / 2, 1080 / 2);
+
+  Mat frame;
+  Timer timer;
+  while (1) {
+    timer.reset();
+    capture.read(frame);
+    if (frame.empty()) {
+      capture.release();
+      capture.open(input_video);
+      assert(capture.isOpened());
+      capture.read(frame);
+      assert(!frame.empty());
+    }
+    cv::resize(frame, frame, size_output);
+
+    imwrite(path_tmp + "image0.jpg", frame);
+
+    string cmd = "ffmpeg -f image2 -i " + path_tmp + "image%d.jpg " + ffm;
+    cout << "cmd: " << cmd << endl;
+    system(cmd.c_str());
+
+    imshow("frame", frame);
+
+    int time = timer.getTimeUs() / 1000;
+    cout << "time: " << time << endl;
+    int wait = max(1, 66 - time);
+    char key = waitKey(wait);
+    if (key == 'q') {
+      break;
+    }
+  }
+
+  return 0;
+}
+
+static int write_jpge_pipe(int argc, char **argv) {
+  cout << "write_jpge_pipe" << endl;
+
+  string name_input = "../MVI_7305.avi";
+  string name_pipe = "../pipe";
+  VideoCapture capture(name_input);
+  assert(capture.isOpened());
+
+  Size size_output(1920 / 2, 1080 / 2);
+  PipeWriter pipe_writer(name_pipe);
+
+  Mat frame;
+  for (int i = 0; i < 100; ++i) {
+    capture.read(frame);
+    if (frame.empty()) {
+      capture.release();
+      capture.open(name_input);
+      assert(capture.isOpened());
+      capture.read(frame);
+      assert(!frame.empty());
+    }
+    cv::resize(frame, frame, size_output);
+    imshow("frame", frame);
+    waitKey(33);
+
+    string cmd = "cat " + name_pipe;
+    system(cmd.c_str());
+
+    string out = to_string(i);
+    assert(pipe_writer.writeSomething(out.c_str(), out.length()));
+  }
   return 0;
 }

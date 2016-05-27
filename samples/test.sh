@@ -27,10 +27,24 @@
 # ./build/giga_video $mode $mode_internal $device
 
 
+# mode="test"
+# mode_internal="video_writer_v4l2"
+# device="/dev/video8"
+# ./build/giga_video $mode $mode_internal $device
+
+
+# mode="test"
+# mode_internal="frame_to_ffm"
+# input_video="../MVI_7305.avi"
+# path_tmp="../tmp/"
+# ffm="http://localhost:8090/feed1.ffm"
+# ./build/giga_video $mode $mode_internal $input_video $path_tmp $ffm
+
+
+
 mode="test"
-mode_internal="video_writer_v4l2"
-device="/dev/video8"
-./build/giga_video $mode $mode_internal $device
+mode_internal="write_jpge_pipe"
+./build/giga_video $mode $mode_internal
 
 
 # mode="test"

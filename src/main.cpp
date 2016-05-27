@@ -29,6 +29,8 @@ int main(int argc, char **argv) {
     return main_internal_client(argc, argv);
   if (mode == "videostab")
     return main_internal_videostab(argc, argv);
+      if (mode == "tool")
+    return main_internal_tool(argc, argv);
   else {
     cerr << "main mode error: " << mode << endl;
     return -1;
