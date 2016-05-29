@@ -6,12 +6,6 @@
 #include <map>
 #include <stdlib.h>
 
-static void system_internal(string cmd) {
-  if (system(cmd.c_str())) {
-    cerr << "system_internal call failed: " << cmd << endl;
-    exit(-1);
-  }
-}
 static string exec(string cmd) {
   FILE *pipe = popen(cmd.c_str(), "r");
   if (!pipe)
@@ -40,6 +34,13 @@ static bool hasSpaceChar(const string &s) {
   }
   return false;
 }
+void DirDealer::systemInternal(std::string cmd) {
+  if (system(cmd.c_str())) {
+    cerr << "systemInternal call failed: " << cmd << endl;
+    exit(-1);
+  }
+}
+
 std::vector<std::string> DirDealer::getNameList(const std::string &path) {
   string cmd;
   cmd = string("ls \"") + path + "\"";
@@ -140,12 +141,12 @@ bool DirDealer::isDir(string dir) {
 void DirDealer::mkdir_p(string dir) {
   string cmd = "mkdir -p ";
   cmd += "\"" + dir + "\"";
-  system_internal(cmd.c_str());
+  systemInternal(cmd.c_str());
 }
 void DirDealer::rm_rf(string dir) {
   string cmd = "rm -rf ";
   cmd += dir;
-  system_internal(cmd.c_str());
+  systemInternal(cmd.c_str());
 }
 string DirDealer::int2String(int i) {
   stringstream ss;

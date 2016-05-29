@@ -7,6 +7,8 @@ using namespace std;
 
 class DirDealer {
 public:
+  static void systemInternal(std::string cmd);
+
   static string int2String(int i);
   static int String2int(string str);
   static string getSuffixRemoved(string name);

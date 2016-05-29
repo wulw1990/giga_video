@@ -41,11 +41,13 @@
 # ./build/giga_video $mode $mode_internal $input_video $path_tmp $ffm
 
 
+# mode="test"
+# mode_internal="write_pipe"
+# ./build/giga_video $mode $mode_internal
 
 mode="test"
-mode_internal="write_jpge_pipe"
+mode_internal="write_pipe_jpg"
 ./build/giga_video $mode $mode_internal
-
 
 # mode="test"
 # mode_internal="zncc"

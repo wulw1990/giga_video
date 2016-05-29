@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <fstream>
 #include <iterator>
+#include <unistd.h>
 using namespace std;
 
 #include <opencv2/opencv.hpp>
@@ -25,7 +26,8 @@ static int zncc(int argc, char **argv);
 static int virtual_camera_device(int argc, char **argv);
 static int video_writer_v4l2(int argc, char **argv);
 static int frame_to_ffm(int argc, char **argv);
-static int write_jpge_pipe(int argc, char **argv);
+static int write_pipe(int argc, char **argv);
+static int write_pipe_jpg(int argc, char **argv);
 
 int main_internal_test(int argc, char **argv) {
   if (argc < 2) {
@@ -53,8 +55,10 @@ int main_internal_test(int argc, char **argv) {
     return video_writer_v4l2(argc, argv);
   if (mode == "frame_to_ffm")
     return frame_to_ffm(argc, argv);
-  if (mode == "write_jpge_pipe")
-    return write_jpge_pipe(argc, argv);
+  if (mode == "write_pipe")
+    return write_pipe(argc, argv);
+  if (mode == "write_pipe_jpg")
+    return write_pipe_jpg(argc, argv);
   else {
     cerr << "main_internal_test mode error: " << mode << endl;
     return -1;
@@ -324,36 +328,86 @@ static int frame_to_ffm(int argc, char **argv) {
   return 0;
 }
 
-static int write_jpge_pipe(int argc, char **argv) {
-  cout << "write_jpge_pipe" << endl;
-
-  string name_input = "../MVI_7305.avi";
+static int write_pipe(int argc, char **argv) {
+  cout << "write_pipe" << endl;
   string name_pipe = "../pipe";
-  VideoCapture capture(name_input);
-  assert(capture.isOpened());
-
+  DirDealer::rm_rf(name_pipe);
   Size size_output(1920 / 2, 1080 / 2);
   PipeWriter pipe_writer(name_pipe);
-
+  assert(pipe_writer.makePipe());
+  // DirDealer::systemInternal("cat " + name_pipe + "&");
+  assert(pipe_writer.openPipe());
   Mat frame;
   for (int i = 0; i < 100; ++i) {
+    cout << i << endl;
+    sleep(1);
+    string out = to_string(i) + '\n';
+    assert(pipe_writer.writeSomething(out.c_str(), out.length()));
+  }
+  return 0;
+}
+
+static int write_pipe_jpg(int argc, char **argv) {
+  // Usage:
+  // cat ../pipe | ffmpeg -r 15 -f image2pipe -vcodec mjpeg -i - ../foo1.mp4
+  // cat ../pipe | ffmpeg -r 15 -f image2pipe -vcodec mjpeg -i - -r 15
+  // http://localhost:8090/feed1.ffm
+
+  cout << "write_pipe_jpg" << endl;
+  string name_pipe = "../pipe";
+  string input_video = "../MVI_7305.avi";
+
+  VideoCapture capture(input_video);
+  assert(capture.isOpened());
+  Size size_output(1920 / 2, 1080 / 2);
+
+  DirDealer::rm_rf(name_pipe);
+  PipeWriter pipe_writer(name_pipe);
+  assert(pipe_writer.makePipe());
+  // DirDealer::systemInternal("cat " + name_pipe + "&");
+  assert(pipe_writer.openPipe());
+
+  Mat frame;
+  Timer timer;
+  Rect rect(rand() % size_output.width, rand() % size_output.height, 200, 200);
+  for (int i = 0;; ++i) {
+    cout << i << endl;
+    timer.reset();
     capture.read(frame);
     if (frame.empty()) {
       capture.release();
-      capture.open(name_input);
+      capture.open(input_video);
       assert(capture.isOpened());
       capture.read(frame);
       assert(!frame.empty());
     }
     cv::resize(frame, frame, size_output);
+
+    frame.setTo(Scalar(255, 255, 255));
+    if (i % 15 == 0) {
+      rect = Rect(rand() % frame.cols, rand() % frame.rows, 200, 200);
+    }
+    rectangle(frame, rect, Scalar(0, 0, 0), -1);
+
     imshow("frame", frame);
-    waitKey(33);
 
-    string cmd = "cat " + name_pipe;
-    system(cmd.c_str());
+    vector<unsigned char> buf;
+    cv::imencode(".jpg", frame, buf);
 
-    string out = to_string(i);
-    assert(pipe_writer.writeSomething(out.c_str(), out.length()));
+    // ofstream fout("../jj.jpg", ios::out | ios::binary);
+    // fout.write((char*)buf.data(), buf.size());
+    // break;
+
+    // string out = to_string(i) + '\n';
+    assert(pipe_writer.writeSomething(buf.data(), buf.size()));
+
+    int time = timer.getTimeUs() / 1000;
+    int wait = max(1, 66 - time);
+    char key = waitKey(wait);
+    cout << "time: " << time << " wait: " << wait << endl;
+    if (key == 'q') {
+      break;
+    }
   }
   return 0;
 }
