@@ -312,7 +312,7 @@ static int frame_to_ffm(int argc, char **argv) {
 
     string cmd = "ffmpeg -f image2 -i " + path_tmp + "image%d.jpg " + ffm;
     cout << "cmd: " << cmd << endl;
-    system(cmd.c_str());
+    DirDealer::systemInternal(cmd.c_str());
 
     imshow("frame", frame);
 

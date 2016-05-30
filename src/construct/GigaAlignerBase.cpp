@@ -17,24 +17,24 @@ static void showImage(string win_name, Mat img) {
   imshow(win_name, show);
   waitKey(1);
 }
-static std::vector<cv::Point2f> getCornerOnFrame(cv::Size size) {
-  int rows = size.height;
-  int cols = size.width;
-  vector<Point2f> corner_frame(4);
-  corner_frame[0] = Point2f(0, 0);
-  corner_frame[1] = Point2f(cols, 0);
-  corner_frame[2] = Point2f(cols, rows);
-  corner_frame[3] = Point2f(0, rows);
+// static std::vector<cv::Point2f> getCornerOnFrame(cv::Size size) {
+//   int rows = size.height;
+//   int cols = size.width;
+//   vector<Point2f> corner_frame(4);
+//   corner_frame[0] = Point2f(0, 0);
+//   corner_frame[1] = Point2f(cols, 0);
+//   corner_frame[2] = Point2f(cols, rows);
+//   corner_frame[3] = Point2f(0, rows);
 
-  return corner_frame;
-}
-static std::vector<cv::Point2f> getCornerOnScene(cv::Size size, cv::Mat H) {
-  vector<Point2f> corner_frame = getCornerOnFrame(size);
+//   return corner_frame;
+// }
+// static std::vector<cv::Point2f> getCornerOnScene(cv::Size size, cv::Mat H) {
+//   vector<Point2f> corner_frame = getCornerOnFrame(size);
 
-  vector<Point2f> corner_on_scene;
-  perspectiveTransform(corner_frame, corner_on_scene, H);
-  return corner_on_scene;
-}
+//   vector<Point2f> corner_on_scene;
+//   perspectiveTransform(corner_frame, corner_on_scene, H);
+//   return corner_on_scene;
+// }
 bool GigaAlignerBase::align(Mat frame, Mat &H, Rect &rect_on_scene) {
   int work_layer_id = m_frame_provider->getNumLayers() - 1;
   Size work_layer_size(m_frame_provider->getLayerWidth(work_layer_id),

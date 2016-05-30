@@ -28,7 +28,7 @@ int main_internal_master(int argc, char **argv) {
 
   string path(argv[1]);
   int support_client = atoi(argv[2]);
-  int video_online = atoi(argv[3]);
+  // int video_online = atoi(argv[3]);
   int port = atoi(argv[4]);
   const int head_argc = 5;
 

@@ -13,11 +13,8 @@
 using namespace std;
 
 int Transmitter::initSocketServer(int port) {
-  int listenfd, connfd;
+  int listenfd;
   struct sockaddr_in servaddr;
-  struct sockaddr_in client_addr;
-  char buff[4096];
-  int n;
 
   if ((listenfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
     printf("create socket error: %s(errno: %d)\n", strerror(errno), errno);
@@ -42,8 +39,7 @@ int Transmitter::initSocketServer(int port) {
   return listenfd;
 }
 int Transmitter::initSocketClient(std::string ip, int port) {
-  int sockfd, n;
-  char recvline[4096], sendline[4096];
+  int sockfd;
   struct sockaddr_in servaddr;
 
   // if ( argc != 2) {

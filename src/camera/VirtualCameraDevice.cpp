@@ -151,8 +151,10 @@ int VirtualCameraDevice::test(int argc, char **argv) {
 
     assert(ret_code != -1);
 
-    if (debug)
-      printf("frame: format=%d\tsize=%d\n", FRAME_FORMAT, framesize);
+    if (debug){
+      printf("frame: format=%d\tsize=%d\n", (int)FRAME_FORMAT, (int)framesize);
+      
+    }
 
     print_format(&vid_format);
 
@@ -198,7 +200,7 @@ int VirtualCameraDevice::test(int argc, char **argv) {
 
     cvtColor(frame, frame, CV_BGR2RGB);
     RGB_to_YUV420(frame.data, buffer, FRAME_WIDTH, FRAME_HEIGHT);
-    write(fdwr, buffer, framesize);
+    assert(write(fdwr, buffer, framesize)==(unsigned int)framesize);
   }
 
   printf("write ok\n");
