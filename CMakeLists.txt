@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 PROJECT(giga_video)
 
-option (FLY_CAPTRUE "Use provided math implementation" OFF)
+option (FLY_CAPTRUE "Use provided math implementation" ON)
 if(FLY_CAPTRUE)
 	add_definitions(-DENABLE_FLY_CAPTRUE)
 	set(FlyCapture_HEADERS "/usr/include/flycapture")
@@ -12,9 +12,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-write-strings")
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-variable")
 
 SET(PATH_INC ${giga_video_SOURCE_DIR}/include)
 SET(PATH_SRC ${giga_video_SOURCE_DIR}/src)

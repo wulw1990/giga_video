@@ -1,5 +1,5 @@
-#ifndef _PLAYER_HPP_
-#define _PLAYER_HPP_
+#ifndef PLAYER_MANNUAL_HPP_
+#define PLAYER_MANNUAL_HPP_
 
 #include <string>
 #include <vector>
@@ -10,14 +10,14 @@
 
 class WaiterServer;
 
-class Player {
+class PlayerMannual {
 public:
   // video_mode:
   // 0: no video
   // 1: offline video
   // 2: online video
-  Player(std::string path, int video_mode, std::string output_video = "");
-  ~Player() {}
+  PlayerMannual(std::string path, int video_mode, std::string output_video = "");
+  ~PlayerMannual() {}
 
   void play();
 
@@ -33,9 +33,6 @@ private:
     int mouse_y;
     cv::Scalar mouse_color;
     std::mutex show_locker;
-    cv::Mat thumnail_show;
-    std::vector<cv::Rect> thumnail_rect;
-    int thumnail_index;
   };
   Info m_info;
   
@@ -44,7 +41,6 @@ private:
 
   static void drawMouse(cv::Mat &show, int x, int y, cv::Scalar color);
   static void onMouse(int event, int x, int y, int, void *data);
-  static int getThunbmailIndex(int x, int y, const std::vector<cv::Rect>& rect);
 
   std::thread m_record_thread;
   bool m_record_end;

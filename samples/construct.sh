@@ -1,7 +1,7 @@
 # mode="construct"
 # mode_internal="giga_image_meta"
-# path="/mnt/hgfs/fast/zijing16/"
-# meta="/mnt/hgfs/fast/zijing16/meta.conf"
+# path="/home/bbnc/data/main_building/"
+# meta=${path}"meta.conf"
 # ./build/giga_video $mode $mode_internal $path $meta
 
 # mode="construct"
@@ -12,14 +12,19 @@
 # ./build/giga_video $mode $mode_internal $path_src $path_dst
 
 
-mode="construct"
-mode_internal="construct_camera_set_video_auto"
-path_scene="/home/wuliwei/ramdisk/zijing16/"
-path_video="/home/wuliwei/ramdisk/zijing16/video/MVI_7302/"
-./build/giga_video $mode $mode_internal $path_scene $path_video
+# mode="construct"
+# mode_internal="construct_camera_set_video_manual"
+# path_scene="/home/bbnc/data/main_building/"
+# # mode_video="video"
+# # name_video="MVI_7302"
+# mode_video="fly2"
+# name_video="0"
+# ./build/giga_video $mode $mode_internal $path_scene $mode_video $name_video
 
 
 mode="construct"
 mode_internal="video_pyramid"
-path="/home/wuliwei/ramdisk/zijing16/video/"
-./build/giga_video $mode $mode_internal $path
+path="/home/bbnc/data/main_building/video/"
+mode_video="fly2"
+name_video="0"
+./build/giga_video $mode $mode_internal $path $mode_video $name_video

@@ -8,8 +8,8 @@ using namespace std;
 
 void GigaImageMeta::generateMetaFile(std::string path, std::string meta) {
   // TODO: magic number
-  int layers = 5;
-  int head_layers = 3;
+  int layers = 7;
+  int head_layers = 5;
   const string TILE_NAME_SUFFIX = ".jpg";
   m_tile_len = 512;
 
