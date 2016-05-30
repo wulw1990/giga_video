@@ -11,7 +11,6 @@ const Scalar default_color(127, 127, 127);
 
 FrameProvider::FrameProvider(std::string path, int video_mode) {
   m_tile_provider = make_shared<TileProvider>(path, path + "info_scene.txt");
-
   m_video_mode = video_mode;
   if (m_video_mode == 0) {
   } else if (m_video_mode == 1) {

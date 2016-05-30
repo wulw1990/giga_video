@@ -48,8 +48,7 @@ bool WaiterServer::hasFrame() {
   if (!m_auto_x.empty()) {
     m_window_controller->setXYZ(m_auto_x[m_auto_index], m_auto_y[m_auto_index],
                                 m_auto_z[m_auto_index]);
-    updateFrameBackground();
-    updateFrameForeground();
+
     m_auto_index++;
     if (m_auto_index == (int)m_auto_x.size()) {
       m_auto_x.clear();
@@ -57,10 +56,11 @@ bool WaiterServer::hasFrame() {
       m_auto_z.clear();
     }
     // cout << "m_auto_index: " << m_auto_index << endl;
-  } else if (m_need_update_foreground) {
-    updateFrameForeground();
-    m_has_frame = true;
   }
+
+  updateFrameBackground();
+  updateFrameForeground();
+  m_has_frame = true;
 
   return m_has_frame;
 }
@@ -150,7 +150,7 @@ void WaiterServer::setThumbnailIndex(int index) {
 void WaiterServer::updateFrameBackground() {
   double x, y, z;
   m_window_controller->getXYZ(x, y, z);
-    cout << "x: " << x << "\ty: " << y << "\tz: " << z << endl;
+  cout << "x: " << x << "\ty: " << y << "\tz: " << z << endl;
   Timer timer;
   timer.reset();
   m_frame = m_frame_provider->getFrameBackground(m_w, m_h, x, y, z);

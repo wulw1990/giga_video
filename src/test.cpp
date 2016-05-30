@@ -356,7 +356,7 @@ static int write_pipe_jpg(int argc, char **argv) {
 
   cout << "write_pipe_jpg" << endl;
   string name_pipe = "../pipe";
-  string input_video = "../MVI_7305.avi";
+  string input_video = "../MVI_6878.MOV";
 
   VideoCapture capture(input_video);
   assert(capture.isOpened());
@@ -368,11 +368,10 @@ static int write_pipe_jpg(int argc, char **argv) {
   // DirDealer::systemInternal("cat " + name_pipe + "&");
 
   thread sub_thread = thread([name_pipe]() {
-    string cmd = "cat " + name_pipe + " ../pipe | ffmpeg -r 15 -f image2pipe -vcodec mjpeg "
+    string cmd = "cat " + name_pipe + " | ffmpeg -r 15 -f image2pipe -vcodec mjpeg "
                           "-i - -r 15 http://localhost:8090/feed1.ffm";
     DirDealer::systemInternal(cmd);
   });
-
   assert(pipe_writer.openPipe());
 
   Mat frame;

@@ -8,7 +8,7 @@ class Transmitter {
 public:
   static int initSocketServer(int port);
   static int initSocketClient(std::string ip, int port);
-  static bool getClientId(int server_id, int &client_id);
+  static bool getClientId(int server_id, int &client_id, std::string& client_info);
   static void closeSocket(int socket_id);
 
   static bool sendData(int socket_id, const std::vector<unsigned char> &data);

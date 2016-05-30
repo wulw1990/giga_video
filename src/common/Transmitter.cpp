@@ -68,7 +68,7 @@ int Transmitter::initSocketClient(std::string ip, int port) {
   printf("send msg to server: \n");
   return sockfd;
 }
-bool Transmitter::getClientId(int server_id, int &client_id) {
+bool Transmitter::getClientId(int server_id, int &client_id, std::string& client_info) {
   struct sockaddr_in client_addr;
   int len = sizeof(client_addr);
   if ((client_id = accept(server_id, (struct sockaddr *)&client_addr,
@@ -76,11 +76,18 @@ bool Transmitter::getClientId(int server_id, int &client_id) {
     printf("accept socket error: %s(errno: %d)", strerror(errno), errno);
     return false;
   }
-  printf("%d.%d.%d.%d:%d\n", int(client_addr.sin_addr.s_addr & 0xFF),
-         int((client_addr.sin_addr.s_addr & 0xFF00) >> 8),
-         int((client_addr.sin_addr.s_addr & 0xFF0000) >> 16),
-         int((client_addr.sin_addr.s_addr & 0xFF000000) >> 24),
-         client_addr.sin_port);
+  client_info = to_string(int(client_addr.sin_addr.s_addr & 0xFF)) + "." + 
+  to_string(int((client_addr.sin_addr.s_addr & 0xFF00) >> 8)) + "." + 
+  to_string(int((client_addr.sin_addr.s_addr & 0xFF0000) >> 16)) + "." + 
+  to_string(int((client_addr.sin_addr.s_addr & 0xFF000000) >> 24)) + ":" +
+  to_string(client_addr.sin_port);
+  
+  // printf("%d.%d.%d.%d:%d\n", int(client_addr.sin_addr.s_addr & 0xFF),
+  //        int((client_addr.sin_addr.s_addr & 0xFF00) >> 8),
+  //        int((client_addr.sin_addr.s_addr & 0xFF0000) >> 16),
+  //        int((client_addr.sin_addr.s_addr & 0xFF000000) >> 24),
+  //        client_addr.sin_port);
+         
   return true;
 }
 void Transmitter::closeSocket(int socket_id) { close(socket_id); }
