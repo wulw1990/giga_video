@@ -7,9 +7,6 @@ using namespace cv;
 #include "WaiterServer.hpp"
 #include "Timer.hpp"
 
-const int w = 1600;
-const int h = 900;
-
 const int SHOW_FPS = 15;
 const int SHOW_MS = 1000 / SHOW_FPS;
 
@@ -40,7 +37,10 @@ static void work_record(string video_name, cv::Mat &show, bool &record_end,
 }
 
 Player::Player(std::string path, int video_mode, string output_video) {
-  m_info.m_waiter = make_shared<WaiterServer>(path, w, h, video_mode);
+  m_window_width = 1024;
+  m_window_height = 720;
+  
+  m_info.m_waiter = make_shared<WaiterServer>(path, m_window_width, m_window_height, video_mode);
   m_info.win_title = "giga player";
   m_info.mouse_x = -100;
   m_info.mouse_y = -100;
@@ -66,8 +66,8 @@ Player::Player(std::string path, int video_mode, string output_video) {
       thumnail[i].copyTo(m_info.thumnail_show(rect));
       m_info.thumnail_rect.push_back(rect);
     }
-    float scale = (float)w / m_info.thumnail_show.cols;
-    int thumnail_show_cols = w;
+    float scale = (float)m_window_width / m_info.thumnail_show.cols;
+    int thumnail_show_cols = m_window_width;
     int thumnail_show_rows = scale * m_info.thumnail_show.rows;
     resize(m_info.thumnail_show, m_info.thumnail_show,
            Size(thumnail_show_cols, thumnail_show_rows));
@@ -91,7 +91,7 @@ Player::Player(std::string path, int video_mode, string output_video) {
   m_info.show_locker.unlock();
   // update thumnail rect
   for (size_t i = 0; i < m_info.thumnail_rect.size(); ++i) {
-    m_info.thumnail_rect[i].y += h;
+    m_info.thumnail_rect[i].y += m_window_height;
     rectangle(m_info.show, m_info.thumnail_rect[i], Scalar(0, 0, 255), 2);
   }
   drawMouse(m_info.show, m_info.mouse_x, m_info.mouse_y, m_info.mouse_color);

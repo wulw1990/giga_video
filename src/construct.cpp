@@ -14,6 +14,7 @@ using namespace cv;
 #include "IO.hpp"
 #include "DirDealer.hpp"
 #include "CameraSetVideo.hpp"
+#include "CameraSetFly2.hpp"
 #include "GigaAlignerBase.hpp"
 #include "GigaAlignerAuto.hpp"
 #include "GigaAlignerManual.hpp"
@@ -278,29 +279,42 @@ static int construct_camera_set_video(int argc, char **argv) {
   return 0;
 }
 static int construct_camera_set_video_manual(int argc, char **argv) {
-  if (argc < 3) {
+  cout << "construct_camera_set_video_manual" << endl;
+  if (argc < 4) {
     cerr << "main_internal_construct construct_camera_set_video args error."
          << endl;
     exit(-1);
   }
 
   string path_scene(argv[1]);
-  string path_video(argv[2]);
+  string mode_video(argv[2]);
+  string name_video(argv[3]);
 
   Mat frame;
-  {
-    vector<string> video_name;
-    video_name.push_back(path_video + "/video.avi");
-    CameraSetVideo camera_set(video_name);
+  if (mode_video == "video") {
+    vector<string> list;
+    list.push_back(path_scene + "video/" + name_video + "/video.avi");
+    CameraSetVideo camera_set(list);
     assert(camera_set.read(frame, 0));
+  } else if (mode_video == "fly2") {
+    CameraSetFly2 camera_set;
+    int camera_id = atoi(name_video.c_str());
+    assert(camera_set.read(frame, camera_id));
   }
+
+  // imshow("frame", frame);
+  // waitKey(0);
+  // destroyAllWindows();
+  
+  string path_output = path_scene + "video/" + name_video + "/";
+  DirDealer::mkdir_p(path_output);
 
   PyramidAligner aligner(path_scene);
   Mat trans;
   Rect rect;
   aligner.align(frame, trans, rect);
   std::ofstream fout;
-  assert(IO::openOStream(fout, path_video + "/info.txt", "VideoData save"));
+  assert(IO::openOStream(fout, path_output + "info.txt", "VideoData save"));
   assert(IO::saveTransMat(fout, trans));
   assert(IO::saveRect(fout, rect));
 

@@ -38,6 +38,9 @@ private:
     int thumnail_index;
   };
   Info m_info;
+  
+  int m_window_width;
+  int m_window_height;
 
   static void drawMouse(cv::Mat &show, int x, int y, cv::Scalar color);
   static void onMouse(int event, int x, int y, int, void *data);

@@ -11,8 +11,10 @@ using namespace cv;
 #include "server/Player.hpp"
 #include "camera/CameraSetVideo.hpp"
 #include "camera/CameraSetImage.hpp"
+#include "camera/CameraSetFly2.hpp"
 #include "camera/PyramidCameraImage.hpp"
 #include "camera/PyCameraSetImage.hpp"
+#include "camera/PyCameraSetFly2.hpp"
 #include "Timer.hpp"
 
 static int giga_image(int argc, char **argv);
@@ -59,19 +61,20 @@ static int giga_image(int argc, char **argv) {
   return 0;
 }
 static int giga_video(int argc, char **argv) {
-  if (argc < 2) {
+  if (argc < 3) {
     cerr << "main_internal_demo giga_image args error." << endl;
     exit(-1);
   }
   string path(argv[1]);
+  int mode_video = atoi(argv[2]);
   // Player player(path, 1, path + "record.avi");
-  Player player(path, 1);
+  Player player(path, mode_video);
   player.play();
   return 0;
 }
 static int camera_set(int argc, char **argv) {
   shared_ptr<CameraSetBase> camera_set;
-#if 1
+#if 0
   string path("/home/wuliwei/ramdisk/zijing16/video/");
   vector<string> video_name;
   string name = "video_0/";
@@ -83,7 +86,7 @@ static int camera_set(int argc, char **argv) {
   video_name.push_back(path + "MVI_7294/" + name);
   camera_set = make_shared<CameraSetImage>(video_name);
 #else
-
+  camera_set = make_shared<CameraSetFly2>();
 #endif
 
   int n_cameras = camera_set->getNumCamera();
@@ -93,6 +96,7 @@ static int camera_set(int argc, char **argv) {
   bool end = false;
   Timer timer;
   const int MS = 66;
+  float scale = 4;
   while (!end) {
     timer.reset();
     for (int i = 0; i < n_cameras; ++i) {
@@ -100,6 +104,8 @@ static int camera_set(int argc, char **argv) {
         end = true;
         break;
       }
+      resize(frame[i], frame[i],
+             Size(frame[i].cols / scale, frame[i].rows / scale));
     }
     cout << "Time=" << timer.getTimeUs() / 1000 << " ";
     for (int i = 0; i < n_cameras; ++i) {
@@ -116,6 +122,7 @@ static int pyramid_camera(int argc, char **argv) {
   //   cerr << "main_internal_demo pyramid_camera args error." << endl;
   //   exit(-1);
   // }
+  
   PyramidCameraImage camera("/home/wuliwei/ramdisk/zijing16/video/MVI_6878/");
   const int MS = 66;
   while (1) {
@@ -134,20 +141,35 @@ static int pyramid_camera(int argc, char **argv) {
   return 0;
 }
 static int py_camera_set(int argc, char **argv) {
-  // if (argc < 2) {
-  //   cerr << "main_internal_demo pyramid_camera args error." << endl;
-  //   exit(-1);
-  // }
-  PyCameraSetImage camera_set("/home/wuliwei/ramdisk/zijing16/video/");
+  if (argc < 2) {
+    cerr << "main_internal_demo pyramid_camera args error." << endl;
+    exit(-1);
+  }
+  
+  string path(argv[1]);
+  string mode_video(argv[2]);
+  string name_video(argv[3]);
+  
+  shared_ptr<PyCameraSetBase> camera_set;
+  
+  if(mode_video=="fly2"){
+   camera_set = make_shared<PyCameraSetFly2>(7);
+  }else if(mode_video=="image"){
+   camera_set = make_shared<PyCameraSetImage>("/home/wuliwei/ramdisk/zijing16/video/");
+  }else{
+    cerr << "mode_video error" << endl;
+    exit(-1);
+  }
+  
   const int MS = 66;
-  int camera_id = 5;
+  int camera_id = 0;
   while (1) {
-    int layer_id = rand() % 5;
-
+    // int layer_id = rand() % 5;
+    int layer_id = 3;
     Timer timer;
     timer.reset();
     Mat frame;
-    camera_set.read(frame, camera_id, layer_id);
+    camera_set->read(frame, camera_id, layer_id);
     imshow("frame", frame);
     int time = timer.getTimeUs() / 1000;
     cout << "Time: " << time << endl;

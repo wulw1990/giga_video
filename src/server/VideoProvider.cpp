@@ -7,6 +7,7 @@ using namespace cv;
 
 #include "DirDealer.hpp"
 #include "PyCameraSetImage.hpp"
+// #include "PyCameraSetFly2.hpp"
 #include "IO.hpp"
 
 const int NUM_LAYERS = 5;
@@ -21,25 +22,22 @@ VideoProvider::VideoProvider(string path, bool online) {
   }
 
   if (online) {
-    // m_camera_set =
-    // make_shared<CameraSetParallel>(make_shared<CameraSetFly2>());
-    // m_camera_set = make_shared<CameraSetFly2>();
   } else {
     m_camera_set = make_shared<PyCameraSetImage>(path);
-  }
-  m_trans.resize(NUM_LAYERS);
-  m_rect.resize(NUM_LAYERS);
-  for (int layer_id = 0; layer_id < NUM_LAYERS; ++layer_id) {
-    int n_cameras = m_camera_set->getNumCamera();
-    m_trans[layer_id].resize(n_cameras);
-    m_rect[layer_id].resize(n_cameras);
-    for (int camera_id = 0; camera_id < n_cameras; ++camera_id) {
-      ifstream fin;
-      assert(IO::openIStream(fin, path + list[camera_id] + "/info_" +
-                                      to_string(layer_id) + ".txt",
-                             "VideoData load"));
-      assert(IO::loadTransMat(fin, m_trans[layer_id][camera_id]));
-      assert(IO::loadRect(fin, m_rect[layer_id][camera_id]));
+    m_trans.resize(NUM_LAYERS);
+    m_rect.resize(NUM_LAYERS);
+    for (int layer_id = 0; layer_id < NUM_LAYERS; ++layer_id) {
+      int n_cameras = m_camera_set->getNumCamera();
+      m_trans[layer_id].resize(n_cameras);
+      m_rect[layer_id].resize(n_cameras);
+      for (int camera_id = 0; camera_id < n_cameras; ++camera_id) {
+        ifstream fin;
+        assert(IO::openIStream(fin, path + list[camera_id] + "/info_" +
+                                        to_string(layer_id) + ".txt",
+                               "VideoData load"));
+        assert(IO::loadTransMat(fin, m_trans[layer_id][camera_id]));
+        assert(IO::loadRect(fin, m_rect[layer_id][camera_id]));
+      }
     }
   }
 }
@@ -59,8 +57,8 @@ bool VideoProvider::getRect(cv::Rect &rect, int camera_id, int layer_id) {
   rect = m_rect[layer_id][camera_id];
   return true;
 }
-bool VideoProvider::getFrame(cv::Mat &frame, cv::Mat &mask,
-                             int camera_id, int layer_id) {
+bool VideoProvider::getFrame(cv::Mat &frame, cv::Mat &mask, int camera_id,
+                             int layer_id) {
   if (!isValidLayer(layer_id))
     return false;
   if (!isValidCamera(camera_id))

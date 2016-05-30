@@ -46,12 +46,12 @@ static cv::Rect getRectFromCorner(std::vector<cv::Point2f> &corner) {
   return Rect(x1, y1, x2 - x1 + 1, y2 - y1 + 1);
 }
 void PyramidAligner::align(cv::Mat frame, cv::Mat &trans, cv::Rect &rect) {
-  int layer_id = 0;
+  int layer_id = 2;
   int layer_width = m_frame_provider->getLayerWidth(layer_id);
   int layer_height = m_frame_provider->getLayerHeight(layer_id);
   Rect rect_global(0, 0, layer_width, layer_height);
 
-  for (layer_id = 0; layer_id < 2; ++layer_id) {
+  for (; layer_id < 4; ++layer_id) {
     Mat refer = m_frame_provider->getFrameBackground(rect_global, layer_id);
     cout << refer.size() << endl;
     Rect rect_local;
@@ -183,8 +183,8 @@ bool PyramidAligner::alignTransRect(cv::Mat frame, cv::Mat refer,
   return true;
 }
 float PyramidAligner::getShowImage(cv::Mat src, cv::Mat &dst) {
-  const int w_best = 1800;
-  const int h_best = 900;
+  const int w_best = 1400;
+  const int h_best = 800;
 
   float scale = max((float)src.cols / w_best, (float)src.rows / h_best);
   scale = max(scale, 1.0f);
