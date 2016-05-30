@@ -9,6 +9,7 @@ using namespace cv;
 
 #include "giga_video.h"
 #include "server/Player.hpp"
+#include "server/PlayerMannual.hpp"
 #include "camera/CameraSetVideo.hpp"
 #include "camera/CameraSetImage.hpp"
 #include "camera/CameraSetFly2.hpp"
@@ -68,7 +69,7 @@ static int giga_video(int argc, char **argv) {
   string path(argv[1]);
   int mode_video = atoi(argv[2]);
   // Player player(path, 1, path + "record.avi");
-  Player player(path, mode_video);
+  PlayerMannual player(path, mode_video);
   player.play();
   return 0;
 }
@@ -162,7 +163,7 @@ static int py_camera_set(int argc, char **argv) {
   }
   
   const int MS = 66;
-  int camera_id = 0;
+  int camera_id = atoi(name_video.c_str());
   while (1) {
     // int layer_id = rand() % 5;
     int layer_id = 3;

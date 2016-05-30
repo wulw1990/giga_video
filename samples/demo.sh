@@ -7,7 +7,8 @@ mode="demo"
 mode_internal="giga_video"
 path="/home/bbnc/data/main_building/"
 mode_video="2"
-./build/giga_video $mode $mode_internal $path $mode_video
+mode_interact="mannual"
+./build/giga_video $mode $mode_internal $path $mode_video $mode_interact
 
 # mode="demo"
 # mode_internal="camera_set"
@@ -23,5 +24,5 @@ mode_video="2"
 # mode_internal="py_camera_set"
 # path="/home/bbnc/data/main_building/"
 # mode_video="fly2"
-# name_video="0"
+# name_video="1"
 # ./build/giga_video $mode $mode_internal $path $mode_video $name_video
