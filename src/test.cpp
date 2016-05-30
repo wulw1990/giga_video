@@ -4,6 +4,7 @@
 #include <fstream>
 #include <iterator>
 #include <unistd.h>
+#include <thread>
 using namespace std;
 
 #include <opencv2/opencv.hpp>
@@ -365,6 +366,13 @@ static int write_pipe_jpg(int argc, char **argv) {
   PipeWriter pipe_writer(name_pipe);
   assert(pipe_writer.makePipe());
   // DirDealer::systemInternal("cat " + name_pipe + "&");
+
+  thread sub_thread = thread([name_pipe]() {
+    string cmd = "cat " + name_pipe + " ../pipe | ffmpeg -r 15 -f image2pipe -vcodec mjpeg "
+                          "-i - -r 15 http://localhost:8090/feed1.ffm";
+    DirDealer::systemInternal(cmd);
+  });
+
   assert(pipe_writer.openPipe());
 
   Mat frame;
