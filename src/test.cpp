@@ -370,6 +370,7 @@ static int write_pipe_jpg(int argc, char **argv) {
   Mat frame;
   Timer timer;
   Rect rect(rand() % size_output.width, rand() % size_output.height, 200, 200);
+  bool test_mask = false;
   for (int i = 0;; ++i) {
     cout << i << endl;
     timer.reset();
@@ -383,11 +384,13 @@ static int write_pipe_jpg(int argc, char **argv) {
     }
     cv::resize(frame, frame, size_output);
 
-    frame.setTo(Scalar(255, 255, 255));
-    if (i % 15 == 0) {
-      rect = Rect(rand() % frame.cols, rand() % frame.rows, 200, 200);
+    if (test_mask) {
+      frame.setTo(Scalar(255, 255, 255));
+      if (i % 15 == 0) {
+        rect = Rect(rand() % frame.cols, rand() % frame.rows, 200, 200);
+      }
+      rectangle(frame, rect, Scalar(0, 0, 0), -1);
     }
-    rectangle(frame, rect, Scalar(0, 0, 0), -1);
 
     imshow("frame", frame);
 
