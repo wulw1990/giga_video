@@ -82,18 +82,18 @@ static void saveVideoFrames(vector<Mat> &frame, string path) {
   }
 }
 static void video_pyramid_one(string path) {
-  cout << path << endl;
   Mat trans;
   Rect rect;
   {
     ifstream fin;
-    assert(IO::openIStream(fin, path + "/info.txt", "VideoData load"));
+    assert(IO::openIStream(fin, path + "info.txt", "VideoData load"));
     assert(IO::loadTransMat(fin, trans));
     assert(IO::loadRect(fin, rect));
     cout << trans << endl;
     cout << rect << endl;
   }
 
+#if 0
   VideoCapture capture(path + "video.avi");
   vector<Mat> frame;
   while (1) {
@@ -109,21 +109,27 @@ static void video_pyramid_one(string path) {
     cout << "video empty" << endl;
     exit(-1);
   }
+#endif
 
-  for (int i = 4; i >= 0; --i) {
+  for (int i = 6; i >= 0; --i) {
     string name_video = path + "video_" + to_string(i) + "/";
     string name_info = path + "info_" + to_string(i) + ".txt";
 
+#if 0
     saveVideoFrames(frame, name_video);
+#endif
 
     ofstream fout;
     assert(IO::openOStream(fout, name_info, "Write Info"));
     assert(IO::saveTransMat(fout, trans));
     assert(IO::saveRect(fout, rect));
 
+#if 0
     for (size_t j = 0; j < frame.size(); ++j) {
       resize(frame[j], frame[j], Size(frame[j].cols / 2, frame[j].rows / 2));
     }
+#endif
+
     trans.at<float>(0, 2) /= 2;
     trans.at<float>(1, 2) /= 2;
     rect.x /= 2;
@@ -133,19 +139,25 @@ static void video_pyramid_one(string path) {
   }
 }
 static int video_pyramid(int argc, char **argv) {
-  if (argc < 2) {
+  if (argc < 4) {
     cerr << "main_internal_construct video_pyramid args error." << endl;
     exit(-1);
   }
   string path(argv[1]);
-  ifstream fin;
+  string mode_video(argv[2]);
+  string name_video(argv[3]);
+
+  // ifstream fin;
+  // vector<string> list;
+  // assert(IO::openIStream(fin, path + "list.txt", "list load"));
+  // assert(IO::loadStringList(fin, list));
+  // cout << "list.size=" << list.size() << endl;
+
   vector<string> list;
-  assert(IO::openIStream(fin, path + "list.txt", "list load"));
-  assert(IO::loadStringList(fin, list));
-  cout << "list.size=" << list.size() << endl;
+  list.push_back(name_video);
 
   for (size_t i = 0; i < list.size(); ++i) {
-    cout << i << endl;
+    cout << i << ": " << list[i] << endl;
     video_pyramid_one(path + list[i] + "/");
   }
 
@@ -305,7 +317,7 @@ static int construct_camera_set_video_manual(int argc, char **argv) {
   // imshow("frame", frame);
   // waitKey(0);
   // destroyAllWindows();
-  
+
   string path_output = path_scene + "video/" + name_video + "/";
   DirDealer::mkdir_p(path_output);
 
