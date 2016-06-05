@@ -8,8 +8,9 @@ using namespace std;
 using namespace cv;
 
 #include "giga_video.h"
-#include "server/PlayerAuto.hpp"
-#include "server/PlayerMannual.hpp"
+#include "PlayerAuto.hpp"
+#include "PlayerMannual.hpp"
+#include "PlayerSlave.hpp"
 #include "camera/CameraSetVideo.hpp"
 #include "camera/CameraSetImage.hpp"
 #include "camera/CameraSetFly2.hpp"
@@ -20,7 +21,6 @@ using namespace cv;
 
 static int giga_image(int argc, char **argv);
 static int giga_video(int argc, char **argv);
-static int master(int argc, char **argv);
 static int slave(int argc, char **argv);
 static int camera_set(int argc, char **argv);
 static int pyramid_camera(int argc, char **argv);
@@ -40,8 +40,6 @@ int main_internal_demo(int argc, char **argv) {
     return giga_image(argc, argv);
   if (mode == "giga_video")
     return giga_video(argc, argv);
-  if (mode == "master")
-    return master(argc, argv);
   if (mode == "slave")
     return slave(argc, argv);
   if (mode == "camera_set")
@@ -78,25 +76,17 @@ static int giga_video(int argc, char **argv) {
   player.play();
   return 0;
 }
-static int master(int argc, char **argv) {
-  if (argc < 4) {
-    cerr << "main_internal_demo giga_image args error." << endl;
-    exit(-1);
-  }
-  // string path(argv[1]);
-  // int mode_video = atoi(argv[2]);
-  // int server_port = atoi(argv[3]);
-  return 0;
-}
 static int slave(int argc, char **argv) {
   if (argc < 5) {
     cerr << "main_internal_demo giga_image args error." << endl;
     exit(-1);
   }
-  // string path(argv[1]);
-  // int mode_video = atoi(argv[2]);
-  // string server_ip(argv[3]);
-  // int server_port = atoi(argv[4]);
+  string path(argv[1]);
+  int mode_video = atoi(argv[2]);
+  string server_ip(argv[3]);
+  int server_port = atoi(argv[4]);
+  PlayerSlave player(path, mode_video, server_ip, server_port);
+  player.play();
   return 0;
 }
 static int camera_set(int argc, char **argv) {

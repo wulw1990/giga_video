@@ -41,7 +41,7 @@ PlayerAuto::PlayerAuto(std::string path, int video_mode, string output_video) {
   m_window_height = 720;
 
   m_info.m_waiter = make_shared<WaiterServer>(
-      path, cv::Size(m_window_width, m_window_height), video_mode);
+      path, cv::Size(m_window_width, m_window_height), video_mode, 5000);
   m_info.win_title = "giga PlayerAuto";
   m_info.mouse_x = -100;
   m_info.mouse_y = -100;
@@ -102,9 +102,10 @@ PlayerAuto::PlayerAuto(std::string path, int video_mode, string output_video) {
   cout << "PlayerAuto: thumnail ok" << endl;
 
   // init show
-  cvNamedWindow(m_info.win_title.c_str(), CV_WINDOW_NORMAL);
-  cvSetWindowProperty(m_info.win_title.c_str(), CV_WND_PROP_FULLSCREEN,
-                      CV_WINDOW_FULLSCREEN);
+  // cvNamedWindow(m_info.win_title.c_str(), CV_WINDOW_NORMAL);
+  // cvSetWindowProperty(m_info.win_title.c_str(), CV_WND_PROP_FULLSCREEN,
+  //                     CV_WINDOW_FULLSCREEN);
+                      
   if (m_info.m_waiter->hasFrame()) {
     m_info.m_waiter->getFrame(m_info.frame);
   }
@@ -140,10 +141,6 @@ void PlayerAuto::drawMouse(cv::Mat &show, int x, int y, Scalar color) {
   // circle(show, Point2f(x, y), 10, Scalar(255, 0, 0), -1);
 }
 void PlayerAuto::play() {
-  // cvNamedWindow(win_title.c_str(), CV_WINDOW_NORMAL);
-  // cvSetWindowProperty(win_title.c_str(), CV_WND_PROP_FULLSCREEN,
-  //                     CV_WINDOW_FULLSCREEN);
-
   Timer timer;
   while (1) {
     timer.reset();

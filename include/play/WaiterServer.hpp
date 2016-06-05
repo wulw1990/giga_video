@@ -13,7 +13,8 @@ class WindowProviderBase;
 
 class WaiterServer : public WaiterBase {
 public:
-  WaiterServer(std::string path, cv::Size window_size, int video_mode);
+  WaiterServer(std::string path, cv::Size window_size, int video_mode,
+               int port = -1);
   void move(float dx, float dy);
   void zoom(float dz);
   bool hasFrame();
@@ -37,6 +38,8 @@ private:
                             int len, std::vector<cv::Point3d> &path);
   std::vector<cv::Point3d> m_auto_path;
   int m_auto_index;
+  
+  std::thread m_thread_listen;
 };
 
 #endif

@@ -4,12 +4,24 @@
 #include "WindowController.hpp"
 #include "Timer.hpp"
 #include "WindowProviderLocal.hpp"
+#include "Transmitter.hpp"
 
 using namespace std;
 using namespace cv;
 
+static void work_listen(int server_id) {
+  while (1) {
+    cout << "work_listen: listening..." << endl;
+    int client_id;
+    string client_info;
+    if (Transmitter::getClientId(server_id, client_id, client_info)) {
+      cout << "work_listen: " << client_info << endl;
+    }
+  }
+}
+
 WaiterServer::WaiterServer(std::string path, cv::Size window_size,
-                           int video_mode) {
+                           int video_mode, int port) {
   m_window_size = window_size;
   {
     FrameProvider provider(path, 0);
@@ -24,6 +36,12 @@ WaiterServer::WaiterServer(std::string path, cv::Size window_size,
       make_shared<WindowProviderLocal>(path, video_mode, window_size);
   m_has_frame = false;
   updateFrame();
+
+  if (port > 0) {
+    int server_id = Transmitter::initSocketServer(port);
+    m_thread_listen = thread(work_listen, server_id);
+  }
+
   cout << "WaiterServer init ok" << endl;
 }
 void WaiterServer::move(float dx, float dy) {
@@ -115,7 +133,6 @@ void WaiterServer::updateWindowPosition() {
   for (size_t i = 0; i < m_window_provider.size(); ++i) {
     m_window_provider[i]->setWindowPosition(postion);
   }
-  cout << postion << endl;
 }
 void WaiterServer::updateFrame() {
   if (m_window_provider.empty()) {
