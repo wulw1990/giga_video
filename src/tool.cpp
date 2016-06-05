@@ -6,7 +6,7 @@ using namespace std;
 using namespace cv;
 
 #include "giga_video.h"
-#include "server/Player.hpp"
+#include "server/PlayerAuto.hpp"
 #include "DirDealer.hpp"
 
 static int video2image(int argc, char **argv);

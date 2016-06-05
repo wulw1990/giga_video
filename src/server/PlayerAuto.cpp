@@ -1,4 +1,4 @@
-#include "Player.hpp"
+#include "PlayerAuto.hpp"
 
 #include <thread>
 using namespace std;
@@ -36,18 +36,18 @@ static void work_record(string video_name, cv::Mat &show, bool &record_end,
   }
 }
 
-Player::Player(std::string path, int video_mode, string output_video) {
+PlayerAuto::PlayerAuto(std::string path, int video_mode, string output_video) {
   m_window_width = 1024;
   m_window_height = 720;
 
   m_info.m_waiter = make_shared<WaiterServer>(path, m_window_width,
                                               m_window_height, video_mode);
-  m_info.win_title = "giga player";
+  m_info.win_title = "giga PlayerAuto";
   m_info.mouse_x = -100;
   m_info.mouse_y = -100;
   m_info.mouse_color = Scalar(255, 255, 255);
   m_info.thumnail_index = -1;
-  cout << "Player: m_info init ok" << endl;
+  cout << "PlayerAuto: m_info init ok" << endl;
 
   // getThumbnail
   if (m_info.m_waiter->hasThumbnail()) {
@@ -101,7 +101,7 @@ Player::Player(std::string path, int video_mode, string output_video) {
       }
     }
   }
-  cout << "Player: thumnail ok" << endl;
+  cout << "PlayerAuto: thumnail ok" << endl;
 
   // init show
   cvNamedWindow(m_info.win_title.c_str(), CV_WINDOW_NORMAL);
@@ -127,7 +127,7 @@ Player::Player(std::string path, int video_mode, string output_video) {
   m_record_thread = thread(work_record, output_video, ref(m_info.show),
                            ref(m_record_end), ref(m_info.show_locker));
 }
-void Player::drawMouse(cv::Mat &show, int x, int y, Scalar color) {
+void PlayerAuto::drawMouse(cv::Mat &show, int x, int y, Scalar color) {
   std::vector<cv::Point> fillContSingle;
   fillContSingle.push_back(cv::Point(x, y));
   fillContSingle.push_back(cv::Point(x + 0, y + 20));
@@ -141,7 +141,7 @@ void Player::drawMouse(cv::Mat &show, int x, int y, Scalar color) {
   cv::fillPoly(show, fillContAll, color);
   // circle(show, Point2f(x, y), 10, Scalar(255, 0, 0), -1);
 }
-void Player::play() {
+void PlayerAuto::play() {
   // cvNamedWindow(win_title.c_str(), CV_WINDOW_NORMAL);
   // cvSetWindowProperty(win_title.c_str(), CV_WND_PROP_FULLSCREEN,
   //                     CV_WINDOW_FULLSCREEN);
@@ -168,7 +168,7 @@ void Player::play() {
     setMouseCallback(m_info.win_title, onMouse, &m_info);
 
     int time = timer.getTimeUs() / 1000;
-    // cout << "Player time: " << time << " index: " << m_info.thumnail_index <<
+    // cout << "PlayerAuto time: " << time << " index: " << m_info.thumnail_index <<
     // endl;
     int wait = max(1, SHOW_MS - time);
     char key = waitKey(wait);
@@ -179,7 +179,7 @@ void Player::play() {
   m_record_end = true;
   m_record_thread.join();
 }
-int Player::getThunbmailIndex(int x, int y,
+int PlayerAuto::getThunbmailIndex(int x, int y,
                               const std::vector<cv::Rect> &rect_vec) {
   for (size_t i = 0; i < rect_vec.size(); ++i) {
     Rect rect = rect_vec[i];
@@ -190,7 +190,7 @@ int Player::getThunbmailIndex(int x, int y,
   }
   return -1;
 }
-void Player::onMouse(int event, int x, int y, int, void *data) {
+void PlayerAuto::onMouse(int event, int x, int y, int, void *data) {
   if (event != EVENT_LBUTTONDOWN && event != EVENT_LBUTTONUP &&
       event != EVENT_LBUTTONDBLCLK && event != EVENT_RBUTTONDOWN &&
       event != EVENT_RBUTTONUP && event != EVENT_RBUTTONDBLCLK &&

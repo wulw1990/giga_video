@@ -8,8 +8,10 @@ using namespace std;
 using namespace cv;
 
 #include "giga_video.h"
-#include "server/Player.hpp"
+#include "server/PlayerAuto.hpp"
 #include "server/PlayerMannual.hpp"
+#include "server/PlayerMaster.hpp"
+#include "server/PlayerSlave.hpp"
 #include "camera/CameraSetVideo.hpp"
 #include "camera/CameraSetImage.hpp"
 #include "camera/CameraSetFly2.hpp"
@@ -20,6 +22,8 @@ using namespace cv;
 
 static int giga_image(int argc, char **argv);
 static int giga_video(int argc, char **argv);
+static int master(int argc, char **argv);
+static int slave(int argc, char **argv);
 static int camera_set(int argc, char **argv);
 static int pyramid_camera(int argc, char **argv);
 static int py_camera_set(int argc, char **argv);
@@ -38,6 +42,10 @@ int main_internal_demo(int argc, char **argv) {
     return giga_image(argc, argv);
   if (mode == "giga_video")
     return giga_video(argc, argv);
+  if (mode == "master")
+    return master(argc, argv);
+  if (mode == "slave")
+    return slave(argc, argv);
   if (mode == "camera_set")
     return camera_set(argc, argv);
   if (mode == "pyramid_camera")
@@ -56,8 +64,8 @@ static int giga_image(int argc, char **argv) {
     exit(-1);
   }
   string path(argv[1]);
-  // Player player(path, 0, path + "record.avi");
-  Player player(path, 0);
+  int mode_video = 0;
+  PlayerAuto player(path, mode_video);
   player.play();
   return 0;
 }
@@ -68,9 +76,32 @@ static int giga_video(int argc, char **argv) {
   }
   string path(argv[1]);
   int mode_video = atoi(argv[2]);
-  // Player player(path, 1, path + "record.avi");
-  Player player(path, mode_video);
-  // PlayerMannual player(path, mode_video);
+  PlayerAuto player(path, mode_video);
+  player.play();
+  return 0;
+}
+static int master(int argc, char **argv) {
+  if (argc < 4) {
+    cerr << "main_internal_demo giga_image args error." << endl;
+    exit(-1);
+  }
+  string path(argv[1]);
+  int mode_video = atoi(argv[2]);
+  int server_port = atoi(argv[3]);
+  PlayerMaster player(path, mode_video, server_port);
+  player.play();
+  return 0;
+}
+static int slave(int argc, char **argv) {
+  if (argc < 5) {
+    cerr << "main_internal_demo giga_image args error." << endl;
+    exit(-1);
+  }
+  string path(argv[1]);
+  int mode_video = atoi(argv[2]);
+  string server_ip(argv[3]);
+  int server_port = atoi(argv[4]);
+  PlayerSlave player(path, mode_video, server_ip, server_port);
   player.play();
   return 0;
 }
@@ -124,7 +155,7 @@ static int pyramid_camera(int argc, char **argv) {
   //   cerr << "main_internal_demo pyramid_camera args error." << endl;
   //   exit(-1);
   // }
-  
+
   PyramidCameraImage camera("/home/wuliwei/ramdisk/zijing16/video/MVI_6878/");
   const int MS = 66;
   while (1) {
@@ -147,22 +178,23 @@ static int py_camera_set(int argc, char **argv) {
     cerr << "main_internal_demo pyramid_camera args error." << endl;
     exit(-1);
   }
-  
+
   string path(argv[1]);
   string mode_video(argv[2]);
   string name_video(argv[3]);
-  
+
   shared_ptr<PyCameraSetBase> camera_set;
-  
-  if(mode_video=="fly2"){
-   camera_set = make_shared<PyCameraSetFly2>(7);
-  }else if(mode_video=="image"){
-   camera_set = make_shared<PyCameraSetImage>("/home/wuliwei/ramdisk/zijing16/video/");
-  }else{
+
+  if (mode_video == "fly2") {
+    camera_set = make_shared<PyCameraSetFly2>(7);
+  } else if (mode_video == "image") {
+    camera_set =
+        make_shared<PyCameraSetImage>("/home/wuliwei/ramdisk/zijing16/video/");
+  } else {
     cerr << "mode_video error" << endl;
     exit(-1);
   }
-  
+
   const int MS = 66;
   int camera_id = atoi(name_video.c_str());
   cout << "n_cameras: " << camera_set->getNumCamera() << endl;

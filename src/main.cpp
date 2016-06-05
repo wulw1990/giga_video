@@ -21,12 +21,6 @@ int main(int argc, char **argv) {
     return main_internal_construct(argc, argv);
   if (mode == "test")
     return main_internal_test(argc, argv);
-  if (mode == "master")
-    return main_internal_master(argc, argv);
-  if (mode == "slave")
-    return main_internal_slave(argc, argv);
-  if (mode == "client")
-    return main_internal_client(argc, argv);
   if (mode == "videostab")
     return main_internal_videostab(argc, argv);
       if (mode == "tool")
