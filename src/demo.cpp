@@ -10,8 +10,6 @@ using namespace cv;
 #include "giga_video.h"
 #include "server/PlayerAuto.hpp"
 #include "server/PlayerMannual.hpp"
-#include "server/PlayerMaster.hpp"
-#include "server/PlayerSlave.hpp"
 #include "camera/CameraSetVideo.hpp"
 #include "camera/CameraSetImage.hpp"
 #include "camera/CameraSetFly2.hpp"
@@ -85,11 +83,9 @@ static int master(int argc, char **argv) {
     cerr << "main_internal_demo giga_image args error." << endl;
     exit(-1);
   }
-  string path(argv[1]);
-  int mode_video = atoi(argv[2]);
-  int server_port = atoi(argv[3]);
-  PlayerMaster player(path, mode_video, server_port);
-  player.play();
+  // string path(argv[1]);
+  // int mode_video = atoi(argv[2]);
+  // int server_port = atoi(argv[3]);
   return 0;
 }
 static int slave(int argc, char **argv) {
@@ -97,12 +93,10 @@ static int slave(int argc, char **argv) {
     cerr << "main_internal_demo giga_image args error." << endl;
     exit(-1);
   }
-  string path(argv[1]);
-  int mode_video = atoi(argv[2]);
-  string server_ip(argv[3]);
-  int server_port = atoi(argv[4]);
-  PlayerSlave player(path, mode_video, server_ip, server_port);
-  player.play();
+  // string path(argv[1]);
+  // int mode_video = atoi(argv[2]);
+  // string server_ip(argv[3]);
+  // int server_port = atoi(argv[4]);
   return 0;
 }
 static int camera_set(int argc, char **argv) {

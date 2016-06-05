@@ -203,6 +203,7 @@ bool FrameProvider::getFrameForeground(int w, int h, int x, int y, int z,
 }
 bool FrameProvider::getThumbnail(std::vector<cv::Mat> &thumbnail) {
   if (m_video_mode == 0) {
+    thumbnail.clear();
     return false;
   }
   thumbnail.resize(m_video_provider->getNumCamera());
@@ -216,10 +217,13 @@ bool FrameProvider::getVideoPosition(std::vector<double> &x,
                                      std::vector<double> &y,
                                      std::vector<double> &z) {
   if (m_video_mode == 0) {
+    x.clear();
+    y.clear();
+    z.clear();
     return false;
   }
   //
-  int layer_id = 2;
+  int layer_id = 4;
   int n_cameras = m_video_provider->getNumCamera();
   x.resize(n_cameras);
   y.resize(n_cameras);

@@ -40,8 +40,8 @@ PlayerAuto::PlayerAuto(std::string path, int video_mode, string output_video) {
   m_window_width = 1024;
   m_window_height = 720;
 
-  m_info.m_waiter = make_shared<WaiterServer>(path, m_window_width,
-                                              m_window_height, video_mode);
+  m_info.m_waiter = make_shared<WaiterServer>(
+      path, cv::Size(m_window_width, m_window_height), video_mode);
   m_info.win_title = "giga PlayerAuto";
   m_info.mouse_x = -100;
   m_info.mouse_y = -100;
@@ -50,10 +50,11 @@ PlayerAuto::PlayerAuto(std::string path, int video_mode, string output_video) {
   cout << "PlayerAuto: m_info init ok" << endl;
 
   // getThumbnail
-  if (m_info.m_waiter->hasThumbnail()) {
-    cout << "thumnail begin" << endl;
-    vector<Mat> thumnail;
-    m_info.m_waiter->getThumbnail(thumnail);
+  cout << "thumnail begin" << endl;
+  vector<Mat> thumnail;
+  m_info.m_waiter->getThumbnail(thumnail);
+  cout << "thumnail size: " << thumnail.size() << endl;
+  if (!thumnail.empty()) {
     int rows = thumnail[0].rows;
     int cols = thumnail[0].cols;
     for (size_t i = 0; i < thumnail.size(); ++i) {
@@ -68,37 +69,34 @@ PlayerAuto::PlayerAuto(std::string path, int video_mode, string output_video) {
       m_info.thumnail_rect.push_back(rect);
     }
 
-    {
-      int thumnail_show_cols_max = m_window_width;
-      int thumnail_show_rows_max = m_window_height / 10;
-      float scale = (float)thumnail_show_cols_max / m_info.thumnail_show.cols;
-      int thumnail_show_cols = thumnail_show_cols_max;
-      int thumnail_show_rows = scale * m_info.thumnail_show.rows;
+    int thumnail_show_cols_max = m_window_width;
+    int thumnail_show_rows_max = m_window_height / 10;
+    float scale = (float)thumnail_show_cols_max / m_info.thumnail_show.cols;
+    int thumnail_show_cols = thumnail_show_cols_max;
+    int thumnail_show_rows = scale * m_info.thumnail_show.rows;
 
-      if (thumnail_show_rows > thumnail_show_rows_max) {
-        scale *= (float)thumnail_show_rows_max / thumnail_show_rows;
-        thumnail_show_cols = m_info.thumnail_show.cols * scale;
-        thumnail_show_rows = m_info.thumnail_show.rows * scale;
-        thumnail_show_cols = min(thumnail_show_cols, thumnail_show_cols_max);
-        thumnail_show_rows = min(thumnail_show_rows, thumnail_show_rows_max);
-        Mat tmp = m_info.thumnail_show.clone();
-        resize(tmp, tmp, Size(thumnail_show_cols, thumnail_show_rows));
-        m_info.thumnail_show =
-            Mat(thumnail_show_rows_max, thumnail_show_cols_max, CV_8UC3,
-                Scalar(0, 0, 0));
-        tmp.copyTo(m_info.thumnail_show(Rect(0, 0, tmp.cols, tmp.rows)));
-      } else {
-        resize(m_info.thumnail_show, m_info.thumnail_show,
-               Size(thumnail_show_cols, thumnail_show_rows));
-      }
+    if (thumnail_show_rows > thumnail_show_rows_max) {
+      scale *= (float)thumnail_show_rows_max / thumnail_show_rows;
+      thumnail_show_cols = m_info.thumnail_show.cols * scale;
+      thumnail_show_rows = m_info.thumnail_show.rows * scale;
+      thumnail_show_cols = min(thumnail_show_cols, thumnail_show_cols_max);
+      thumnail_show_rows = min(thumnail_show_rows, thumnail_show_rows_max);
+      Mat tmp = m_info.thumnail_show.clone();
+      resize(tmp, tmp, Size(thumnail_show_cols, thumnail_show_rows));
+      m_info.thumnail_show = Mat(thumnail_show_rows_max, thumnail_show_cols_max,
+                                 CV_8UC3, Scalar(0, 0, 0));
+      tmp.copyTo(m_info.thumnail_show(Rect(0, 0, tmp.cols, tmp.rows)));
+    } else {
+      resize(m_info.thumnail_show, m_info.thumnail_show,
+             Size(thumnail_show_cols, thumnail_show_rows));
+    }
 
-      for (size_t i = 0; i < thumnail.size(); ++i) {
-        m_info.thumnail_rect[i].x = scale * m_info.thumnail_rect[i].x;
-        m_info.thumnail_rect[i].y = scale * m_info.thumnail_rect[i].y;
-        m_info.thumnail_rect[i].width = scale * m_info.thumnail_rect[i].width;
-        m_info.thumnail_rect[i].height = scale * m_info.thumnail_rect[i].height;
-        // cout << m_info.thumnail_rect[i] << endl;
-      }
+    for (size_t i = 0; i < thumnail.size(); ++i) {
+      m_info.thumnail_rect[i].x = scale * m_info.thumnail_rect[i].x;
+      m_info.thumnail_rect[i].y = scale * m_info.thumnail_rect[i].y;
+      m_info.thumnail_rect[i].width = scale * m_info.thumnail_rect[i].width;
+      m_info.thumnail_rect[i].height = scale * m_info.thumnail_rect[i].height;
+      // cout << m_info.thumnail_rect[i] << endl;
     }
   }
   cout << "PlayerAuto: thumnail ok" << endl;
@@ -168,7 +166,8 @@ void PlayerAuto::play() {
     setMouseCallback(m_info.win_title, onMouse, &m_info);
 
     int time = timer.getTimeUs() / 1000;
-    // cout << "PlayerAuto time: " << time << " index: " << m_info.thumnail_index <<
+    // cout << "PlayerAuto time: " << time << " index: " <<
+    // m_info.thumnail_index <<
     // endl;
     int wait = max(1, SHOW_MS - time);
     char key = waitKey(wait);
@@ -180,7 +179,7 @@ void PlayerAuto::play() {
   m_record_thread.join();
 }
 int PlayerAuto::getThunbmailIndex(int x, int y,
-                              const std::vector<cv::Rect> &rect_vec) {
+                                  const std::vector<cv::Rect> &rect_vec) {
   for (size_t i = 0; i < rect_vec.size(); ++i) {
     Rect rect = rect_vec[i];
     if (x >= rect.x && x < rect.x + rect.width && y >= rect.y &&

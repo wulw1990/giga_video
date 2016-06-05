@@ -65,7 +65,7 @@ bool GigaAlignerBase::align(Mat frame, Mat &H, Rect &rect_on_scene) {
       timer.reset();
       // cout << rect << endl;
       Mat win = m_frame_provider->getFrameBackground(
-          rect.width, rect.height, rect.x, rect.y, work_layer_id);
+          Size(rect.width, rect.height), Point3i(rect.x, rect.y, work_layer_id));
       cout << "read ms : " << timer.getTimeUs() / 1000 << "\t";
       cout.flush();
 

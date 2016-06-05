@@ -41,8 +41,8 @@ PlayerMannual::PlayerMannual(std::string path, int video_mode,
   m_window_width = 1024;
   m_window_height = 720;
 
-  m_info.m_waiter = make_shared<WaiterServer>(path, m_window_width,
-                                              m_window_height, video_mode);
+  m_info.m_waiter = make_shared<WaiterServer>(
+      path, Size(m_window_width, m_window_height), video_mode);
   m_info.win_title = "giga player";
   m_info.mouse_x = -100;
   m_info.mouse_y = -100;

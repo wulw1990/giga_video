@@ -56,7 +56,7 @@ void PyramidAlignerAuto::align(cv::Mat frame, cv::Mat &trans, cv::Rect &rect) {
   int h = m_frame_provider->getLayerHeight(layer_id);
   int x = 0;
   int y = 0;
-  cv::Mat refer = m_frame_provider->getFrameBackground(w, h, x, y, layer_id);
+  cv::Mat refer = m_frame_provider->getFrameBackground(Size(w, h), Point3i(x, y, layer_id));
   layer_id--;
   resize(refer, refer, Size(refer.cols / 2, refer.rows / 2));
   cout << refer.size() << endl;
