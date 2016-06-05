@@ -13,16 +13,17 @@ class WindowController;
 class WaiterServer : public WaiterBase {
 public:
   WaiterServer(std::string path, int w, int h, int video_mode);
+
   void move(float dx, float dy);
   void zoom(float dz);
 
   bool hasFrame();
   void getFrame(cv::Mat &frame);
-
-  bool hasThumbnail();
-  void getThumbnail(std::vector<cv::Mat> &thumbnail);
+  void getFrameMasked(cv::Mat &frame);
 
   void setThumbnailIndex(int index);
+  bool hasThumbnail();
+  void getThumbnail(std::vector<cv::Mat> &thumbnail);
 
 private:
   std::shared_ptr<FrameProvider> m_frame_provider;
@@ -35,6 +36,7 @@ private:
   bool m_has_thumbnail;
 
   cv::Mat m_frame;
+  cv::Mat m_mask;
   std::vector<cv::Mat> m_thumbnail;
 
   static void getLinearPath(double sx, double sy, double sz, double dx,

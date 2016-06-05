@@ -69,6 +69,15 @@ void WaiterServer::getFrame(cv::Mat &frame) {
   frame = m_frame;
   m_has_frame = false;
 }
+void WaiterServer::getFrameMasked(cv::Mat &frame) {
+  //
+  frame = m_frame.clone();
+  Mat black = Mat(frame.size(), frame.type(), Scalar(0, 0, 0));
+  Mat mask = m_mask.clone();
+  mask = Mat(mask.size(), mask.type(), Scalar(255)) - mask;
+  black.copyTo(frame, mask);
+  m_has_frame = false;
+}
 bool WaiterServer::hasThumbnail() {
   // hasThumbnail
   return m_has_thumbnail;
@@ -150,10 +159,11 @@ void WaiterServer::setThumbnailIndex(int index) {
 void WaiterServer::updateFrameBackground() {
   double x, y, z;
   m_window_controller->getXYZ(x, y, z);
-  cout << "x: " << x << "\ty: " << y << "\tz: " << z << endl;
+  // cout << "x: " << x << "\ty: " << y << "\tz: " << z << endl;
   Timer timer;
   timer.reset();
   m_frame = m_frame_provider->getFrameBackground(m_w, m_h, x, y, z);
+  m_mask = Mat(m_frame.rows, m_frame.cols, CV_8UC1, 0);
   // cout << "Frame Time: " << timer.getTimeUs() / 1000 << " ms" << endl;
   m_has_frame = true;
 }
@@ -171,6 +181,7 @@ void WaiterServer::updateFrameForeground() {
     // imshow("foregournd_frame", foregournd_frame);
     // imshow("foregournd_mask", foregournd_mask);
     foregournd_frame.copyTo(m_frame, foregournd_mask);
+    m_mask = foregournd_mask;
   }
   m_has_frame = true;
 }

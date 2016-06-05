@@ -12,10 +12,11 @@ public:
 
   virtual bool hasFrame() = 0;
   virtual void getFrame(cv::Mat &frame) = 0;
+  virtual void getFrameMasked(cv::Mat &frame) = 0;
 
+  virtual void setThumbnailIndex(int index) = 0;
   virtual bool hasThumbnail() = 0;
   virtual void getThumbnail(std::vector<cv::Mat> &thumbnail) = 0;
-
 };
 
 #endif

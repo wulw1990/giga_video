@@ -69,7 +69,8 @@ static int giga_video(int argc, char **argv) {
   string path(argv[1]);
   int mode_video = atoi(argv[2]);
   // Player player(path, 1, path + "record.avi");
-  PlayerMannual player(path, mode_video);
+  Player player(path, mode_video);
+  // PlayerMannual player(path, mode_video);
   player.play();
   return 0;
 }

@@ -50,15 +50,15 @@ PlayerMannual::PlayerMannual(std::string path, int video_mode,
   cout << "PlayerMannual: m_info init ok" << endl;
 
   // init show
-  if (m_info.m_waiter->hasFrame()) {
-    m_info.m_waiter->getFrame(m_info.frame);
-  }
-  m_info.show_locker.lock();
-  m_info.show = m_info.frame.clone();
-  m_info.show_locker.unlock();
-  drawMouse(m_info.show, m_info.mouse_x, m_info.mouse_y, m_info.mouse_color);
-  imshow(m_info.win_title, m_info.show);
-  setMouseCallback(m_info.win_title, onMouse, &m_info);
+  // if (m_info.m_waiter->hasFrame()) {
+  //   m_info.m_waiter->getFrame(m_info.frame);
+  // }
+  // m_info.show_locker.lock();
+  // m_info.show = m_info.frame.clone();
+  // m_info.show_locker.unlock();
+  // drawMouse(m_info.show, m_info.mouse_x, m_info.mouse_y, m_info.mouse_color);
+  // imshow(m_info.win_title, m_info.show);
+  // setMouseCallback(m_info.win_title, onMouse, &m_info);
 
   m_record_end = false;
   m_record_thread = thread(work_record, output_video, ref(m_info.show),
@@ -79,9 +79,10 @@ void PlayerMannual::drawMouse(cv::Mat &show, int x, int y, Scalar color) {
   // circle(show, Point2f(x, y), 10, Scalar(255, 0, 0), -1);
 }
 void PlayerMannual::play() {
-  // cvNamedWindow(win_title.c_str(), CV_WINDOW_NORMAL);
-  // cvSetWindowProperty(win_title.c_str(), CV_WND_PROP_FULLSCREEN,
-  //                     CV_WINDOW_FULLSCREEN);
+  cout << "hh" << endl;
+  cvNamedWindow(m_info.win_title.c_str(), CV_WINDOW_NORMAL);
+  cvSetWindowProperty(m_info.win_title.c_str(), CV_WND_PROP_FULLSCREEN,
+                      CV_WINDOW_FULLSCREEN);
 
   Timer timer;
   while (1) {
@@ -95,6 +96,10 @@ void PlayerMannual::play() {
     m_info.show = m_info.frame.clone();
     m_info.show_locker.unlock();
     drawMouse(m_info.show, m_info.mouse_x, m_info.mouse_y, m_info.mouse_color);
+
+    cvNamedWindow(m_info.win_title.c_str(), CV_WINDOW_NORMAL);
+    cvSetWindowProperty(m_info.win_title.c_str(), CV_WND_PROP_FULLSCREEN,
+                        CV_WINDOW_FULLSCREEN);
     imshow(m_info.win_title, m_info.show);
     setMouseCallback(m_info.win_title, onMouse, &m_info);
 
@@ -130,7 +135,6 @@ void PlayerMannual::onMouse(int event, int x, int y, int, void *data) {
     break;
   case EVENT_LBUTTONDBLCLK:
     info->m_waiter->zoom(1);
-    // cout << "ThunbmailIndex: " << info->thumnail_index << endl;
     break;
   case EVENT_RBUTTONDOWN:
     info->mouse_color = Scalar(255, 0, 0);
@@ -146,10 +150,4 @@ void PlayerMannual::onMouse(int event, int x, int y, int, void *data) {
     info->mouse_y = y;
     break;
   }
-  info->show_locker.lock();
-  info->show = info->frame.clone();
-  drawMouse(info->show, info->mouse_x, info->mouse_y, info->mouse_color);
-  info->show_locker.unlock();
-  imshow(info->win_title, info->show);
-  waitKey(1);
 }
