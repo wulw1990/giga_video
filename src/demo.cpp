@@ -165,13 +165,14 @@ static int py_camera_set(int argc, char **argv) {
   
   const int MS = 66;
   int camera_id = atoi(name_video.c_str());
+  cout << "n_cameras: " << camera_set->getNumCamera() << endl;
   while (1) {
     // int layer_id = rand() % 5;
     int layer_id = 3;
     Timer timer;
     timer.reset();
     Mat frame;
-    camera_set->read(frame, camera_id, layer_id);
+    assert(camera_set->read(frame, camera_id, layer_id));
     imshow("frame", frame);
     int time = timer.getTimeUs() / 1000;
     cout << "Time: " << time << endl;

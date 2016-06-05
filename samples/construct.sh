@@ -1,6 +1,6 @@
 # mode="construct"
 # mode_internal="giga_image_meta"
-# path="/home/bbnc/data/main_building/"
+# path="$HOME/wuliwei/data/main_building/"
 # meta=${path}"meta.conf"
 # ./build/giga_video $mode $mode_internal $path $meta
 
@@ -14,17 +14,15 @@
 
 # mode="construct"
 # mode_internal="construct_camera_set_video_manual"
-# path_scene="/home/bbnc/data/main_building/"
-# # mode_video="video"
-# # name_video="MVI_7302"
-# mode_video="fly2"
-# name_video="0"
+# path_scene="$HOME/wuliwei/data/main_building/"
+# mode_video="fly2" # "video" or "fly2"
+# name_video="0" # "0" or "MVI_7302"
 # ./build/giga_video $mode $mode_internal $path_scene $mode_video $name_video
 
 
 mode="construct"
 mode_internal="video_pyramid"
-path="/home/bbnc/data/main_building/video/"
+path_scene="$HOME/wuliwei/data/main_building/video/"
 mode_video="fly2"
 name_video="0"
-./build/giga_video $mode $mode_internal $path $mode_video $name_video
+./build/giga_video $mode $mode_internal $path_scene $mode_video $name_video

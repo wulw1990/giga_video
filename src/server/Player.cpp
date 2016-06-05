@@ -108,7 +108,7 @@ Player::Player(std::string path, int video_mode, string output_video) {
   cvSetWindowProperty(m_info.win_title.c_str(), CV_WND_PROP_FULLSCREEN,
                       CV_WINDOW_FULLSCREEN);
   if (m_info.m_waiter->hasFrame()) {
-    m_info.m_waiter->getFrameMasked(m_info.frame);
+    m_info.m_waiter->getFrame(m_info.frame);
   }
   m_info.show_locker.lock();
   m_info.show = m_info.frame.clone();
@@ -155,7 +155,7 @@ void Player::play() {
       m_info.thumnail_index = -1;
     }
     if (m_info.m_waiter->hasFrame()) {
-      m_info.m_waiter->getFrameMasked(m_info.frame);
+      m_info.m_waiter->getFrame(m_info.frame);
       // imwrite("../refer.png", m_info.frame);
       // cout << rand() << endl;
     }

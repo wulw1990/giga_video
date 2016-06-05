@@ -66,12 +66,18 @@ public:
   CameraSetFly2() {}
   CameraSetFly2(std::string setting_file) {}
   bool read(cv::Mat &frame, int index) {
-    std::cerr << "no fly capture" << std::endl;
+    printError();
     return false;
   }
   int getNumCamera() {
-    std::cerr << "no fly capture" << std::endl;
+    printError();
     return 0;
+  }
+  private:
+  void printError(){
+    std::cerr << "#######################" << std::endl;
+    std::cerr << "### FLY_CAPTRUE OFF ###" << std::endl;
+    std::cerr << "#######################" << std::endl;
   }
 };
 #endif
