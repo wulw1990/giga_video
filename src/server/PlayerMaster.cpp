@@ -48,6 +48,31 @@ static void work_listen(int server_id) {
     cout << endl << "work_listen: serve it: " << client_info << endl;
   }
 }
+// static void work_receive(shared_ptr<WaiterServer> waiter, int client_id) {
+//   while (1) {
+//     vector<unsigned char> recv_buf;
+//     if (!Transmitter::readData(client_id, recv_buf, Protocol::getHeadLen())) {
+//       break;
+//     }
+//     string cmd;
+//     int data_len;
+//     Protocol::decodeHead(recv_buf, cmd, data_len);
+//     cout << endl << "cmd: " << cmd << " data_len: " << data_len << endl;
+//     if (!Transmitter::readData(client_id, recv_buf, data_len)) {
+//       break;
+//     }
+//     int dx, dy, dz;
+//     Protocol::decodeDataXYZ(recv_buf, dx, dy, dz);
+//     if (dx != 0 || dy != 0 || dz != 0) {
+//       cout << dx << " " << dy << " " << dz << endl;
+//     }
+//     cout << dx << " " << dy << " " << dz << endl;
+//     if (dx != 0 || dy != 0)
+//       waiter->move(dx, dy);
+//     if (dz != 0)
+//       waiter->zoom(dz);
+//   }
+// }
 
 PlayerMaster::PlayerMaster(std::string path, int video_mode, int server_port,
                            string output_video) {

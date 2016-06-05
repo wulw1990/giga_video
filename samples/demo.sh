@@ -3,19 +3,19 @@
 # path="${HOME}/wuliwei/data/main_building/"
 # ./build/giga_video $mode $mode_internal $path
 
-# mode="demo"
-# mode_internal="giga_video"
-# path="${HOME}/wuliwei/data/main_building/"
-# mode_video="2"
-# mode_interact="mannual"
-# ./build/giga_video $mode $mode_internal $path $mode_video $mode_interact
-
 mode="demo"
-mode_internal="slave"
+mode_internal="giga_video"
 path="${HOME}/wuliwei/data/main_building/"
 mode_video="2"
 mode_interact="mannual"
 ./build/giga_video $mode $mode_internal $path $mode_video $mode_interact
+
+# mode="demo"
+# mode_internal="slave"
+# path="${HOME}/wuliwei/data/main_building/"
+# mode_video="2"
+# mode_interact="mannual"
+# ./build/giga_video $mode $mode_internal $path $mode_video $mode_interact
 
 # mode="demo"
 # mode_internal="camera_set"

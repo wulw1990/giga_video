@@ -37,6 +37,13 @@ private:
     int thumnail_index;
   };
   Info m_info;
+  
+  // struct Client{
+  //   int socket_id;
+  //   cv::Mat frame;
+  //   // cv::Mat mask;
+  //   cv::
+  // };
 
   int m_window_width;
   int m_window_height;

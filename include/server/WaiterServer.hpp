@@ -9,10 +9,12 @@
 
 class FrameProvider;
 class WindowController;
+class WindowProviderBase;
 
 class WaiterServer : public WaiterBase {
 public:
-  WaiterServer(std::string path, int w, int h, int video_mode);
+  WaiterServer(std::string path, int window_width, int window_height,
+               int video_mode);
 
   void move(float dx, float dy);
   void zoom(float dz);
@@ -26,11 +28,10 @@ public:
   void getThumbnail(std::vector<cv::Mat> &thumbnail);
 
 private:
-  std::shared_ptr<FrameProvider> m_frame_provider;
+  int m_window_width;
+  int m_window_height;
+  std::shared_ptr<WindowProviderBase> m_window_local;
   std::shared_ptr<WindowController> m_window_controller;
-  std::string m_path;
-  int m_w;
-  int m_h;
 
   bool m_has_frame;
   bool m_has_thumbnail;

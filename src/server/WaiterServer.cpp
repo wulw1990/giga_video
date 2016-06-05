@@ -3,29 +3,33 @@
 #include "FrameProvider.hpp"
 #include "WindowController.hpp"
 #include "Timer.hpp"
+#include "WindowProviderLocal.hpp"
 
 using namespace std;
 using namespace cv;
 
-WaiterServer::WaiterServer(std::string path, int w, int h, int video_mode) {
-  m_path = path;
-  m_w = w;
-  m_h = h;
-  m_frame_provider = make_shared<FrameProvider>(m_path, video_mode);
+WaiterServer::WaiterServer(std::string path, int window_width,
+                           int window_height, int video_mode) {
+  {
+    FrameProvider provider(path, 0);
+    int n_layers = provider.getNumLayers();
+    Size top_layer_size(provider.getLayerWidth(n_layers - 1),
+                        provider.getLayerHeight(n_layers - 1));
+    Size winsize(window_width, window_height);
+    m_window_controller =
+        make_shared<WindowController>(n_layers, top_layer_size, winsize);
+  }
 
-  int n_layers = m_frame_provider->getNumLayers();
-  Size top_layer_size(m_frame_provider->getLayerWidth(n_layers - 1),
-                      m_frame_provider->getLayerHeight(n_layers - 1));
-  Size winsize(w, h);
-  m_window_controller =
-      make_shared<WindowController>(n_layers, top_layer_size, winsize);
-
+  m_window_local = make_shared<WindowProviderLocal>(
+      path, video_mode, window_width, window_height);
   m_has_frame = false;
   m_need_update_foreground = false;
   updateFrameBackground();
   updateFrameForeground();
 
-  m_has_thumbnail = m_frame_provider->getThumbnail(m_thumbnail);
+  m_has_thumbnail = m_window_local->hasThumbnail();
+  if (m_window_local->hasThumbnail())
+    m_window_local->getThumbnail(m_thumbnail);
   if (m_thumbnail.empty())
     m_has_thumbnail = false;
   cout << "WaiterServer init ok" << endl;
@@ -46,8 +50,8 @@ bool WaiterServer::hasFrame() {
   // hasFrame
 
   if (!m_auto_x.empty()) {
-    m_window_controller->setXYZ(m_auto_x[m_auto_index], m_auto_y[m_auto_index],
-                                m_auto_z[m_auto_index]);
+    m_window_controller->setXYZ(
+        m_auto_x[m_auto_index], m_auto_y[m_auto_index], m_auto_z[m_auto_index]);
 
     m_auto_index++;
     if (m_auto_index == (int)m_auto_x.size()) {
@@ -105,7 +109,8 @@ void WaiterServer::getLinearPath(double sx, double sy, double sz, double dx,
 void WaiterServer::setThumbnailIndex(int index) {
   //
   vector<double> camera_x, camera_y, camera_z;
-  assert(m_frame_provider->getVideoPosition(camera_x, camera_y, camera_z));
+  // assert(
+      // m_window_local.provider->getVideoPosition(camera_x, camera_y, camera_z));
   // for (size_t camera_id = 0; camera_id < camera_x.size(); ++camera_id) {
   //   cout << camera_id << " : " << camera_x[camera_id] << " "
   //        << camera_y[camera_id] << " " << camera_z[camera_id] << endl;
@@ -157,31 +162,37 @@ void WaiterServer::setThumbnailIndex(int index) {
 }
 
 void WaiterServer::updateFrameBackground() {
+  #if 0
   double x, y, z;
   m_window_controller->getXYZ(x, y, z);
   // cout << "x: " << x << "\ty: " << y << "\tz: " << z << endl;
   Timer timer;
   timer.reset();
-  m_frame = m_frame_provider->getFrameBackground(m_w, m_h, x, y, z);
+  m_frame = m_window_local.provider->getFrameBackground(
+      m_window_width, m_window_height, x, y, z);
   m_mask = Mat(m_frame.rows, m_frame.cols, CV_8UC1, 0);
   // cout << "Frame Time: " << timer.getTimeUs() / 1000 << " ms" << endl;
   m_has_frame = true;
+  #endif
 }
 void WaiterServer::updateFrameForeground() {
+  #if 0
   double x, y, z;
   m_window_controller->getXYZ(x, y, z);
-  m_need_update_foreground =
-      m_frame_provider->hasFrameForeground(m_w, m_h, x, y, z);
+  m_need_update_foreground = m_window_local.provider->hasFrameForeground(
+      m_window_width, m_window_height, x, y, z);
   // cout << "m_need_update_foreground: " << m_need_update_foreground << endl;
   if (m_need_update_foreground) {
     cv::Mat foregournd_frame;
     cv::Mat foregournd_mask;
-    m_frame_provider->getFrameForeground(m_w, m_h, x, y, z, foregournd_frame,
-                                         foregournd_mask);
+    m_window_local.provider->getFrameForeground(m_window_width, m_window_height,
+                                                x, y, z, foregournd_frame,
+                                                foregournd_mask);
     // imshow("foregournd_frame", foregournd_frame);
     // imshow("foregournd_mask", foregournd_mask);
     foregournd_frame.copyTo(m_frame, foregournd_mask);
     m_mask = foregournd_mask;
   }
   m_has_frame = true;
+  #endif
 }
