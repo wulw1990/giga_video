@@ -13,11 +13,17 @@ static void work_receive(int socket_id, Point3d &position, mutex &locker) {
     vector<unsigned char> buf;
     std::string cmd;
     int length;
-    Transmitter::readData(socket_id, buf, Protocol::getHeadLen());
+    if(!Transmitter::readData(socket_id, buf, Protocol::getHeadLen())){
+      cout << "Connect End. Master Machine Down." << endl;
+      exit(-1);
+    }
     Protocol::decodeHead(buf, cmd, length);
     // cout << "cmd: " << cmd << endl;
     // cout << "length: " << length << endl;
-    Transmitter::readData(socket_id, buf, length);
+    if(!Transmitter::readData(socket_id, buf, length)){
+      cout << "Connect End. Master Machine Down." << endl;
+      exit(-1);
+    }
 
     Point3d tmp_position;
     Protocol::decodePoint3d(buf, tmp_position.x, tmp_position.y,
@@ -27,7 +33,7 @@ static void work_receive(int socket_id, Point3d &position, mutex &locker) {
     position = tmp_position;
     locker.unlock();
 
-    cout << "position: " << position << endl;
+    // cout << "position: " << position << endl;
   }
 }
 
@@ -56,7 +62,7 @@ PlayerSlave::PlayerSlave(std::string path, int mode_video,
     // cout << "height: " << height << endl;
     m_size.width = width;
     m_size.height = height;
-    cout << "PlayerSlave:m_size:" << m_size << endl;
+    // cout << "PlayerSlave:m_size:" << m_size << endl;
   }
 
   // send thumbnail
@@ -64,8 +70,8 @@ PlayerSlave::PlayerSlave(std::string path, int mode_video,
     vector<Mat> thumbnail;
     vector<Point3d> position;
     m_provider->getThumbnail(thumbnail, position);
-    cout << "thumbnail size: " << thumbnail.size() << endl;
-    cout << "position size: " << position.size() << endl;
+    // cout << "thumbnail size: " << thumbnail.size() << endl;
+    // cout << "position size: " << position.size() << endl;
 
     std::vector<unsigned char> buf;
     Protocol::encodeLength(buf, thumbnail.size());
@@ -81,7 +87,7 @@ PlayerSlave::PlayerSlave(std::string path, int mode_video,
       Transmitter::sendData(m_client_id, buf);
     }
     for (size_t i = 0; i < thumbnail.size(); ++i) {
-      cout << "position: " << position[i] << endl;
+      // cout << "position: " << position[i] << endl;
       Protocol::encodePoint3d(buf, position[i].x, position[i].y, position[i].z);
       Transmitter::sendData(m_client_id, buf);
     }
@@ -95,37 +101,33 @@ void PlayerSlave::play() {
   while (1) {
     timer.reset();
     Mat frame = m_provider->getFrameBackground(m_size, m_position);
-    Mat mask = Mat(frame.rows, frame.cols, CV_8UC1, 0);
+    Mat mask = Mat(frame.rows, frame.cols, CV_8UC1, Scalar(0));
     // cout << "Frame Time: " << timer.getTimeUs() / 1000 << " ms" << endl;
     bool need_update_foreground =
         m_provider->hasFrameForeground(m_size, m_position);
     if (need_update_foreground) {
-      cv::Mat foregournd_frame;
-      cv::Mat foregournd_mask;
-      m_provider->getFrameForeground(m_size, m_position, foregournd_frame,
-                                     foregournd_mask);
-      foregournd_frame.copyTo(frame, foregournd_mask);
-      mask = foregournd_mask;
+      cv::Mat foreground_frame;
+      cv::Mat foreground_mask;
+      m_provider->getFrameForeground(m_size, m_position, foreground_frame,
+                                     foreground_mask);
+      foreground_frame.copyTo(frame, foreground_mask);
+      mask = foreground_mask;
     }
-
 #if 1
-    cout << "mask size" << mask.size() << endl;
-    Mat mask_bgr;
-    cvtColor(mask, mask_bgr, CV_GRAY2BGR);
+vector<unsigned char> buf;
+vector<unsigned char> jpg;
 
-// frame = frame.clone();
-// mask = mask.clone();
+imencode(".jpg", frame, jpg);
+Protocol::encodeData(buf, "jpg", jpg);
+Transmitter::sendData(m_client_id, buf);
 
-// vector<unsigned char> buf;
-// vector<unsigned char> jpg;
-// imencode(".jpg", frame, jpg);
-// Protocol::encodeData(buf, "jpg", jpg);
-// Transmitter::sendData(m_client_id, buf);
-// imencode(".jpg", mask, jpg);
-// Protocol::encodeData(buf, "jpg", jpg);
-// Transmitter::sendData(m_client_id, buf);
+imencode(".jpg", mask, jpg);
+Protocol::encodeData(buf, "jpg", jpg);
+Transmitter::sendData(m_client_id, buf);
 #endif
-    imshow("frame", frame);
+    // cout << mask.size() << endl;
+    imshow("slave frame", frame);
+    // imshow("slave mask", mask);
     int time = timer.getTimeUs() / 1000;
     int wait = max(1, MS - time);
     waitKey(wait);

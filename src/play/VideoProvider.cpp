@@ -21,7 +21,7 @@ VideoProvider::VideoProvider(string path, bool online) {
       ifstream fin;
       assert(IO::openIStream(fin, path + "n_layers.txt", "VideoData load"));
       fin >> NUM_LAYERS;
-      cout << "NUM_LAYERS: " << NUM_LAYERS << endl;
+      // cout << "NUM_LAYERS: " << NUM_LAYERS << endl;
   }
   
 

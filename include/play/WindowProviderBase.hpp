@@ -13,6 +13,8 @@ public:
   virtual bool hasThumbnail() = 0;
   virtual void getThumbnail(std::vector<cv::Mat> &thumbnail,
                             std::vector<cv::Point3d> &position) = 0;
+  virtual bool isDead() = 0;
+  virtual std::string getName() = 0;
 };
 
 #endif

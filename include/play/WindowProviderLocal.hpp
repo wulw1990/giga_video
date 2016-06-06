@@ -15,6 +15,8 @@ public:
   bool hasThumbnail();
   void getThumbnail(std::vector<cv::Mat> &thumbnail,
                     std::vector<cv::Point3d> &position);
+  bool isDead() { return false; }
+  std::string getName() { return std::string("local"); }
 
 private:
   cv::Size m_size;
@@ -24,7 +26,7 @@ private:
   bool m_has_frame;
   cv::Mat m_frame;
   cv::Mat m_mask;
-  
+
   bool m_has_thumbnail;
   std::vector<cv::Mat> m_thumbnail;
 };

@@ -47,7 +47,6 @@ PlayerAuto::PlayerAuto(std::string path, int video_mode, string output_video) {
   m_info.mouse_y = -100;
   m_info.mouse_color = Scalar(255, 255, 255);
   m_info.thumnail_index = -1;
-  cout << "PlayerAuto: m_info init ok" << endl;
 
   // getThumbnail
   if (m_info.m_waiter->hasThumbnail())
@@ -75,10 +74,10 @@ PlayerAuto::PlayerAuto(std::string path, int video_mode, string output_video) {
                            ref(m_record_end), ref(m_info.show_locker));
 }
 void PlayerAuto::updateThumbnail() {
-  cout << "thumnail begin" << endl;
+  // cout << "thumnail begin" << endl;
   vector<Mat> thumnail;
   m_info.m_waiter->getThumbnail(thumnail);
-  cout << "thumnail size: " << thumnail.size() << endl;
+  // cout << "thumnail size: " << thumnail.size() << endl;
   if (!thumnail.empty()) {
     int rows = thumnail[0].rows;
     int cols = thumnail[0].cols;
@@ -122,10 +121,10 @@ void PlayerAuto::updateThumbnail() {
       m_info.thumnail_rect[i].y = scale * m_info.thumnail_rect[i].y;
       m_info.thumnail_rect[i].width = scale * m_info.thumnail_rect[i].width;
       m_info.thumnail_rect[i].height = scale * m_info.thumnail_rect[i].height;
-      cout << m_info.thumnail_rect[i] << endl;
+      // cout << m_info.thumnail_rect[i] << endl;
     }
   }
-  cout << "PlayerAuto: thumnail ok" << endl;
+  // cout << "PlayerAuto: thumnail ok" << endl;
 }
 
 void PlayerAuto::drawMouse(cv::Mat &show, int x, int y, Scalar color) {

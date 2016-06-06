@@ -15,17 +15,25 @@ work_listen(int server_id, cv::Size window_size,
             std::vector<std::shared_ptr<WindowProviderBase>> &provider,
             bool &has_thumbnail) {
   while (1) {
-    cout << "work_listen: listening..." << endl;
+    cout << "################WaiterServer::work_listen############" << endl;
+    cout << "WaiterServer::work_listen: listening..." << endl;
     int client_id;
     string client_info;
     if (Transmitter::getClientId(server_id, client_id, client_info)) {
-      cout << "work_listen: " << client_info << endl;
+      cout << "WaiterServer::work_listen: " << client_info << endl;
       std::shared_ptr<WindowProviderBase> instance =
-          make_shared<WindowProviderRemote>(client_id, window_size);
+          make_shared<WindowProviderRemote>(client_id, window_size,
+                                            client_info);
       provider.push_back(instance);
-      has_thumbnail = true;
+      cout << "WaiterServer::Window Provider List: " << endl;
+      for (size_t i = 0; i < provider.size(); ++i) {
+        cout << " " << i << " : "
+             << " is_dead=" << provider[i]->isDead() << " "
+             << provider[i]->getName() << endl;
+      }
     }
-  }
+    cout << "################WaiterServer::work_listen############" << endl;
+  } // while
 }
 WaiterServer::WaiterServer(std::string path, cv::Size window_size,
                            int video_mode, int port) {
@@ -50,8 +58,7 @@ WaiterServer::WaiterServer(std::string path, cv::Size window_size,
     m_thread_listen = thread(work_listen, server_id, window_size,
                              ref(m_window_provider), ref(m_has_thumbnail));
   }
-
-  cout << "WaiterServer init ok" << endl;
+  cout << "WaiterServer::init ok" << endl;
 }
 void WaiterServer::move(float dx, float dy) {
   m_window_controller->move(dx, dy);
@@ -145,7 +152,7 @@ void WaiterServer::setThumbnailIndex(int index) {
 void WaiterServer::updateWindowPosition() {
   Point3d position;
   m_window_controller->getPosition(position);
-  cout << "position: " << position << endl;
+  // cout << "position: " << position << endl;
   for (size_t i = 0; i < m_window_provider.size(); ++i) {
     m_window_provider[i]->setWindowPosition(position);
   }

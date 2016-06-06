@@ -66,7 +66,7 @@ int Transmitter::initSocketClient(std::string ip, int port) {
     exit(0);
   }
 
-  printf("send msg to server: \n");
+  // printf("send msg to server: \n");
   return sockfd;
 }
 bool Transmitter::getClientId(int server_id, int &client_id, std::string& client_info) {
@@ -108,7 +108,7 @@ bool Transmitter::readData(int socket_id, std::vector<unsigned char> &data,
     int n = recv(socket_id, &data[rec_len], len - rec_len, 0);
     rec_len += n;
     if (n <= 0) {
-      cout << "Transmitter::readData error" << endl;
+      // cout << "Transmitter::readData error" << endl;
       return false;
     }
   }
