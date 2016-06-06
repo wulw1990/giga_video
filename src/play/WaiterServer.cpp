@@ -37,6 +37,7 @@ work_listen(int server_id, cv::Size window_size,
 }
 WaiterServer::WaiterServer(std::string path, cv::Size window_size,
                            int video_mode, int port) {
+  cout << "WaiterServer::init begin" << endl;
   m_window_size = window_size;
   {
     FrameProvider provider(path, 0);
@@ -45,6 +46,7 @@ WaiterServer::WaiterServer(std::string path, cv::Size window_size,
                         provider.getLayerHeight(n_layers - 1));
     m_window_controller =
         make_shared<WindowController>(n_layers, top_layer_size, window_size);
+    cout << "WaiterServer::init WindowController ok" << endl;
   }
   m_window_provider.resize(1);
   m_window_provider[0] =
@@ -52,6 +54,8 @@ WaiterServer::WaiterServer(std::string path, cv::Size window_size,
   m_has_thumbnail = true;
   m_has_frame = false;
   updateFrame();
+
+  cout << "WaiterServer::init local" << endl;
 
   if (port > 0) {
     int server_id = Transmitter::initSocketServer(port);

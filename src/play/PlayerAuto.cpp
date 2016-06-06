@@ -37,6 +37,7 @@ static void work_record(string video_name, cv::Mat &show, bool &record_end,
 }
 
 PlayerAuto::PlayerAuto(std::string path, int video_mode, string output_video) {
+  cout << "PlayerAuto::init begin" << endl;
   m_window_width = 1024;
   m_window_height = 720;
 
@@ -72,6 +73,7 @@ PlayerAuto::PlayerAuto(std::string path, int video_mode, string output_video) {
   m_record_end = false;
   m_record_thread = thread(work_record, output_video, ref(m_info.show),
                            ref(m_record_end), ref(m_info.show_locker));
+  cout << "PlayerAuto::init ok" << endl;
 }
 void PlayerAuto::updateThumbnail() {
   // cout << "thumnail begin" << endl;
@@ -209,7 +211,8 @@ void PlayerAuto::onMouse(int event, int x, int y, int, void *data) {
     info->mouse_color = Scalar(255, 255, 255);
     break;
   case EVENT_LBUTTONDBLCLK:
-    info->thumnail_index = getThunbmailIndex(x, y - info->frame.rows, info->thumnail_rect);
+    info->thumnail_index =
+        getThunbmailIndex(x, y - info->frame.rows, info->thumnail_rect);
     if (info->thumnail_index < 0)
       info->m_waiter->zoom(1);
     // cout << "ThunbmailIndex: " << info->thumnail_index << endl;

@@ -11,23 +11,25 @@ using namespace cv;
 #include "IO.hpp"
 
 VideoProvider::VideoProvider(string path, bool online) {
+  cout << "VideoProvider::init begin" << endl;
+
+  {
+    ifstream fin;
+    assert(IO::openIStream(fin, path + "n_layers.txt", "VideoData load"));
+    fin >> NUM_LAYERS;
+    cout << "VideoProvider::init NUM_LAYERS=" << NUM_LAYERS << endl;
+  }
+
   if (online) {
     m_camera_set = make_shared<PyCameraSetFly2>(NUM_LAYERS);
   } else {
     m_camera_set = make_shared<PyCameraSetImage>(path);
   }
-  
-  {
-      ifstream fin;
-      assert(IO::openIStream(fin, path + "n_layers.txt", "VideoData load"));
-      fin >> NUM_LAYERS;
-      // cout << "NUM_LAYERS: " << NUM_LAYERS << endl;
-  }
-  
 
   m_trans.resize(NUM_LAYERS);
   m_rect.resize(NUM_LAYERS);
   for (int layer_id = 0; layer_id < NUM_LAYERS; ++layer_id) {
+    // cout << "VideoProvider::init layer=" << layer_id << endl;
     int n_cameras = m_camera_set->getNumCamera();
     m_trans[layer_id].resize(n_cameras);
     m_rect[layer_id].resize(n_cameras);
@@ -42,6 +44,7 @@ VideoProvider::VideoProvider(string path, bool online) {
       assert(IO::loadRect(fin, m_rect[layer_id][camera_id]));
     }
   }
+  cout << "VideoProvider::init end" << endl;
 }
 int VideoProvider::getNumCamera() {
   //
@@ -61,6 +64,7 @@ bool VideoProvider::getRect(cv::Rect &rect, int camera_id, int layer_id) {
 }
 bool VideoProvider::getFrame(cv::Mat &frame, cv::Mat &mask, int camera_id,
                              int layer_id) {
+  // cout << "VideoProvider::getFrame begin" << endl;
   if (!isValidLayer(layer_id))
     return false;
   if (!isValidCamera(camera_id))
@@ -70,6 +74,8 @@ bool VideoProvider::getFrame(cv::Mat &frame, cv::Mat &mask, int camera_id,
   if (!m_camera_set->read(raw_frame, camera_id, layer_id)) {
     return false;
   }
+  // imshow("raw_frame", raw_frame);
+  // waitKey(0);
   Mat raw_mask(raw_frame.size(), CV_8UC1, Scalar(255));
   Size frame_size;
   {
@@ -80,7 +86,7 @@ bool VideoProvider::getFrame(cv::Mat &frame, cv::Mat &mask, int camera_id,
   warpPerspective(raw_mask, mask, m_trans[layer_id][camera_id], frame_size);
   threshold(mask, mask, 250, 255, THRESH_BINARY);
   // imshow("mask", mask);
-
+  // cout << "VideoProvider::getFrame end" << endl;
   return true;
 }
 bool VideoProvider::getThumbnail(cv::Mat &thumbnail, int camera_id) {

@@ -37,7 +37,9 @@ bool PyCameraSetFly2::read(cv::Mat &frame, int camera_id, int layer_id) {
   if(frame.empty()){
       return false;
   }
+  // cout << "PyCameraSetFly2::read diff layer=" << m_n_layers - 1 - layer_id << endl;
   float scale = std::pow(2, m_n_layers - 1 - layer_id);
+  // cout << "PyCameraSetFly2::read scale: " << scale << endl;
   resize(frame, frame, Size(frame.cols/scale, frame.rows/scale));
   return true;
 }
