@@ -10,16 +10,20 @@ using namespace cv;
 #include "PyCameraSetFly2.hpp"
 #include "IO.hpp"
 
-const int NUM_LAYERS = 7;
-
 VideoProvider::VideoProvider(string path, bool online) {
-  m_path = path;
-
   if (online) {
     m_camera_set = make_shared<PyCameraSetFly2>(NUM_LAYERS);
   } else {
     m_camera_set = make_shared<PyCameraSetImage>(path);
   }
+  
+  {
+      ifstream fin;
+      assert(IO::openIStream(fin, path + "n_layers.txt", "VideoData load"));
+      fin >> NUM_LAYERS;
+      cout << "NUM_LAYERS: " << NUM_LAYERS << endl;
+  }
+  
 
   m_trans.resize(NUM_LAYERS);
   m_rect.resize(NUM_LAYERS);

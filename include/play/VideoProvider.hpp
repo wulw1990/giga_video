@@ -18,7 +18,7 @@ public:
   bool getThumbnail(cv::Mat& thumbnail, int camera_id);
 
 private:
-  std::string m_path;
+  int NUM_LAYERS;
   std::shared_ptr<PyCameraSetBase> m_camera_set;
   std::vector<std::vector<cv::Mat>> m_trans;
   std::vector<std::vector<cv::Rect>> m_rect;
