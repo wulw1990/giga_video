@@ -8,8 +8,8 @@ mode_internal="giga_video"
 #path="${HOME}/wuliwei/data/zijing16_1/"
 path="${HOME}/wuliwei/data/main_building/"
 mode_video="2"
-mode_interact="mannual"
-./build/giga_video $mode $mode_internal $path $mode_video $mode_interact
+port=5001
+./build/giga_video $mode $mode_internal $path $mode_video $port
 
 # mode="demo"
 # mode_internal="slave"
