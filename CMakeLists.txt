@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 PROJECT(giga_video)
 
-option (FLY_CAPTRUE "Use provided math implementation" ON)
+option (FLY_CAPTRUE "Use provided math implementation" OFF)
 if(FLY_CAPTRUE)
 	add_definitions(-DENABLE_FLY_CAPTRUE)
 	set(FlyCapture_HEADERS "/usr/include/flycapture")

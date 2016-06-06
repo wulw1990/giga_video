@@ -30,6 +30,7 @@ private:
   void updateWindowPosition();
 
   bool m_has_frame;
+  bool m_has_thumbnail;
   cv::Mat m_frame;
   void updateFrame();
   void getDesinationPosition(std::vector<cv::Point3d> &position);

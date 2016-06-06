@@ -12,6 +12,7 @@ public:
   void setWindowPosition(cv::Point3d position);
   bool hasFrame();
   void getFrame(cv::Mat &frame, cv::Mat &mask);
+  bool hasThumbnail();
   void getThumbnail(std::vector<cv::Mat> &thumbnail,
                     std::vector<cv::Point3d> &position);
 
@@ -23,6 +24,8 @@ private:
   bool m_has_frame;
   cv::Mat m_frame;
   cv::Mat m_mask;
+  
+  bool m_has_thumbnail;
   std::vector<cv::Mat> m_thumbnail;
 };
 

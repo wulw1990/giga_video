@@ -11,7 +11,8 @@ WindowProviderLocal::WindowProviderLocal(std::string path, int mode_video,
   m_size = window_size;
   m_position = Point3d(0.5, 0.5, 0.5);
   m_provider = make_shared<FrameProvider>(path, mode_video);
-  m_has_frame = false;
+  m_has_frame = true;
+  m_has_thumbnail = true;
 }
 void WindowProviderLocal::setWindowPosition(cv::Point3d position) {
   m_position = position;
@@ -41,7 +42,12 @@ void WindowProviderLocal::getFrame(cv::Mat &frame, cv::Mat &mask) {
   mask = m_mask.clone();
   m_has_frame = false;
 }
+bool WindowProviderLocal::hasThumbnail() {
+  //
+  return m_has_thumbnail;
+}
 void WindowProviderLocal::getThumbnail(std::vector<cv::Mat> &thumbnail,
                                        std::vector<cv::Point3d> &position) {
   m_provider->getThumbnail(thumbnail, position);
+  m_has_thumbnail = false;
 }

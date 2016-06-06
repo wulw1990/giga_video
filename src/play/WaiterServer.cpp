@@ -4,22 +4,29 @@
 #include "WindowController.hpp"
 #include "Timer.hpp"
 #include "WindowProviderLocal.hpp"
+#include "WindowProviderRemote.hpp"
 #include "Transmitter.hpp"
 
 using namespace std;
 using namespace cv;
 
-static void work_listen(int server_id) {
+static void
+work_listen(int server_id, cv::Size window_size,
+            std::vector<std::shared_ptr<WindowProviderBase>> &provider,
+            bool &has_thumbnail) {
   while (1) {
     cout << "work_listen: listening..." << endl;
     int client_id;
     string client_info;
     if (Transmitter::getClientId(server_id, client_id, client_info)) {
       cout << "work_listen: " << client_info << endl;
+      std::shared_ptr<WindowProviderBase> instance =
+          make_shared<WindowProviderRemote>(client_id, window_size);
+      provider.push_back(instance);
+      has_thumbnail = true;
     }
   }
 }
-
 WaiterServer::WaiterServer(std::string path, cv::Size window_size,
                            int video_mode, int port) {
   m_window_size = window_size;
@@ -34,12 +41,14 @@ WaiterServer::WaiterServer(std::string path, cv::Size window_size,
   m_window_provider.resize(1);
   m_window_provider[0] =
       make_shared<WindowProviderLocal>(path, video_mode, window_size);
+  m_has_thumbnail = true;
   m_has_frame = false;
   updateFrame();
 
   if (port > 0) {
     int server_id = Transmitter::initSocketServer(port);
-    m_thread_listen = thread(work_listen, server_id);
+    m_thread_listen = thread(work_listen, server_id, window_size,
+                             ref(m_window_provider), ref(m_has_thumbnail));
   }
 
   cout << "WaiterServer init ok" << endl;
@@ -74,8 +83,12 @@ void WaiterServer::getFrame(cv::Mat &frame) {
   m_has_frame = false;
 }
 bool WaiterServer::hasThumbnail() {
-  //
-  return true;
+  m_has_thumbnail = false;
+  for (size_t i = 0; i < m_window_provider.size(); ++i) {
+    if (m_window_provider[i]->hasThumbnail())
+      m_has_thumbnail = true;
+  }
+  return m_has_thumbnail;
 }
 void WaiterServer::getThumbnail(std::vector<cv::Mat> &thumbnail) {
   thumbnail.clear();
@@ -85,6 +98,7 @@ void WaiterServer::getThumbnail(std::vector<cv::Mat> &thumbnail) {
     m_window_provider[i]->getThumbnail(tmp, tmp_pos);
     thumbnail.insert(thumbnail.end(), tmp.begin(), tmp.end());
   }
+  m_has_thumbnail = false;
 }
 void WaiterServer::getLinearPath(cv::Point3d position_src,
                                  cv::Point3d position_dst, int len,
@@ -97,6 +111,7 @@ void WaiterServer::getLinearPath(cv::Point3d position_src,
   }
 }
 void WaiterServer::setThumbnailIndex(int index) {
+  cout << "WaiterServer::setThumbnailIndex: " << index << endl;
   vector<Point3d> camera_position;
   getDesinationPosition(camera_position);
   if (index < 0 || index >= (int)camera_position.size()) {
@@ -128,10 +143,11 @@ void WaiterServer::setThumbnailIndex(int index) {
   // exit(-1);
 }
 void WaiterServer::updateWindowPosition() {
-  Point3d postion;
-  m_window_controller->getPosition(postion);
+  Point3d position;
+  m_window_controller->getPosition(position);
+  cout << "position: " << position << endl;
   for (size_t i = 0; i < m_window_provider.size(); ++i) {
-    m_window_provider[i]->setWindowPosition(postion);
+    m_window_provider[i]->setWindowPosition(position);
   }
 }
 void WaiterServer::updateFrame() {
@@ -149,6 +165,8 @@ void WaiterServer::updateFrame() {
     Mat frame, mask;
     m_window_provider[0]->getFrame(frame, mask);
     for (size_t i = 1; i < m_window_provider.size(); ++i) {
+      if (!m_window_provider[i]->hasFrame())
+        continue;
       Mat tmp_frame;
       Mat tmp_mask;
       m_window_provider[i]->getFrame(tmp_frame, tmp_mask);

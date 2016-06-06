@@ -50,6 +50,31 @@ PlayerAuto::PlayerAuto(std::string path, int video_mode, string output_video) {
   cout << "PlayerAuto: m_info init ok" << endl;
 
   // getThumbnail
+  if (m_info.m_waiter->hasThumbnail())
+    updateThumbnail();
+
+  // init show
+  // cvNamedWindow(m_info.win_title.c_str(), CV_WINDOW_NORMAL);
+  // cvSetWindowProperty(m_info.win_title.c_str(), CV_WND_PROP_FULLSCREEN,
+  //                     CV_WINDOW_FULLSCREEN);
+
+  if (m_info.m_waiter->hasFrame()) {
+    m_info.m_waiter->getFrame(m_info.frame);
+  }
+  m_info.show_locker.lock();
+  m_info.show = m_info.frame.clone();
+  m_info.show.push_back(m_info.thumnail_show);
+  m_info.show_locker.unlock();
+
+  drawMouse(m_info.show, m_info.mouse_x, m_info.mouse_y, m_info.mouse_color);
+  imshow(m_info.win_title, m_info.show);
+  setMouseCallback(m_info.win_title, onMouse, &m_info);
+
+  m_record_end = false;
+  m_record_thread = thread(work_record, output_video, ref(m_info.show),
+                           ref(m_record_end), ref(m_info.show_locker));
+}
+void PlayerAuto::updateThumbnail() {
   cout << "thumnail begin" << endl;
   vector<Mat> thumnail;
   m_info.m_waiter->getThumbnail(thumnail);
@@ -63,6 +88,7 @@ PlayerAuto::PlayerAuto(std::string path, int video_mode, string output_video) {
       rectangle(thumnail[i], rect, Scalar(255, 0, 0), 5);
     }
     m_info.thumnail_show = Mat(rows, cols * thumnail.size(), CV_8UC3);
+    m_info.thumnail_rect.clear();
     for (size_t i = 0; i < thumnail.size(); ++i) {
       Rect rect(cols * i, 0, cols, rows);
       thumnail[i].copyTo(m_info.thumnail_show(rect));
@@ -96,36 +122,12 @@ PlayerAuto::PlayerAuto(std::string path, int video_mode, string output_video) {
       m_info.thumnail_rect[i].y = scale * m_info.thumnail_rect[i].y;
       m_info.thumnail_rect[i].width = scale * m_info.thumnail_rect[i].width;
       m_info.thumnail_rect[i].height = scale * m_info.thumnail_rect[i].height;
-      // cout << m_info.thumnail_rect[i] << endl;
+      cout << m_info.thumnail_rect[i] << endl;
     }
   }
   cout << "PlayerAuto: thumnail ok" << endl;
-
-  // init show
-  // cvNamedWindow(m_info.win_title.c_str(), CV_WINDOW_NORMAL);
-  // cvSetWindowProperty(m_info.win_title.c_str(), CV_WND_PROP_FULLSCREEN,
-  //                     CV_WINDOW_FULLSCREEN);
-                      
-  if (m_info.m_waiter->hasFrame()) {
-    m_info.m_waiter->getFrame(m_info.frame);
-  }
-  m_info.show_locker.lock();
-  m_info.show = m_info.frame.clone();
-  m_info.show.push_back(m_info.thumnail_show);
-  m_info.show_locker.unlock();
-  // update thumnail rect
-  for (size_t i = 0; i < m_info.thumnail_rect.size(); ++i) {
-    m_info.thumnail_rect[i].y += m_window_height;
-    rectangle(m_info.show, m_info.thumnail_rect[i], Scalar(0, 0, 255), 2);
-  }
-  drawMouse(m_info.show, m_info.mouse_x, m_info.mouse_y, m_info.mouse_color);
-  imshow(m_info.win_title, m_info.show);
-  setMouseCallback(m_info.win_title, onMouse, &m_info);
-
-  m_record_end = false;
-  m_record_thread = thread(work_record, output_video, ref(m_info.show),
-                           ref(m_record_end), ref(m_info.show_locker));
 }
+
 void PlayerAuto::drawMouse(cv::Mat &show, int x, int y, Scalar color) {
   std::vector<cv::Point> fillContSingle;
   fillContSingle.push_back(cv::Point(x, y));
@@ -148,6 +150,9 @@ void PlayerAuto::play() {
       // cout << m_info.thumnail_index << endl;
       m_info.m_waiter->setThumbnailIndex(m_info.thumnail_index);
       m_info.thumnail_index = -1;
+    }
+    if (m_info.m_waiter->hasThumbnail()) {
+      updateThumbnail();
     }
     if (m_info.m_waiter->hasFrame()) {
       m_info.m_waiter->getFrame(m_info.frame);
@@ -205,7 +210,7 @@ void PlayerAuto::onMouse(int event, int x, int y, int, void *data) {
     info->mouse_color = Scalar(255, 255, 255);
     break;
   case EVENT_LBUTTONDBLCLK:
-    info->thumnail_index = getThunbmailIndex(x, y, info->thumnail_rect);
+    info->thumnail_index = getThunbmailIndex(x, y - info->frame.rows, info->thumnail_rect);
     if (info->thumnail_index < 0)
       info->m_waiter->zoom(1);
     // cout << "ThunbmailIndex: " << info->thumnail_index << endl;

@@ -5,8 +5,8 @@
 
 mode="demo"
 mode_internal="giga_video"
-path="${HOME}/wuliwei/data/main_building/"
-mode_video="2"
+path="${HOME}/wuliwei/data/zijing16/"
+mode_video="1"
 mode_interact="mannual"
 ./build/giga_video $mode $mode_internal $path $mode_video $mode_interact
 

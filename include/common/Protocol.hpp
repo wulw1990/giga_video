@@ -6,25 +6,23 @@
 
 class Protocol {
 public:
-  static void encode(std::vector<unsigned char> &buf, std::string cmd,
-                     const std::vector<unsigned char> &data);
-
-  static void encodeHead(std::vector<unsigned char> &head, std::string cmd,
-                         int data_len);
-
   static void decodeHead(const std::vector<unsigned char> &buf,
                          std::string &cmd, int &data_len);
 
-  static void encodeXYZ(std::vector<unsigned char> &buf, int x, int y, int z);
+  static void encodeLength(std::vector<unsigned char> &buf, int length);
+  static void decodeLength(const std::vector<unsigned char> &data, int &length);
+  static void encodeSize(std::vector<unsigned char> &buf, int width,
+                         int height);
+  static void decodeSize(const std::vector<unsigned char> &data, int &width,
+                         int &height);
 
-  static void decodeDataXYZ(const std::vector<unsigned char> &buf, int &x,
-                            int &y, int &z);
+  static void encodePoint3d(std::vector<unsigned char> &buf, double x, double y,
+                            double z);
+  static void decodePoint3d(const std::vector<unsigned char> &data, double &x,
+                            double &y, double &z);
 
-  static void encodeFloatVector(const std::vector<float> &vec,
-                                std::vector<unsigned char> &buf);
-
-  static void decodeFloatVector(const std::vector<unsigned char> &buf,
-                                std::vector<float> &fvec);
+  static void encodeData(std::vector<unsigned char> &buf, std::string cmd,
+                         const std::vector<unsigned char> &data);
 
   static int getHeadLen() { return CMD_LEN + LEN_LEN; }
 
@@ -32,8 +30,16 @@ private:
   static int CMD_LEN;
   static int LEN_LEN;
 
-  static void int2Vector(int value, std::vector<unsigned char> &vec);
-  static void vector2Int(int &value, const std::vector<unsigned char> &vec);
+  static void encodeString(unsigned char *buf, std::string str);
+  static void encodeInt(unsigned char *buf, int raw);
+  static void decodeInt(const std::vector<unsigned char> &buf, int& raw);
+  static void encodeVectorInt(unsigned char *buf, const std::vector<int> &raw);
+  static void decodeVectorInt(const std::vector<unsigned char> &buf,
+                              std::vector<int> &raw);
+  static void encodeVectorDouble(unsigned char *buf,
+                                 const std::vector<double> &raw);
+  static void decodeVectorDouble(const std::vector<unsigned char> &buf,
+                                 std::vector<double> &raw);
 };
 
 #endif

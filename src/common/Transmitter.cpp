@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 
+#include <iostream>
 using namespace std;
 
 int Transmitter::initSocketServer(int port) {
@@ -107,6 +108,7 @@ bool Transmitter::readData(int socket_id, std::vector<unsigned char> &data,
     int n = recv(socket_id, &data[rec_len], len - rec_len, 0);
     rec_len += n;
     if (n <= 0) {
+      cout << "Transmitter::readData error" << endl;
       return false;
     }
   }

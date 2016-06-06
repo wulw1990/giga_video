@@ -48,6 +48,8 @@ private:
 
   std::thread m_record_thread;
   bool m_record_end;
+  
+  void updateThumbnail();
 };
 
 #endif
