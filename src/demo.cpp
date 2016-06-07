@@ -61,18 +61,19 @@ static int giga_image(int argc, char **argv) {
   }
   string path(argv[1]);
   int mode_video = 0;
-  PlayerAuto player(path, mode_video);
+  PlayerAuto player(path, mode_video, -1);
   player.play();
   return 0;
 }
 static int giga_video(int argc, char **argv) {
-  if (argc < 3) {
+  if (argc < 4) {
     cerr << "main_internal_demo giga_image args error." << endl;
     exit(-1);
   }
   string path(argv[1]);
   int mode_video = atoi(argv[2]);
-  PlayerAuto player(path, mode_video);
+  int port = atoi(argv[3]);
+  PlayerAuto player(path, mode_video, port, "../record.avi");
   player.play();
   return 0;
 }

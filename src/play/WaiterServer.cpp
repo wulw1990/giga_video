@@ -13,7 +13,7 @@ using namespace cv;
 static void
 work_listen(int server_id, cv::Size window_size,
             std::vector<std::shared_ptr<WindowProviderBase>> &provider,
-            bool &has_thumbnail) {
+            shared_ptr<WindowController> controller, bool &has_thumbnail) {
   while (1) {
     cout << "################WaiterServer::work_listen############" << endl;
     cout << "WaiterServer::work_listen: listening..." << endl;
@@ -24,7 +24,13 @@ work_listen(int server_id, cv::Size window_size,
       std::shared_ptr<WindowProviderBase> instance =
           make_shared<WindowProviderRemote>(client_id, window_size,
                                             client_info);
+      
+      Point3d position;
+      controller->getPosition(position);
+      // cout << "position: " << position << endl;
+      instance->setWindowPosition(position);
       provider.push_back(instance);
+      
       cout << "WaiterServer::Window Provider List: " << endl;
       for (size_t i = 0; i < provider.size(); ++i) {
         cout << " " << i << " : "
@@ -60,7 +66,7 @@ WaiterServer::WaiterServer(std::string path, cv::Size window_size,
   if (port > 0) {
     int server_id = Transmitter::initSocketServer(port);
     m_thread_listen = thread(work_listen, server_id, window_size,
-                             ref(m_window_provider), ref(m_has_thumbnail));
+                             ref(m_window_provider), m_window_controller, ref(m_has_thumbnail));
   }
   cout << "WaiterServer::init ok" << endl;
 }

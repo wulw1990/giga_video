@@ -9,7 +9,7 @@ using namespace cv;
 WindowProviderLocal::WindowProviderLocal(std::string path, int mode_video,
                                          cv::Size window_size) {
   m_size = window_size;
-  m_position = Point3d(0.5, 0.5, 0.5);
+  m_position = Point3d(0.5, 0.5, 0);
   m_provider = make_shared<FrameProvider>(path, mode_video);
   m_has_frame = true;
   m_has_thumbnail = true;

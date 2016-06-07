@@ -36,13 +36,13 @@ static void work_record(string video_name, cv::Mat &show, bool &record_end,
   }
 }
 
-PlayerAuto::PlayerAuto(std::string path, int video_mode, string output_video) {
+PlayerAuto::PlayerAuto(std::string path, int video_mode, int port, string output_video) {
   cout << "PlayerAuto::init begin" << endl;
   m_window_width = 1024;
   m_window_height = 720;
 
   m_info.m_waiter = make_shared<WaiterServer>(
-      path, cv::Size(m_window_width, m_window_height), video_mode, 5000);
+      path, cv::Size(m_window_width, m_window_height), video_mode, port);
   m_info.win_title = "giga PlayerAuto";
   m_info.mouse_x = -100;
   m_info.mouse_y = -100;

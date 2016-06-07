@@ -44,7 +44,11 @@ void WindowProviderRemote::work_receive(Info &info) {
         break;
       }
       tmp_mask = imdecode(buf, 0);
+      threshold(tmp_mask, tmp_mask, 250, 255, THRESH_BINARY);
     }
+
+    // imshow("tmp_frame", tmp_frame);
+    // imshow("tmp_mask", tmp_mask);
 
     info.locker.lock();
     info.frame = tmp_frame;

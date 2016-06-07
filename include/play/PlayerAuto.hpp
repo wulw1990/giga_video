@@ -16,7 +16,7 @@ public:
   // 0: no video
   // 1: offline video
   // 2: online video
-  PlayerAuto(std::string path, int video_mode, std::string output_video = "");
+  PlayerAuto(std::string path, int video_mode, int port, std::string output_video = "");
   ~PlayerAuto() {}
 
   void play();
