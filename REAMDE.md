@@ -17,7 +17,7 @@ make clean
 ```
 ## architecture
 
-![architecture](readme/architecture_hardware.jpg)
+![architecture](data/architecture_hardware.jpg)
 
 
 ### data acquisition system
