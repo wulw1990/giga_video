@@ -1,8 +1,8 @@
-# mode="construct"
-# mode_internal="giga_image_meta"
-# path="$HOME/wuliwei/data/main_building/"
-# meta=${path}"meta.conf"
-# ./build/giga_video $mode $mode_internal $path $meta
+mode="construct"
+mode_internal="giga_image_meta"
+path="$HOME/wuliwei/data/main_building/"
+meta=${path}"info_scene.txt"
+./build/giga_video $mode $mode_internal $path $meta
 
 # mode="construct"
 # mode_internal="cut_video"
@@ -20,9 +20,9 @@
 # ./build/giga_video $mode $mode_internal $path_scene $mode_video $name_video
 
 
-mode="construct"
-mode_internal="video_pyramid"
-path_scene="$HOME/wuliwei/data/main_building/video/"
-mode_video="fly2"
-name_video="0"
-./build/giga_video $mode $mode_internal $path_scene $mode_video $name_video
+# mode="construct"
+# mode_internal="video_pyramid"
+# path_scene="$HOME/wuliwei/data/main_building/video/"
+# mode_video="fly2"
+# name_video="0"
+# ./build/giga_video $mode $mode_internal $path_scene $mode_video $name_video

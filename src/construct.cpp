@@ -65,7 +65,6 @@ static int giga_image_meta(int argc, char **argv) {
   string meta_file(argv[2]);
   GigaImageMeta meta;
   meta.generateMetaFile(path, meta_file);
-  cout << "giga_image_meta" << endl;
   return 0;
 }
 static void saveVideoFrames(vector<Mat> &frame, string path) {

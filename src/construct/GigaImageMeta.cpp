@@ -8,8 +8,27 @@ using namespace std;
 
 void GigaImageMeta::generateMetaFile(std::string path, std::string meta) {
   // TODO: magic number
-  int layers = 7;
-  int head_layers = 5;
+  int layers;
+  {
+    layers = 0;
+    for (int i = 0; i < 1000; ++i) {
+      if (!DirDealer::isDir(path + to_string(i)))
+        break;
+      layers++;
+    }
+    cout << "GigaImageMeta::generateMetaFile layers=" << layers << endl;
+  }
+  int head_layers;
+  {
+    head_layers = 0;
+    for (int i = 0; i < layers; ++i) {
+      if (!DirDealer::existFileOrDir(path + to_string(i) + "/0_0.jpg"))
+        break;
+      head_layers++;
+    }
+    cout << "GigaImageMeta::generateMetaFile head_layers=" << head_layers
+         << endl;
+  }
   const string TILE_NAME_SUFFIX = ".jpg";
   m_tile_len = 512;
 
@@ -93,6 +112,7 @@ void GigaImageMeta::generateMetaFile(std::string path, std::string meta) {
       }
     }
   }
+  cout << "GigaImageMeta::generateMetaFile ok" << endl;
 }
 void GigaImageMeta::load(std::string meta) {
   ifstream fin(meta);
