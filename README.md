@@ -10,39 +10,22 @@ sudo add-apt-repository --yes ppa:xqms/opencv-nonfree
 sudo apt-get update 
 sudo apt-get install libopencv-nonfree-dev
 ```
+If you have FlyCapture driver, edit CMakeLists.txt:
+Otherwise:
 ```
 make
 make clean
+```
+## run
+some example scripts in samples:
+```
 ../samples/demo.sh
 ```
-## architecture
 
-![architecture](data/architecture_hardware.jpg)
-
-
-### data acquisition system
-
-one master with multi slave
-
-each slave has multi camera
-
-### application
-
-now mobile(android) supported
-
-
-## TODO
-construct camera set
-
-giga show camera set
-
-transmit between master and slave
 
 ## 选择是否编译FlyCapture
 如果不在采集设备上运行，编译项目会出现FlyCapture的编译错误。
-
 编辑最外层目录的CMakeLists.txt
-
 如果启用FlyCapture：
 
 ```
