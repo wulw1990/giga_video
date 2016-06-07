@@ -6,8 +6,8 @@ using namespace cv;
 bool IO::openOStream(std::ofstream &fout, std::string name, std::string error) {
   fout.open(name.c_str());
   if (!fout.is_open()) {
-    cerr << "error: " + error << endl;
-    cerr << "can not open output: " << name << endl;
+    cerr << "IO::openOStream error: " + error << endl;
+    cerr << "IO::openOStream can not output: " << name << endl;
     return false;
   }
   return true;

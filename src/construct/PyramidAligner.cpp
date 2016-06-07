@@ -52,8 +52,9 @@ void PyramidAligner::align(cv::Mat frame, cv::Mat &trans, cv::Rect &rect) {
   Rect rect_global(0, 0, layer_width, layer_height);
 
   for (; layer_id < 4; ++layer_id) {
+    cout << "PyramidAligner::align layer_id=" << layer_id
+         << " rect_global=" << rect_global << endl;
     Mat refer = m_frame_provider->getFrameBackground(rect_global, layer_id);
-    cout << refer.size() << endl;
     Rect rect_local;
     alignRect(frame, refer, rect_local);
     rect_local.x += rect_global.x;
@@ -66,22 +67,23 @@ void PyramidAligner::align(cv::Mat frame, cv::Mat &trans, cv::Rect &rect) {
     rect_global.height *= 2;
   }
 
-  cout << rect_global << endl;
+  cout << "PyramidAligner::align layer_id=" << layer_id
+       << " rect_global=" << rect_global << endl;
   Mat refer = m_frame_provider->getFrameBackground(rect_global, layer_id);
   alignTransRect(frame, refer, trans, rect);
   rect.x += rect_global.x;
   rect.y += rect_global.y;
   {
     float scale = pow(2.0, m_frame_provider->getNumLayers() - 1 - layer_id);
-    cout << scale << endl;
-    cout << trans << endl;
+    // cout << scale << endl;
+    // cout << trans << endl;
     trans.at<float>(0, 0) *= scale;
     trans.at<float>(0, 1) *= scale;
     trans.at<float>(0, 2) *= scale;
     trans.at<float>(1, 0) *= scale;
     trans.at<float>(1, 1) *= scale;
     trans.at<float>(1, 2) *= scale;
-    cout << trans << endl;
+    // cout << trans << endl;
     rect.x *= scale;
     rect.y *= scale;
     rect.width *= scale;
@@ -89,6 +91,9 @@ void PyramidAligner::align(cv::Mat frame, cv::Mat &trans, cv::Rect &rect) {
   }
 }
 bool PyramidAligner::alignRect(cv::Mat frame, cv::Mat refer, cv::Rect &rect) {
+  cout << "PyramidAligner::alignRect draw a rectangle, press q continue."
+       << endl;
+
   Mat show_frame;
   Mat show_refer;
   getShowImage(frame, show_frame);
@@ -103,6 +108,7 @@ bool PyramidAligner::alignRect(cv::Mat frame, cv::Mat refer, cv::Rect &rect) {
   info.move = false;
   imshow("show_frame", show_frame);
   imshow(info.title, show_refer);
+
   setMouseCallback(info.title, onMouseRect, &info);
   while (1) {
     char key = waitKey(33);
@@ -125,13 +131,15 @@ bool PyramidAligner::alignRect(cv::Mat frame, cv::Mat refer, cv::Rect &rect) {
 }
 bool PyramidAligner::alignTransRect(cv::Mat frame, cv::Mat refer,
                                     cv::Mat &trans, cv::Rect &rect) {
-  //
+  cout << "PyramidAligner::alignTransRect draw points, press q continue."
+       << endl;
+
   Mat show_frame;
   Mat show_refer;
   float scale_frame = getShowImage(frame, show_frame);
   float scale_refer = getShowImage(refer, show_refer);
-  cout << "show_frame: " << show_frame.size() << endl;
-  cout << "show_refer: " << show_refer.size() << endl;
+  // cout << "show_frame: " << show_frame.size() << endl;
+  // cout << "show_refer: " << show_refer.size() << endl;
 
   MousePointInfo info_frame;
   info_frame.title = "frame";
@@ -156,10 +164,11 @@ bool PyramidAligner::alignTransRect(cv::Mat frame, cv::Mat refer,
   cvDestroyWindow(info_frame.title.c_str());
   cvDestroyWindow(info_refer.title.c_str());
 
-  cout << info_frame.point.size() << endl;
-  cout << info_refer.point.size() << endl;
+  // cout << info_frame.point.size() << endl;
+  // cout << info_refer.point.size() << endl;
 
   if (info_frame.point.size() != info_frame.point.size()) {
+    cout << "PyramidAligner::alignTransRect Points Number not equal" << endl;
     return false;
   }
 

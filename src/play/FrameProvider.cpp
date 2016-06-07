@@ -10,6 +10,7 @@ using namespace cv;
 const Scalar default_color(127, 127, 127);
 
 FrameProvider::FrameProvider(std::string path, int video_mode) {
+  cout << "FrameProvider::init begin. video_mode=" << video_mode << endl;
   m_tile_provider = make_shared<TileProvider>(path, path + "info_scene.txt");
   m_video_mode = video_mode;
   if (m_video_mode == 0) {
@@ -22,6 +23,7 @@ FrameProvider::FrameProvider(std::string path, int video_mode) {
     exit(-1);
   }
   // cout << "video_mode: " << m_video_mode << endl;
+  cout << "FrameProvider::init OK" << endl;
 }
 
 cv::Mat FrameProvider::getFrameBackground(int w, int h, double x, double y,

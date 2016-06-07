@@ -99,7 +99,7 @@ CameraSetFly2::CameraSetFly2() {
   m_setting.shutter_step.push_back(20);
   m_setting.shutter_step.push_back(20);
 
-  cout << "init camera set...  " << endl;
+  cout << "CameraSetFly2::init camera set...  " << endl;
   setup();
   release();
   setup();
@@ -108,10 +108,10 @@ CameraSetFly2::CameraSetFly2() {
   for (size_t i = 0; i < m_frame_id.size(); ++i) {
     m_frame_id[i] = 0;
   }
-  cout << "ok. n_cameras = " << numCameras << endl;
+  cout << "CameraSetFly2::init ok. n_cameras = " << numCameras << endl;
 }
 CameraSetFly2::CameraSetFly2(string setting_file) : m_setting(setting_file) {
-  cout << "init camera set...  " << endl;
+  cout << "CameraSetFly2::init camera set...  " << endl;
   setup();
   release();
   setup();
@@ -120,7 +120,7 @@ CameraSetFly2::CameraSetFly2(string setting_file) : m_setting(setting_file) {
   for (size_t i = 0; i < m_frame_id.size(); ++i) {
     m_frame_id[i] = 0;
   }
-  cout << "ok. n_cameras = " << numCameras << endl;
+  cout << "CameraSetFly2::init ok. n_cameras = " << numCameras << endl;
 }
 void CameraSetFly2::setStaticProperty() {
   for (size_t i = 0; i < m_camera.size(); ++i) {

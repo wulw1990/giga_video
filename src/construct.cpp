@@ -67,19 +67,6 @@ static int giga_image_meta(int argc, char **argv) {
   meta.generateMetaFile(path, meta_file);
   return 0;
 }
-static void saveVideoFrames(vector<Mat> &frame, string path) {
-  DirDealer::mkdir_p(path);
-  for (int i = 0; i < (int)frame.size(); ++i) {
-    string full_name;
-    {
-      stringstream ss;
-      ss << setfill('0') << setw(6) << i;
-      full_name = path + ss.str() + ".jpg";
-      // cout << "full_name: " << full_name << endl;
-    }
-    imwrite(full_name, frame[i]);
-  }
-}
 static void video_pyramid_one(string path) {
   Mat trans;
   Rect rect;
@@ -114,20 +101,10 @@ static void video_pyramid_one(string path) {
     string name_video = path + "video_" + to_string(i) + "/";
     string name_info = path + "info_" + to_string(i) + ".txt";
 
-#if 0
-    saveVideoFrames(frame, name_video);
-#endif
-
     ofstream fout;
     assert(IO::openOStream(fout, name_info, "Write Info"));
     assert(IO::saveTransMat(fout, trans));
     assert(IO::saveRect(fout, rect));
-
-#if 0
-    for (size_t j = 0; j < frame.size(); ++j) {
-      resize(frame[j], frame[j], Size(frame[j].cols / 2, frame[j].rows / 2));
-    }
-#endif
 
     trans.at<float>(0, 2) /= 2;
     trans.at<float>(1, 2) /= 2;
@@ -135,6 +112,7 @@ static void video_pyramid_one(string path) {
     rect.y /= 2;
     rect.width /= 2;
     rect.height /= 2;
+    cout << "video_pyramid_one: layer_id=" << i << " OK" << endl;
   }
 }
 static int video_pyramid(int argc, char **argv) {
