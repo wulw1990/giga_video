@@ -28,3 +28,6 @@ some example scripts in samples:
 ../samples/demo.sh
 ../samples/demo_slave.sh
 ```
+
+## vs code
+http://www.codepool.biz/vscode-format-c-code-windows-linux.html
