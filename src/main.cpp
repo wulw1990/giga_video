@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
     return main_internal_test(argc, argv);
   if (mode == "videostab")
     return main_internal_videostab(argc, argv);
-      if (mode == "tool")
+  if (mode == "tool")
     return main_internal_tool(argc, argv);
   else {
     cerr << "main mode error: " << mode << endl;

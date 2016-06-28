@@ -225,7 +225,7 @@ bool FrameProvider::getVideoPosition(std::vector<double> &x,
     return false;
   }
   //
-  int layer_id = 2;
+  int layer_id = 4;
   int n_cameras = m_video_provider->getNumCamera();
   x.resize(n_cameras);
   y.resize(n_cameras);
