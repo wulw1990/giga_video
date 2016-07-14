@@ -9,6 +9,8 @@ using namespace cv;
 
 #include "giga_video.h"
 #include "PlayerAuto.hpp"
+#include "PlayerServer.hpp"
+#include "PlayerClient.hpp"
 #include "PlayerMannual.hpp"
 #include "PlayerSlave.hpp"
 #include "camera/CameraSetVideo.hpp"
@@ -22,6 +24,8 @@ using namespace cv;
 static int giga_image(int argc, char **argv);
 static int giga_video(int argc, char **argv);
 static int slave(int argc, char **argv);
+static int server(int argc, char **argv);
+static int client(int argc, char **argv);
 static int camera_set(int argc, char **argv);
 static int pyramid_camera(int argc, char **argv);
 static int py_camera_set(int argc, char **argv);
@@ -42,6 +46,10 @@ int main_internal_demo(int argc, char **argv) {
     return giga_video(argc, argv);
   if (mode == "slave")
     return slave(argc, argv);
+  if (mode == "server")
+    return server(argc, argv);
+  if (mode == "client")
+    return client(argc, argv);
   if (mode == "camera_set")
     return camera_set(argc, argv);
   if (mode == "pyramid_camera")
@@ -73,7 +81,7 @@ static int giga_video(int argc, char **argv) {
   string path(argv[1]);
   int mode_video = atoi(argv[2]);
   int port = atoi(argv[3]);
-  PlayerAuto player(path, mode_video, port, "../record.avi");
+  PlayerAuto player(path, mode_video, port, "");
   player.play();
   return 0;
 }
@@ -87,6 +95,30 @@ static int slave(int argc, char **argv) {
   string server_ip(argv[3]);
   int server_port = atoi(argv[4]);
   PlayerSlave player(path, mode_video, server_ip, server_port);
+  player.play();
+  return 0;
+}
+static int server(int argc, char **argv) {
+  if (argc < 5) {
+    cerr << "main_internal_demo server args error." << endl;
+    exit(-1);
+  }
+  string path(argv[1]);
+  int mode_video = atoi(argv[2]);
+  int port_slave = atoi(argv[3]);
+  int port_client = atoi(argv[4]);
+  PlayerServer player(path, mode_video, port_slave, port_client);
+  player.play();
+  return 0;
+}
+static int client(int argc, char **argv) {
+  if (argc < 3) {
+    cerr << "main_internal_demo client args error." << endl;
+    exit(-1);
+  }
+  string server_ip(argv[1]);
+  int server_port = atoi(argv[2]);
+  PlayerClient player(server_ip, server_port);
   player.play();
   return 0;
 }

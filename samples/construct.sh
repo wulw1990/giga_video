@@ -8,7 +8,7 @@ mode="construct"
 mode_internal="construct_camera_set_video_manual"
 path_scene="$HOME/wuliwei/data/main_building/"
 mode_video="fly2" # "video" or "fly2"
-name_video="4" # "0" or "MVI_7302" or ...
+name_video="1" # "0" or "MVI_7302" or ...
 ./build/giga_video $mode $mode_internal $path_scene $mode_video $name_video
 
 mode="construct"

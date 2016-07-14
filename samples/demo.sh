@@ -8,7 +8,7 @@ mode_internal="giga_video"
 #path="${HOME}/wuliwei/data/zijing16_1/"
 path="${HOME}/wuliwei/data/main_building/"
 mode_video="2"
-port=5001
+port=5000
 ./build/giga_video $mode $mode_internal $path $mode_video $port
 
 # mode="demo"

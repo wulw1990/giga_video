@@ -174,8 +174,8 @@ void PlayerAuto::play() {
     // endl;
     int wait = max(1, SHOW_MS - time);
     char key = waitKey(wait);
-    if (key == 'q')
-      break;
+    // if (key == 'q')
+    //   break;
   }
 
   m_record_end = true;
